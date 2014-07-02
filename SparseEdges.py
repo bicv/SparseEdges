@@ -2,78 +2,29 @@
 """
 SparseEdges
 
-See http://invibe.net/LaurentPerrinet/Publications/Perrinet11sfn
+See http://pythonhosted.org/SparseEdges
 
 """
 __author__ = "(c) Laurent Perrinet INT - CNRS"
 import numpy as np
 import scipy.ndimage as nd
-from scipy.fftpack import fft2, fftshift, ifft2, ifftshift
+import os
+PID, HOST = os.getpid(), os.uname()[1]
+TAG = 'host-' + HOST + '_pid-' + str(PID)
+# -------------------------------------------
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+import time
 
-# import LogGabor.LogGabor as LogGabor
-# import LogGabor.Image as Image
-# 
+import logging
+logging.basicConfig(filename='log-sparseedges-debug.log', format='%(asctime)s@[' + TAG + '] %(message)s', datefmt='%Y%m%d-%H:%M:%S')
+log = logging.getLogger("SparseEdges")
+#log.setLevel(level=logging.WARN)
+log.setLevel(level=logging.INFO)
+# log.setLevel(logging.DEBUG) #set verbosity to show all messages of severity >= DEBUG
+import matplotlib.pyplot as plt
 
-def init_pylab():
-    ############################  FIGURES   ########################################
-    from NeuroTools import check_dependency
-    HAVE_MATPLOTLIB = check_dependency('matplotlib')
-    if HAVE_MATPLOTLIB:
-        import matplotlib
-        matplotlib.use("Agg") # agg-backend, so we can create figures without x-server (no PDF, just PNG etc.)
-    HAVE_PYLAB = check_dependency('pylab')
-    if HAVE_PYLAB:
-        import pylab
-        # parameters for plots
-        fig_width_pt = 500.  # Get this from LaTeX using \showthe\columnwidth
-        inches_per_pt = 1.0/72.27               # Convert pt to inches
-        fig_width = fig_width_pt*inches_per_pt  # width in inches
-        fontsize = 8
-        # pe.edge_scale_chevrons, line_width = 64., .75
-        params = {'backend': 'Agg',
-                 'origin': 'upper',
-                  'font.family': 'serif',
-                  'font.serif': 'Times',
-                  'font.sans-serif': 'Arial',
-                  'text.usetex': True,
-        #          'mathtext.fontset': 'stix', #http://matplotlib.sourceforge.net/users/mathtext.html
-                  'interpolation':'nearest',
-                  'axes.labelsize': fontsize,
-                  'text.fontsize': fontsize,
-                  'legend.fontsize': fontsize,
-                  'figure.subplot.bottom': 0.17,
-                  'figure.subplot.left': 0.15,
-                  'ytick.labelsize': fontsize,
-                  'xtick.labelsize': fontsize,
-                  'savefig.dpi': 100,
-                }
-        pylab.rcParams.update(params)
-
-def adjust_spines(ax,spines):
-    for loc, spine in ax.spines.iteritems():
-        if loc in spines:
-            spine.set_position(('outward',1)) # outward by 10 points
-#            spine.set_smart_bounds(True)
-        else:
-            spine.set_color('none') # don't draw spine
-
-    # turn off ticks where there is no spine
-    if 'left' in spines:
-        ax.yaxis.set_ticks_position('left')
-    else:
-        # no yaxis ticks
-        ax.yaxis.set_ticks([])
-
-    if 'bottom' in spines:
-        ax.xaxis.set_ticks_position('bottom')
-    else:
-        # no xaxis ticks
-        ax.xaxis.set_ticks([])
-class MatchingPursuit:
-    """
-    defines a MatchingPursuit algorithm
-
-    """
+class SparseEdges:
     def __init__(self, lg):
         """
         initializes the LogGabor structure
@@ -103,8 +54,16 @@ class MatchingPursuit:
         if self.do_mask:
             X, Y = np.mgrid[-1:1:1j*self.n_x, -1:1:1j*self.n_y]
             self.mask = (X**2 + Y**2) < 1.
+        for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
+            if not(os.path.isdir(path)): os.mkdir(path)
 
-    def run(self, image, verbose=False):
+
+# class MatchingPursuit(SparseEdges):
+#     """
+#     defines a MatchingPursuit algorithm
+# 
+#     """
+    def run_mp(self, image, verbose=False):
         edges = np.zeros((5, self.N), dtype=np.complex)
         image_ = image.copy()
         if self.do_whitening: image_ = self.im.whitening(image_)
@@ -184,10 +143,9 @@ class MatchingPursuit:
         Shows the quiver plot of a set of edges, optionally associated to an image.
 
         """
-        import pylab
         import matplotlib.cm as cm
         if fig==None:
-            fig = pylab.figure(figsize=(self.pe.figsize_edges, self.pe.figsize_edges))
+            fig = plt.figure(figsize=(self.pe.figsize_edges, self.pe.figsize_edges))
         if a==None:
             border = 0.0
             a = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
@@ -278,15 +236,700 @@ class MatchingPursuit:
             a.add_collection(line_segments)
 
         if not(color=='auto'):# chevrons maps etc...
-            pylab.setp(a, xticks=[])
-            pylab.setp(a, yticks=[])
+            plt.setp(a, xticks=[])
+            plt.setp(a, yticks=[])
 
         a.axis([0, self.n_x, self.n_y, 0])
-        pylab.draw()
+        plt.draw()
         if mappable:
             return fig, a, line_segments
         else:
             return fig, a
+
+    def full_run(self, exp, url_database, imagelist, noise):
+        """
+        runs the edge extraction for a list of images
+
+        """
+        N_image = len(imagelist)
+        # TODO control number of jobs to not clutter the cluster
+
+        def do_edge(edge, image, exp, url_database, filename, croparea):
+            if not(os.path.isdir(os.path.join(self.pe.edgematpath, exp + '_' + url_database))): os.mkdir(os.path.join(self.pe.edgematpath, exp + '_' + url_database))
+            matname = os.path.join(self.pe.edgematpath, exp + '_' + url_database, filename + str(croparea) + '.npy')
+
+            if not(os.path.isfile(matname)):
+                if not(os.path.isfile(matname + '_lock')):
+                    file(matname + '_lock', 'w').close()
+                    edges, C = run_mp(image)
+                    np.save(matname, edges)
+                    try:
+                        os.remove(matname + '_lock')
+                    except Exception, e:
+                        log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
+                    return 'run'
+                else:
+                    log.info('The edge extraction at step %s is locked', matname)
+                    return 'locked'
+            return 'ran'
+
+        global_lock = False # switch to True when we resume a batch and detect that one edgelist is not finished in another process
+        if self.parallel:
+            for filename, croparea in imagelist:
+                image, filename_, croparea_  = self.edge.im.patch(url_database, filename=filename, croparea=croparea)
+                if noise >0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
+                # Submit a job which will compute edges for different images
+                # do_edge - the function
+                # (self.edge, url_database, i_image,) - tuple with arguments for do_edge
+                # () - tuple with functions on which function do_edge depends
+                # ("SparseEdges","plt",) - tuple with module names which must be imported before
+                # do_edge execution
+                self.jobs.append(self.job_server.submit(do_edge, (self.edge, image, exp, url_database, filename, croparea,), (), ("SparseEdges", "np", "plt",)))
+            for job in self.jobs:
+                signal = job()
+                if signal == 'locked': global_lock = True
+            self.job_server.print_stats()
+
+        else: # sequential case
+            for filename, croparea in imagelist:
+                image, filename_, croparea_ = self.edge.im.patch(url_database, filename=filename, croparea=croparea)
+                if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
+                signal = do_edge(self.edge, image, exp, url_database, filename, croparea)
+                if signal == 'locked': global_lock = True
+
+        if global_lock is True:
+            log.error(' some locked edge extractions ')
+            return 'locked'
+        else:
+            try:
+                edgeslist = np.zeros((5, self.edge.N, N_image), dtype=np.complex)
+                i_image = 0
+                for filename, croparea in imagelist:
+                    matname = os.path.join(self.pe.edgematpath, exp + '_' + url_database, filename + str(croparea) + '.npy')
+                    edgeslist[:, :, i_image] = np.load(matname)
+                    i_image += 1
+
+                return edgeslist
+            except:
+                log.error(' some locked edge extractions ')
+                return 'locked'
+
+    def init_edges(self):
+        # configuring histograms
+        # sequence of scalars,it defines the bin edges, including the rightmost edge.
+        self.edges_d = np.linspace(self.pe.d_min, self.pe.d_max, self.pe.N_r+1)
+        self.edges_phi = np.linspace(-np.pi/2, np.pi/2, self.pe.N_phi+1) + np.pi/self.pe.N_phi/2
+        self.edges_theta = np.linspace(-np.pi/2, np.pi/2, self.pe.N_Dtheta+1) + np.pi/self.pe.n_theta/2
+        self.edges_sf_0 = 2**np.arange(np.ceil(np.log2(self.n_x)))
+        self.edges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
+
+    def histedges_theta(self, edgeslist, fig=None, a=None, display=True):
+        """
+        First-order stats
+
+        p(theta | I )
+
+        """
+        self.init_edges()
+
+        theta = (edgeslist[2, ...].real.ravel())
+        theta = ((theta + np.pi/2 - np.pi/self.pe.N_Dtheta/2)  % np.pi ) - np.pi/2  + np.pi/self.pe.N_Dtheta/2
+        value = edgeslist[4, ...].ravel()
+
+        if self.pe.edge_mask:
+            # remove edges whose center position is not on the central disk
+            x , y = edgeslist[0, ...].ravel().real, edgeslist[1, ...].ravel().real
+            mask = ((x/self.n_x -.5)**2+(y/self.n_y -.5)**2) < .5**2
+            theta = theta[mask]
+            value = value[mask]
+
+        weights = np.absolute(value)/(np.absolute(value)).sum()
+        v_hist, v_theta_edges_ = np.histogram(theta, self.edges_theta, normed=True, weights=weights)
+        v_hist /= v_hist.sum()
+        if display:
+            if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
+            if a==None: a = plt.axes(polar=True, axisbg='w')
+            a.bar(self.edges_theta[:-1], v_hist, width=np.pi/self.pe.N_Dtheta, color='b')# edgecolor="none")
+            a.bar(self.edges_theta[:-1]+np.pi, v_hist, width=np.pi/self.pe.N_Dtheta, color='g')
+            plt.setp(a, yticks=[])
+            return fig, a
+        else:
+            return v_hist, v_theta_edges_
+
+    def histedges_scale(self, edgeslist, fig=None, a=None, display=True):
+        """
+        First-order stats for the scale
+
+        p(scale | I )
+
+        """
+        self.init_edges()
+
+        sf_0 = (edgeslist[3, ...].real.ravel())
+        value = edgeslist[4, ...].ravel()
+        if self.pe.edge_mask:
+            # remove edges whose center position is not on the central disk
+            x , y = edgeslist[0, ...].ravel().real, edgeslist[1, ...].ravel().real
+            mask = ((x/self.n_x -.5)**2+(y/self.n_y -.5)**2) < .5**2
+            sf_0 = sf_0[mask]
+            value = value[mask]
+
+        weights = np.absolute(value)/(np.absolute(value)).sum()
+        v_hist, v_sf_0_edges_ = np.histogram(sf_0, self.edges_sf_0, normed=True, weights=weights)
+        v_hist /= v_hist.sum()
+        if display:
+            if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
+            if a==None: a = fig.add_subplot(111, axisbg='w')
+            a.bar(v_sf_0_edges_[:-1], v_hist)
+            plt.setp(a, yticks=[])
+            plt.xlabel('SF_0')
+            plt.ylabel('probability')
+            return fig,a
+        else:
+            return v_hist, v_theta_edges_
+
+    def cohistedges(self, edgeslist, v_hist=None, prior=None,
+                    fig=None, a=None, symmetry=True,
+                    display='chevrons', v_min=None, v_max=None, labels=True, mappable=False, radius=None,
+                    xticks=False, half=False, dolog=False, color='redblue', colorbar=True, cbar_label=True):
+        """
+        second-order stats= center all edges around the current one by rotating and scaling
+
+        p(x-x_, y-y_, theta-theta_ | I, x_, y_, theta_)
+
+        """
+        self.init_edges()
+
+        if not(edgeslist==None):
+            v_hist = None
+            five, N_edge, N_image = edgeslist.shape
+            # TODO: vectorize over images?
+            for i_image in range(N_image):
+                # retrieve individual positions, orientations, scales and coefficients
+                X, Y = edgeslist[0, :, i_image].real, edgeslist[1, :, i_image].real
+                Theta = edgeslist[2, :, i_image].real
+                Sf_0 = edgeslist[3, :, i_image].real
+                value = edgeslist[4, :, i_image]
+                if self.pe.edge_mask:
+                    # remove edges whose center position is not on the central disk
+                    mask = ((X/self.n_x -.5)**2+(Y/self.n_y -.5)**2) < .5**2
+                    X = X[mask]
+                    Y = Y[mask]
+                    Theta = Theta[mask]
+                    Sf_0 = Sf_0[mask]
+                    value = value[mask]
+
+                # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
+                Weights = np.absolute(value)#/(np.absolute(value)).sum()
+                if self.pe.do_rank: Weights[Weights.argsort()] = np.linspace(1./Weights.size, 1., Weights.size)
+                # TODO: include phases or use that to modify center of the edge
+                # TODO: or at least on the value (ON or OFF) of the edge
+                # TODO: normalize weights by their relative order to be independent of the texture
+
+                # to raise on numerical error, issue
+                np.seterr(all='ignore')
+                dx = X[:, np.newaxis] - X[np.newaxis, :]
+                dy = Y[:, np.newaxis] - Y[np.newaxis, :]
+                # TODO : make an histogram on log-radial coordinates and theta versus scale
+                d = np.sqrt(dx**2 + dy**2) / self.n_x  # distance
+                # TODO: check that we correctly normalize position by the scale of the current edge
+                if self.pe.scale_invariant: d *= np.sqrt(Sf_0[:, np.newaxis]*Sf_0[np.newaxis, :])/np.sqrt(self.n_x)
+                d *= self.pe.d_width # distance in visual angle
+                theta = Theta[:, np.newaxis] - Theta[np.newaxis, :]
+                phi = np.arctan2(dy, dx) - np.pi/2 - Theta[np.newaxis, :]
+                if symmetry: phi -= theta/2
+                loglevel = np.log2(Sf_0[:, np.newaxis]) - np.log2(Sf_0[np.newaxis, :])
+                weights = Weights[:, np.newaxis] * Weights[np.newaxis, :]
+                if self.pe.weight_by_distance:
+                    # normalize weights by the relative distance (bin areas increase with radius)
+                    # it makes sense to give less weight to "far bins"
+                    weights /= (d + 1.e-6) # warning, some are still at the same position d=0...
+                # exclude self-occurence
+#                 weights[np.diag_indices_from(weights)] = 0.
+                np.fill_diagonal(weights, 0.)
+                # TODO check: if not self.pe.multiscale: weights *= (Sf_0[:, np.newaxis]==Sf_0[inp.newaxis, :])
+                # just checking if we get different results when selecting edges with a similar phase (von Mises profile)
+                if self.pe.kappa_phase>0:
+                    # TODO: should we use the phase information to refine position?
+                    # https://en.wikipedia.org/wiki/Atan2
+                    phase = np.angle(value)
+                    weights *= np.exp(self.pe.kappa_phase*np.cos(np.arctan2(phase[:, np.newaxis], phase[np.newaxis, :])))
+
+                if weights.sum()>0:
+                    weights /= weights.sum()
+                else:
+                    weights = 1.
+#                 print 'd', d.min(), self.edges_d.min(), ' / ', d.max(), self.edges_d.max(), ' / ', d.std(), ' / ', np.median(d), ' / ', (d*weights).sum(), ' / ', weights.sum()
+
+#                 print (np.sin(theta + theta.T)).std()
+#                 print (np.sin(phi - phi.T)).std()
+#                 print 'phi', phi.min(), self.edges_phi.min(), ' / ', phi.max(), self.edges_phi.max()
+#                 print 'theta', theta.min(), self.edges_theta.min(), ' / ', theta.max(), self.edges_theta.max()
+                # putting everything in the right range:
+                phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
+                theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
+#                 print 'phi', phi.min() - self.edges_phi.min(), ' / ', phi.max() - self.edges_phi.max()
+#                 print 'theta', theta.min() - self.edges_theta.min(), ' / ', theta.max() - self.edges_theta.max()
+                v_hist_, edges_ = np.histogramdd([d.ravel(), phi.ravel(), theta.ravel(), loglevel.ravel()], #data,
+                                                 bins=(self.edges_d, self.edges_phi, self.edges_theta, self.edges_loglevel),
+                                                 normed=True,
+                                                 weights=weights.ravel()
+                                                )
+#                 print v_hist_.sum(), v_hist_.min(), v_hist_.max(), d.ravel().shape
+                if v_hist_.sum()<.8: log.error(' less than 80 percent of co-occurences within ranges: %f ', v_hist_.sum())
+                if not(v_hist_.sum() == 0.):
+                    # add to the full histogram
+                    if v_hist is None:
+                        v_hist = v_hist_*1.
+                    else:
+                        v_hist += v_hist_*1.
+        if v_hist is None or (v_hist.sum() == 0.):
+            v_hist = np.ones(v_hist_.shape)
+
+        v_hist /= v_hist.sum()
+
+        if display=='full':
+            if fig==None:
+                fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
+            options = {'cmap': plt.cm.jet, 'interpolation':'nearest', 'vmin':0., 'origin': 'lower'}
+            a1 = fig.add_subplot(221, axisbg='w')#, polar = True)
+            a1.imshow((v_hist.sum(axis=3).sum(axis=2)), **options)
+            if symmetry:
+                a1.set_xlabel('psi')
+            else:
+                a1.set_xlabel('phi')
+            a1.set_xticks([0., self.edges_phi.size/2. -1.5, self.edges_phi.size-2.])
+            a1.set_xticklabels(['-pi/2 + bw ', '0', 'pi/2'])
+            a1.set_ylabel('d')
+            edges_d_half = .5*(self.edges_d[1:] + self.edges_d[:-1])
+            a1.set_yticks([0., self.edges_d.size-2.])
+            a1.set_yticklabels([str(edges_d_half[0]), str(edges_d_half[-1])])
+            a1.axis('tight')
+            a2 = fig.add_subplot(222, axisbg='w')#edges_[0], edges_[2],
+            a2.imshow((v_hist.sum(axis=3).sum(axis=1)), **options)
+            a2.set_xlabel('theta')
+            a2.set_xticks([0., self.edges_theta.size/2.-1.5, self.edges_theta.size-2.])
+            a2.set_xticklabels(['-pi/2 + bw', '0', 'pi/2'])
+            a2.set_ylabel('d')
+            a2.set_yticks([0., self.edges_d.size-2.])
+            a2.set_yticklabels([str(edges_d_half[0]), str(edges_d_half[-1])])
+            a2.axis('tight')
+            a3 = fig.add_subplot(223, axisbg='w')#edges_[1], edges_[2],
+            a3.imshow((v_hist.sum(axis=3).sum(axis=0)).T, **options)
+            if symmetry:
+                a3.set_xlabel('psi')
+            else:
+                a3.set_xlabel('phi')
+            a3.set_xticks([0., self.edges_phi.size/2. - 1.5, self.edges_phi.size-2.])
+            a3.set_xticklabels(['-pi/2 + bw', '0', 'pi/2'])
+            a3.set_ylabel('theta')
+            a3.set_yticks([0., self.edges_theta.size/2. - 1.5, self.edges_theta.size-2.])
+            a3.set_yticklabels(['-pi/2 + bw', '0', 'pi/2'])
+            a3.axis('tight')
+            a4 = fig.add_subplot(224, axisbg='w')#, polar = True)
+            a4.imshow((v_hist.sum(axis=1).sum(axis=1)), **options)
+            a4.set_xlabel('levels')
+            a4.set_xticks([0., self.pe.N_scale/2. -.5, self.pe.N_scale -1.])
+            a4.set_xticklabels(['smaller', '0', 'bigger'])
+            a4.set_ylabel('d')
+            a4.set_yticks([0., self.edges_d.size-2.])
+            a4.set_yticklabels([str(edges_d_half[0]), str(edges_d_half[-1])])
+            a4.axis('tight')
+            plt.tight_layout()
+            return fig, a1, a2, a3, a4
+
+        elif display=='colin_geisler':
+            edge_scale = 64.
+            try:
+                if fig==None:
+                    fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
+                    if a==None:
+                        a = fig.add_subplot(111)
+                v_hist_noscale = v_hist.sum(axis=3)
+                colin_edgelist = np.zeros((5, self.pe.N_r * self.pe.N_phi * 2 + 1 ))
+                colin_argmax = np.argmax(v_hist_noscale, axis=2)
+                for i_r, d_r in enumerate(self.edges_d[:-1]):
+                    for i_phi, phi in enumerate(self.edges_phi[:-1]):
+                        rad = d_r / self.pe.d_max * max(self.n_x, self.n_y) /2
+                        ii_phi = i_r * self.pe.N_phi
+                        colin_edgelist[0:2, ii_phi + i_phi] =  self.n_x /2 - rad * np.sin(phi + np.pi/self.pe.N_phi/2), self.n_y /2 + rad * np.cos(phi + np.pi/self.pe.N_phi/2)
+                        colin_edgelist[2, ii_phi + i_phi] = self.edges_theta[colin_argmax[i_r, i_phi]] + np.pi/self.pe.N_Dtheta/2
+                        colin_edgelist[3, ii_phi + i_phi] = edge_scale
+                        colin_edgelist[4, ii_phi + i_phi] = v_hist_noscale[i_r, i_phi, colin_argmax[i_r, i_phi]]
+                        # symmetric
+                        colin_edgelist[:, ii_phi + i_phi +  self.pe.N_r * self.pe.N_phi] = colin_edgelist[:, ii_phi + i_phi]
+                        colin_edgelist[0:2, ii_phi + i_phi +  self.pe.N_r * self.pe.N_phi] = self.n_x - colin_edgelist[0, ii_phi + i_phi], self.n_y - colin_edgelist[1, ii_phi + i_phi]
+                # reference angle
+                colin_edgelist[:, -1] = [self.n_x /2, self.n_y /2, 0, edge_scale, colin_edgelist[4,:].max() *1.2 ]
+                return self.edge.show_edges(colin_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
+            except Exception, e:
+                log.error(' failed to generate colin_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
+                return e, None # HACK to return something instead of None
+
+        elif display=='cocir_geisler':
+            edge_scale = 64.
+            try:
+                if fig==None:
+                    fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
+                    if a==None:
+                        a = fig.add_subplot(111)
+                v_hist_noscale = v_hist.sum(axis=3)
+                cocir_edgelist = np.zeros((5, self.pe.N_r * self.pe.N_Dtheta * 2 + 1 ))
+                cocir_proba = np.argmax(v_hist_noscale, axis=1)
+                for i_r, d_r in enumerate(self.edges_d[:-1]):
+                    for i_theta, theta in enumerate(self.edges_theta[:-1]):
+                        rad = d_r / self.pe.d_max * max(self.n_x, self.n_y) /2
+                        ii_theta = i_r * self.pe.N_Dtheta
+                        cocir_edgelist[0:2, ii_theta + i_theta] =  self.n_x /2 - rad * np.sin( self.edges_phi[cocir_proba[i_r, i_theta]] + np.pi/self.pe.N_phi/2), self.n_y /2 + rad * np.cos( self.edges_phi[cocir_proba[i_r, i_theta]] + np.pi/self.pe.N_phi/2)
+                        cocir_edgelist[2, ii_theta + i_theta] = theta + np.pi/self.pe.N_Dtheta/2
+                        cocir_edgelist[3, ii_theta + i_theta] = edge_scale
+                        cocir_edgelist[4, ii_theta + i_theta] = v_hist_noscale[i_r, cocir_proba[i_r, i_theta], i_theta]
+                        # symmetric
+                        cocir_edgelist[:, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = cocir_edgelist[:,  ii_theta + i_theta]
+                        cocir_edgelist[0:2, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = self.n_x - cocir_edgelist[0,  ii_theta + i_theta], self.n_y - cocir_edgelist[1, ii_theta + i_theta]
+                cocir_edgelist[:, -1] = [self.n_x /2, self.n_y /2, 0, edge_scale, cocir_edgelist[4,:].max() *1.2 ]
+                return self.edge.show_edges(cocir_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
+            except Exception, e:
+                log.error(' failed to generate cocir_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
+                return e, None # HACK to retrun something instead of None
+
+        elif display=='cohist_scale':
+            try:
+                if fig==None:
+                    fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
+                    if a==None:
+                        a = fig.add_subplot(111)
+                a.bar(self.edges_loglevel[:-1], v_hist.sum(axis=(0, 1, 2)))
+                plt.setp(a, yticks=[])
+                a.set_xlabel('log2 of scale ratio')
+                a.set_ylabel('probability')
+                return fig, a
+            except:
+                log.error(' failed to generate cohist_scale, %s', e)
+                return e, None # HACK to retrun something instead of None
+
+
+        elif display=='chevrons':
+            assert(symmetry==True)
+            v_hist_angle = v_hist.sum(axis=0).sum(axis=-1) # -d-,phi,  theta, -scale-
+            # some useful normalizations
+            if not(prior==None):
+                # this allows to show conditional probability by dividing by an arbitrary (prior) distribution
+                prior_angle = prior.sum(axis=0).sum(axis=-1) # -d-, phi, theta, -scale-
+                prior_angle /= prior_angle.sum()
+                v_hist_angle /= prior_angle
+            v_hist_angle /= v_hist_angle.mean()
+
+            if dolog:
+                v_hist_angle = np.log2(v_hist_angle)
+            if v_max==None: v_max=v_hist_angle.max()
+            if v_min==None: v_min=v_hist_angle.min()
+#             v_hist_angle /= v_max
+
+            # Computes the centers of the bins
+            if half:
+                v_phi, v_theta = self.edges_phi[(self.pe.N_phi/2-1):-1] + np.pi/self.pe.N_phi/2, self.edges_theta[(self.pe.N_Dtheta/2-1):-1] + np.pi/self.pe.N_Dtheta/2
+                i_phi_shift, i_theta_shift = self.pe.N_phi/2+1, self.pe.N_Dtheta/2-1
+            else:
+                v_phi, v_theta = self.edges_phi - np.pi/self.pe.N_phi/2, self.edges_theta - np.pi/self.pe.N_Dtheta/2
+                i_phi_shift, i_theta_shift = 2, -1
+            s_phi, s_theta = len(v_phi), len(v_theta)
+            #print 'DEBUG: s_phi, s_theta, self.pe.N_phi, self.pe.N_Dtheta', s_phi, s_theta, self.pe.N_phi, self.pe.N_Dtheta
+            rad_X, rad_Y = 1.* self.n_x/s_theta, 1.*self.n_y/s_phi
+            rad = min(rad_X, rad_Y) / 2.619
+            if radius==None: radius = np.ones((self.pe.N_phi, self.pe.N_Dtheta))
+
+            if fig==None:
+                fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
+                if a==None:
+                    border = 0.005
+                    a = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
+                    a.axis(c='b', lw=0)
+
+            # make circles around each couple of edges
+            import matplotlib.patches as patches
+            from matplotlib.collections import PatchCollection
+            import matplotlib.cm as cm
+            import matplotlib.pyplot as plt
+            import matplotlib.colors as mplcolors
+            mypatches, colors = [], []
+            fc=cm.gray(.6, alpha=.2) #cm.hsv(2./3., alpha=weight)#))
+            angle_edgelist = np.zeros((5,  s_phi * s_theta * 2 ))
+            for i_phi, phi in enumerate(v_phi):
+                for i_theta, theta in enumerate(v_theta):
+                    value = v_hist_angle[(s_phi - i_phi - i_phi_shift) % self.pe.N_phi, (i_theta + i_theta_shift) % self.pe.N_Dtheta]
+                    score = radius[(s_phi - i_phi - i_phi_shift) % self.pe.N_phi, (i_theta + i_theta_shift) % self.pe.N_Dtheta]
+                    circ = patches.Circle((rad_Y * (i_phi + .5) + .5,
+                                       self.n_x - rad_X * (s_theta - i_theta - .5) + .5),
+#                                             facecolor=fc, edgecolor=fc,
+                                       rad, lw=self.pe.line_width_chevrons/2)
+                    mypatches.append(circ)
+                    colors.append(value*score)
+
+                    # first edge
+#                    print i_phi, i_theta,  s_phi, s_theta, v_hist_angle.shape
+                    angle_edgelist[0, i_phi * s_theta + i_theta] = self.n_x - rad_X * (s_theta - i_theta - .5)
+                    angle_edgelist[1, i_phi * s_theta + i_theta] = rad_Y * (i_phi + .5) - rad * 1.
+                    angle_edgelist[2, i_phi * s_theta + i_theta] = phi + theta/2
+                    angle_edgelist[3, i_phi * s_theta + i_theta] = self.pe.edge_scale_chevrons
+                    angle_edgelist[4, i_phi * s_theta + i_theta] = 1.
+                    # second edge
+                    angle_edgelist[0, i_phi * s_theta + i_theta + s_phi * s_theta] = self.n_x - rad_X * (s_theta - i_theta - .5)
+                    angle_edgelist[1, i_phi * s_theta + i_theta + s_phi * s_theta] = rad_Y * (i_phi + .5) +  rad * 1.
+                    angle_edgelist[2, i_phi * s_theta + i_theta + s_phi * s_theta] = phi - theta/2
+                    angle_edgelist[3, i_phi * s_theta + i_theta + s_phi * s_theta] = self.pe.edge_scale_chevrons
+                    angle_edgelist[4, i_phi * s_theta + i_theta + s_phi * s_theta] = 1.
+
+            from matplotlib.colors import Normalize
+
+            # see also http://stackoverflow.com/questions/7404116/defining-the-midpoint-of-a-colormap-in-matplotlib/7741317#7741317
+            class MidpointNormalize(Normalize):
+                def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False, gamma=1.3):
+                    self.midpoint = midpoint
+                    self.gamma = gamma
+                    Normalize.__init__(self, vmin, vmax, clip)
+
+                def __call__(self, value, clip=None):
+                    # I'm ignoring masked values and all kinds of edge cases to make a
+                    # simple example...
+                    x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+                    z = np.ma.masked_array(np.interp(value, x, y))
+                    pm = np.sign(z-.5)
+                    z = pm*(np.absolute(z-.5)**(1/self.gamma))+.5
+                    return z
+
+#             p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=matplotlib.cm.RdBu_r, alpha=0.8)
+            p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=matplotlib.cm.coolwarm, alpha=0.8)
+            p.set_array(np.array(colors))
+            if dolog:
+                p.set_clim([v_min, v_max])
+            else:
+                p.set_clim([v_min, v_max])
+            a.add_collection(p)
+
+#            print rad/s_theta, rad/s_phi
+            fig, a = self.edge.show_edges(angle_edgelist, fig=fig, a=a, image=None, color='black')
+
+            if colorbar:
+                cbar = plt.colorbar(ax=a, mappable=p, shrink=0.6)
+                if dolog:
+                    if cbar_label: cbar.set_label('probability ratio')
+                    ticks_cbar = 2**(np.floor(np.linspace(v_min, v_max, 5)))
+                    cbar.set_ticks(np.log2(ticks_cbar))
+                    cbar.set_ticklabels([r'$%0.1f$' % r for r in ticks_cbar])
+#                     cbar.set_ticklabels([r'$2^{%d}$' % r for r in np.floor(np.log2(ticks_cbar))])
+                else:
+                    if cbar_label: cbar.set_label('probability ratio')
+                    cbar.set_ticklabels(np.linspace(v_min, v_max, 5))#, base=2))
+                cbar.update_ticks()
+
+            if not(labels==False):
+                if not(xticks=='left'): a.set_xlabel(r'azimuth difference $\psi$')
+                if not(xticks=='bottom'): a.set_ylabel(r'orientation difference $\theta$')
+            if not(xticks==False):
+                eps = 0.55 # HACK to center grid. dunnon what's happening here
+                if half:
+                    plt.setp(a, xticks=[(1./self.pe.N_phi/1.25)*self.n_x, (1. - 1./self.pe.N_phi/1.25)*self.n_x])
+                    if not(xticks=='left'):
+                        plt.setp(a, xticklabels=[r'$0$', r'$\frac{\pi}{2}$'])
+                    else:
+                        plt.setp(a, xticklabels=[r'', r''])
+                else:
+                    plt.setp(a, xticks=[(1./(self.pe.N_phi+1)/2)*self.n_x, .5*self.n_x+eps, (1. - 1./(self.pe.N_phi+1)/2)*self.n_x])
+                    if not(xticks=='left'):
+                        plt.setp(a, xticklabels=[r'$-\frac{\pi}{2}$', r'$0$', r'$\frac{\pi}{2}$'])
+                    else:
+                        plt.setp(a, xticklabels=[r'', r''])
+                if half:
+                    plt.setp(a, yticks=[(1./self.pe.N_Dtheta)*self.n_y, (1. - 1./(self.pe.N_Dtheta+.45))*self.n_y])
+                    if not(xticks=='bottom'):
+                        plt.setp(a, yticklabels=[r'$0$', r'$\frac{\pi}{2}$'])
+                    else:
+                        plt.setp(a, yticklabels=[r'', r''])
+                else:
+                    plt.setp(a, yticks=[1./(self.pe.N_Dtheta+1)/2*self.n_x, .5*self.n_y+eps, (1. - 1./(self.pe.N_Dtheta+1)/2)*self.n_y])
+                    if not(xticks=='bottom'):
+                        plt.setp(a, yticklabels=[r'$-\frac{\pi}{2}$', r'$0$', r'$\frac{\pi}{2}$'])
+                    else:
+                        plt.setp(a, yticklabels=['', '', ''])
+                plt.grid('off')
+            plt.draw()
+
+            return fig, a
+        else:
+            return v_hist
+
+
+    def process(self, exp, note='', name_database='natural', noise=0.):
+        """
+        The pipeline to go from one database to a list of edge lists
+
+        ``note`` designs a string that modified the histogram (such as changing the number of bins)
+
+        """
+
+        log.info(' > computing edges for experiment %s with database %s ', exp, name_database)
+        #: 1 - Creating an image list
+        locked = False
+        matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+        #while os.path.isfile(matname + '_images_lock'):
+        time.sleep(.1*np.random.rand())
+        imagelist = self.im.get_imagelist(exp, name_database=name_database)
+        locked = (imagelist=='locked')
+
+        # 2- Doing the edge extraction for each image in this list
+        if not(locked):
+            try:
+                edgeslist = np.load(matname + '_edges.npy')
+            except Exception, e:
+                log.info(' >> There is no edgeslist: %s ', e)
+                log.info('>> Doing the edge extraction')
+                edgeslist = self.full_run(exp, name_database, imagelist, noise=noise)
+                if edgeslist == 'locked':
+                    log.info('>> Edge extraction %s is locked', matname)
+                    locked = True
+                else:
+                    np.save(matname + '_edges.npy', edgeslist)
+        else: return 'locked', 'locked imagelist'
+
+        # 3- Doing the independence check for this set
+        if not(locked):
+            txtname = os.path.join(self.pe.figpath, exp + '_dependence_' + name_database + note + '.txt')
+            if not(os.path.isfile(txtname)) and not(os.path.isfile(txtname + '_lock')):
+                file(txtname + '_lock', 'w').close() # touching
+                log.info(' >> Doing check_independence')
+                out = check_independence(self.cohistedges(edgeslist, name_database, symmetry=False, display=None), name_database)
+                f = file(txtname, 'w')
+                f.write(out)
+                f.close()
+                out = check_independence(self.cohistedges(edgeslist, name_database, symmetry=True, display=None), name_database)
+                f = file(os.path.join(self.pe.figpath, exp + '_dependence_sym_' + name_database + note + '.txt'), 'w')
+                f.write(out)
+                f.close()
+                print out
+                try:
+                    os.remove(txtname + '_lock')
+                except Exception, e:
+                    log.error('Failed to remove lock file %s_lock, error : %s ', txtname, e)
+
+        # 4- Doing the edge figures to check the edge extraction process
+        edgedir = os.path.join(self.pe.edgefigpath, exp + '_' + name_database)
+        if not(os.path.isdir(edgedir)): os.mkdir(edgedir)
+
+        if not(locked):
+            N_image = edgeslist.shape[2]
+            for i_image in range(N_image):
+                filename, croparea = imagelist[i_image]
+
+                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '.png')
+                if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
+                    try:
+                        file(figname + '_lock', 'w').close()
+                        log.info(' redoing figure %s ', figname)
+                        image, filename_, croparea_ = self.edge.im.patch(url_database=name_database, filename=filename, croparea=croparea)
+                        if noise >0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
+#                        if self.edge.do_whitening: image = self.edge.im.whitening(image)
+                        fig, a = self.edge.show_edges(edgeslist[:, :, i_image], image=image*1.)
+                        fig.savefig(figname)
+                        plt.close(fig)
+                        try:
+                            os.remove(figname + '_lock')
+                        except Exception, e:
+                            log.info('Failed to remove lock file %s_lock', ', error : %s ', figname , e)
+                    except Exception, e:
+                        log.info('Failed to make edge image  %s, error : %s ', figname , e)
+
+                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct.png')
+                if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
+                    try:
+                        file(figname + '_lock', 'w').close()
+                        log.info(' reconstructing figure %s ', figname)
+                        image, filename_, croparea_  = self.edge.im.patch(url_database=name_database, filename=filename, croparea=croparea)
+                        if self.edge.do_whitening: image = self.edge.im.whitening(image)
+                        image_ = self.edge.reconstruct(edgeslist[:, :, i_image])
+                        #if self.edge.do_whitening: image_ = self.edge.im.dewhitening(image_)
+                        fig, a = self.edge.show_edges(edgeslist[:, :, i_image], image=image_*1.)
+                        fig.savefig(figname)
+                        plt.close(fig)
+                        try:
+                            os.remove(figname + '_lock')
+                        except Exception, e:
+                            log.error('Failed to remove lock file %s_lock, error : %s ', figname, e)
+                    except Exception, e:
+                        log.error('Failed to make reconstruct image  %s , error : %s  ', figname, e)
+
+            # 5- Computing RMSE to check the edge extraction process
+            try:
+                RMSE = np.load(matname + '_RMSE.npy')
+            except Exception, e:
+                log.info(' >> There is no RMSE: %s ', e)
+                if not(os.path.isfile(matname + '_RMSE.npy_lock')):
+                    file(matname + '_RMSE.npy_lock', 'w').close()
+                    N_image = edgeslist.shape[2]
+                    RMSE = np.zeros((N_image,))
+                    for i_image in range(N_image):
+                        filename, croparea = imagelist[i_image]
+                        image, filename_, croparea_  = self.edge.im.patch(url_database=name_database, filename=filename, croparea=croparea)
+                        if self.edge.do_whitening: image = self.edge.im.whitening(image)
+                        image_ = self.edge.reconstruct(edgeslist[:, :, i_image])
+#                        print image.mean(), image.std(), image_.mean(), image_.std()
+                        X, Y = np.mgrid[-1:1:1j*self.n_x, -1:1:1j*self.n_y]
+                        mask = (X**2 + Y**2) < 1.
+                        RMSE[i_image] =  ((image*mask-image_*mask)**2).sum()/((image*mask)**2).sum()
+    #                    print 'RMSE = ', RMSE[i_image]
+                    np.save(matname + '_RMSE.npy', RMSE)
+                    try:
+                        os.remove(matname + '_RMSE.npy_lock')
+                    except Exception, e:
+                        log.error('Failed to remove lock file %s_RMSE.npy_lock, error : %s ', matname, e)
+                else:
+                    log.warn(' Some process is building the RMSE: %s_RMSE.npy', matname)
+
+            if not(os.path.isfile(matname + '_RMSE.npy_lock')):
+                log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, RMSE.mean())
+
+
+            # 6- Plotting the histogram
+
+#            figname = os.path.join(self.pe.figpath, exp + '_proba-scale_' + name_database + note + self.pe.ext)
+#            if not(os.path.isfile(figname)):
+#                fig, a = self.histedges_scale(edgeslist, display=True)
+#                fig.savefig(figname)
+#                plt.close(fig)
+#
+            figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note + self.pe.ext)
+            if not(os.path.isfile(figname)):
+                fig, a = self.histedges_theta(edgeslist, display=True)
+                fig.savefig(figname)
+                plt.close(fig)
+
+#            figname = os.path.join(self.pe.figpath, exp + '_proba-cohist_scale_' + name_database + note + self.pe.ext)
+#            if not(os.path.isfile(figname)):
+#                fig, a = self.cohistedges(edgeslist, display='cohist_scale')
+#                fig.savefig(figname)
+#                plt.close(fig)
+#
+            figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note + self.pe.ext)
+            if not(os.path.isfile(figname)):
+                fig, a = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
+                fig.savefig(figname)
+                plt.close(fig)
+
+            figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_cocir_' + name_database + note + self.pe.ext)
+            if not(os.path.isfile(figname)):
+                fig, a = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
+                fig.savefig(figname)
+                plt.close(fig)
+
+            figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note + self.pe.ext)
+            if not(os.path.isfile(figname)):
+                fig, a = self.cohistedges(edgeslist, display='chevrons')
+                fig.savefig(figname)
+                plt.close(fig)
+
+            return imagelist, edgeslist
+        else:
+            return 'locked', 'locked edgeslist'
 
 
 def _test():
@@ -303,7 +946,7 @@ if __name__ == '__main__':
 
     """
     print 'main'
-#     from pylab import imread
+#     from plt import imread
 #     # whitening
 #     image = imread('database/gris512.png')[:,:,0]
 #     lg = LogGabor(image.shape)

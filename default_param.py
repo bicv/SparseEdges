@@ -17,6 +17,9 @@
 'do_mask'  : True, # self.pe.do_mask
 #do_real=False # do we consider log-gabors with a complex part?
 'figpath' : 'figures/',
+'edgefigpath' : 'figures/edges/',
+'matpath' : 'mat/',
+'edgematpath' : 'mat/edges/',
 'datapath' : 'database/',
 'ext' : '.pdf',
 'scale' : .2,

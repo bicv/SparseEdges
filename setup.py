@@ -1,21 +1,25 @@
 #!/usr/bin/env python
+# -*- coding: utf8 -*-
 
-from distutils.core import setup
+# from distutils.core import setup
+from setuptools import setup
+
+NAME = "SparseEdges"
+version = "0.1"
 
 setup(
-    name = "SparseEdges",
-    version = "0.1",
-    packages = ['SparseEdges'],
-    package_dir = {'SparseEdges': ''},
-    package_data={'SparseEdges': ['index.html', "README.md"]},
+    name = NAME,
+    version = version,
+    packages = [NAME],
+    package_dir = {NAME: ''},
     author = "Laurent Perrinet INT - CNRS",
     author_email = "Laurent.Perrinet@univ-amu.fr",
-    description = "SparseEdges is a collection of tools to support all tasks associated with the sparse representation of an image in a LogGabor pyramid.",
+    description = "SLIP: a Simple Library for Image Processing.",
     long_description=open("README.md").read(),
     license = "GPLv2",
-    keywords = ('computational neuroscience', 'simulation', 'analysis', 'visualization', 'parameters'),
-    url = 'https://github.com/meduz/SparseEdges', # use the URL to the github repo
-    download_url = 'https://github.com/meduz/SparseEdges/tarball/0.1',
+    keywords = ('computational neuroscience', 'simulation', 'analysis', 'visualization', 'computer vision'),
+    url = 'https://github.com/meduz/' + NAME, # use the URL to the github repo
+    download_url = 'https://github.com/meduz/' + NAME + '/tarball/' + version,
     classifiers = ['Development Status :: 3 - Alpha',
                    'Environment :: Console',
                    'License :: OSI Approved :: GNU General Public License (GPL)',
