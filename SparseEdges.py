@@ -246,7 +246,7 @@ class SparseEdges:
         else:
             return fig, a
 
-    def full_run(self, exp, url_database, imagelist, noise):
+    def full_run(self, exp, name_database, imagelist, noise):
         """
         runs the edge extraction for a list of images
 
@@ -254,9 +254,9 @@ class SparseEdges:
         N_image = len(imagelist)
         # TODO control number of jobs to not clutter the cluster
 
-        def do_edge(edge, image, exp, url_database, filename, croparea):
-            if not(os.path.isdir(os.path.join(self.pe.edgematpath, exp + '_' + url_database))): os.mkdir(os.path.join(self.pe.edgematpath, exp + '_' + url_database))
-            matname = os.path.join(self.pe.edgematpath, exp + '_' + url_database, filename + str(croparea) + '.npy')
+        def do_edge(edge, image, exp, name_database, filename, croparea):
+            if not(os.path.isdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))): os.mkdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))
+            matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
 
             if not(os.path.isfile(matname)):
                 if not(os.path.isfile(matname + '_lock')):
@@ -276,15 +276,15 @@ class SparseEdges:
         global_lock = False # switch to True when we resume a batch and detect that one edgelist is not finished in another process
         if self.parallel:
             for filename, croparea in imagelist:
-                image, filename_, croparea_  = self.edge.im.patch(url_database, filename=filename, croparea=croparea)
+                image, filename_, croparea_  = self.im.patch(name_database, filename=filename, croparea=croparea)
                 if noise >0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
                 # Submit a job which will compute edges for different images
                 # do_edge - the function
-                # (self.edge, url_database, i_image,) - tuple with arguments for do_edge
+                # (self.edge, name_database, i_image,) - tuple with arguments for do_edge
                 # () - tuple with functions on which function do_edge depends
                 # ("SparseEdges","plt",) - tuple with module names which must be imported before
                 # do_edge execution
-                self.jobs.append(self.job_server.submit(do_edge, (self.edge, image, exp, url_database, filename, croparea,), (), ("SparseEdges", "np", "plt",)))
+                self.jobs.append(self.job_server.submit(do_edge, (self.edge, image, exp, name_database, filename, croparea,), (), ("SparseEdges", "np", "plt",)))
             for job in self.jobs:
                 signal = job()
                 if signal == 'locked': global_lock = True
@@ -292,9 +292,9 @@ class SparseEdges:
 
         else: # sequential case
             for filename, croparea in imagelist:
-                image, filename_, croparea_ = self.edge.im.patch(url_database, filename=filename, croparea=croparea)
+                image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
                 if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
-                signal = do_edge(self.edge, image, exp, url_database, filename, croparea)
+                signal = do_edge(self.edge, image, exp, name_database, filename, croparea)
                 if signal == 'locked': global_lock = True
 
         if global_lock is True:
@@ -302,10 +302,10 @@ class SparseEdges:
             return 'locked'
         else:
             try:
-                edgeslist = np.zeros((5, self.edge.N, N_image), dtype=np.complex)
+                edgeslist = np.zeros((5, self.N, N_image), dtype=np.complex)
                 i_image = 0
                 for filename, croparea in imagelist:
-                    matname = os.path.join(self.pe.edgematpath, exp + '_' + url_database, filename + str(croparea) + '.npy')
+                    matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
                     edgeslist[:, :, i_image] = np.load(matname)
                     i_image += 1
 
@@ -488,10 +488,11 @@ class SparseEdges:
 
         v_hist /= v_hist.sum()
 
+        import matplotlib.cm as cm
         if display=='full':
             if fig==None:
                 fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
-            options = {'cmap': plt.cm.jet, 'interpolation':'nearest', 'vmin':0., 'origin': 'lower'}
+            options = {'cmap': cm.jet, 'interpolation':'nearest', 'vmin':0., 'origin': 'lower'}
             a1 = fig.add_subplot(221, axisbg='w')#, polar = True)
             a1.imshow((v_hist.sum(axis=3).sum(axis=2)), **options)
             if symmetry:
@@ -535,7 +536,7 @@ class SparseEdges:
             a4.set_yticks([0., self.edges_d.size-2.])
             a4.set_yticklabels([str(edges_d_half[0]), str(edges_d_half[-1])])
             a4.axis('tight')
-            plt.tight_layout()
+#             plt.tight_layout()
             return fig, a1, a2, a3, a4
 
         elif display=='colin_geisler':
@@ -561,7 +562,7 @@ class SparseEdges:
                         colin_edgelist[0:2, ii_phi + i_phi +  self.pe.N_r * self.pe.N_phi] = self.n_x - colin_edgelist[0, ii_phi + i_phi], self.n_y - colin_edgelist[1, ii_phi + i_phi]
                 # reference angle
                 colin_edgelist[:, -1] = [self.n_x /2, self.n_y /2, 0, edge_scale, colin_edgelist[4,:].max() *1.2 ]
-                return self.edge.show_edges(colin_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
+                return self.show_edges(colin_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
             except Exception, e:
                 log.error(' failed to generate colin_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
                 return e, None # HACK to return something instead of None
@@ -588,7 +589,7 @@ class SparseEdges:
                         cocir_edgelist[:, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = cocir_edgelist[:,  ii_theta + i_theta]
                         cocir_edgelist[0:2, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = self.n_x - cocir_edgelist[0,  ii_theta + i_theta], self.n_y - cocir_edgelist[1, ii_theta + i_theta]
                 cocir_edgelist[:, -1] = [self.n_x /2, self.n_y /2, 0, edge_scale, cocir_edgelist[4,:].max() *1.2 ]
-                return self.edge.show_edges(cocir_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
+                return self.show_edges(cocir_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
             except Exception, e:
                 log.error(' failed to generate cocir_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
                 return e, None # HACK to retrun something instead of None
@@ -699,7 +700,7 @@ class SparseEdges:
                     return z
 
 #             p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=matplotlib.cm.RdBu_r, alpha=0.8)
-            p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=matplotlib.cm.coolwarm, alpha=0.8)
+            p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=cm.coolwarm, alpha=0.8)
             p.set_array(np.array(colors))
             if dolog:
                 p.set_clim([v_min, v_max])
@@ -708,7 +709,7 @@ class SparseEdges:
             a.add_collection(p)
 
 #            print rad/s_theta, rad/s_phi
-            fig, a = self.edge.show_edges(angle_edgelist, fig=fig, a=a, image=None, color='black')
+            fig, a = self.show_edges(angle_edgelist, fig=fig, a=a, image=None, color='black')
 
             if colorbar:
                 cbar = plt.colorbar(ax=a, mappable=p, shrink=0.6)
@@ -826,10 +827,10 @@ class SparseEdges:
                     try:
                         file(figname + '_lock', 'w').close()
                         log.info(' redoing figure %s ', figname)
-                        image, filename_, croparea_ = self.edge.im.patch(url_database=name_database, filename=filename, croparea=croparea)
+                        image, filename_, croparea_ = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
                         if noise >0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
-#                        if self.edge.do_whitening: image = self.edge.im.whitening(image)
-                        fig, a = self.edge.show_edges(edgeslist[:, :, i_image], image=image*1.)
+#                        if self.do_whitening: image = self.im.whitening(image)
+                        fig, a = self.show_edges(edgeslist[:, :, i_image], image=image*1.)
                         fig.savefig(figname)
                         plt.close(fig)
                         try:
@@ -844,11 +845,11 @@ class SparseEdges:
                     try:
                         file(figname + '_lock', 'w').close()
                         log.info(' reconstructing figure %s ', figname)
-                        image, filename_, croparea_  = self.edge.im.patch(url_database=name_database, filename=filename, croparea=croparea)
-                        if self.edge.do_whitening: image = self.edge.im.whitening(image)
-                        image_ = self.edge.reconstruct(edgeslist[:, :, i_image])
-                        #if self.edge.do_whitening: image_ = self.edge.im.dewhitening(image_)
-                        fig, a = self.edge.show_edges(edgeslist[:, :, i_image], image=image_*1.)
+                        image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
+                        if self.do_whitening: image = self.im.whitening(image)
+                        image_ = self.reconstruct(edgeslist[:, :, i_image])
+                        #if self.do_whitening: image_ = self.im.dewhitening(image_)
+                        fig, a = self.show_edges(edgeslist[:, :, i_image], image=image_*1.)
                         fig.savefig(figname)
                         plt.close(fig)
                         try:
@@ -869,9 +870,9 @@ class SparseEdges:
                     RMSE = np.zeros((N_image,))
                     for i_image in range(N_image):
                         filename, croparea = imagelist[i_image]
-                        image, filename_, croparea_  = self.edge.im.patch(url_database=name_database, filename=filename, croparea=croparea)
-                        if self.edge.do_whitening: image = self.edge.im.whitening(image)
-                        image_ = self.edge.reconstruct(edgeslist[:, :, i_image])
+                        image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
+                        if self.do_whitening: image = self.im.whitening(image)
+                        image_ = self.reconstruct(edgeslist[:, :, i_image])
 #                        print image.mean(), image.std(), image_.mean(), image_.std()
                         X, Y = np.mgrid[-1:1:1j*self.n_x, -1:1:1j*self.n_y]
                         mask = (X**2 + Y**2) < 1.

@@ -1,10 +1,11 @@
-SparseEdges
-===========
+What is the SparseEdges package?
+================================
 
 This class exploits the LogGabor package to provide with a sparse representation of edges in images.
 
 This algorithm was presented in the following paper:
 
+~~~~{.bibtex}
 @article{Fischer07,
     author = {Fischer, Sylvain and Redondo, Rafael and Perrinet, Laurent and Cristobal, Gabriel},
     citeulike-article-id = {12825723},
@@ -23,6 +24,11 @@ This algorithm was presented in the following paper:
     volume = {2007},
     year = {2007}
 }
+~~~~
+
 This package gives a python implementation.
 
+Moreover, it gives additional tools to compute useful stistics in images; first- and second order statistics of co-occurences in images.
+
 More information is available @ http://pythonhosted.org/SparseEdges
+

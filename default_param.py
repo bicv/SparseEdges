@@ -1,6 +1,7 @@
 {
 # Image
 'N_X' : 256, # size of images
+'N_Y' : 256, # size of images
 # Log-Gabor
 #'base_levels' : 2.,
 'base_levels' : 1.618,
@@ -41,4 +42,13 @@
 'alpha' : .0, # exponent of the color envelope
 'N_image' : None, #use all images in the folder 200, #None
 'noise' : 0.5, #
+'figsize_hist' : 3.41, # width of a column in inches
+'figsize_cohist' : 3.41, #
+# doing the computation on a circular mask
+'edge_mask' : True, #
+'do_rank': False,
+'scale_invariant': True,
+'multiscale': True,
+'kappa_phase': 0.,
+'weight_by_distance': True,
 }
