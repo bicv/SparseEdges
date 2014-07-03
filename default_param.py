@@ -19,7 +19,7 @@
 # 'N' : 512 # number of edges extracted
 'N' : 2**11,
 'do_whitening'  : True, # = self.pe.do_whitening
-'do_mask'  : True, # self.pe.do_mask
+'do_mask'  : True, # used in MAtching Pursuit self.pe.do_mask
 #do_real=False # do we consider log-gabors with a complex part?
 'figpath' : 'figures/',
 'edgefigpath' : 'figures/edges/',

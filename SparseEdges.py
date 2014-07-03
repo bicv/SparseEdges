@@ -39,7 +39,7 @@ class SparseEdges:
         self.N_Y = lg.N_Y
 
         self.base_levels = self.pe.base_levels
-        self.n_levels = int(np.log(np.max((self.N_X, self.N_Y)))/np.log(self.base_levels)) + 1
+        self.n_levels = int(np.log(np.max((self.N_X, self.N_Y)))/np.log(self.base_levels))
         self.sf_0 = 1. / np.logspace(1, self.n_levels, self.n_levels, base=self.base_levels)
 
         self.n_theta = self.pe.n_theta
@@ -73,7 +73,7 @@ class SparseEdges:
         runs the MatchingPursuit algorithm on image
 
         """
-        edges = np.zeros((5, self.N), dtype=np.complex)
+        edges = np.zeros((6, self.N))
         image_ = image.copy()
         if self.do_whitening: image_ = self.im.whitening(image_)
         C = self.init(image_)
@@ -82,7 +82,10 @@ class SparseEdges:
             ind_edge_star = self.argmax(C)
             # recording
             if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
-            edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1., self.theta_[ind_edge_star[2]], self.sf_0[ind_edge_star[3]], self.MP_alpha * C[ind_edge_star]])
+            edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
+                                         self.theta_[ind_edge_star[2]],
+                                         self.sf_0[ind_edge_star[3]],
+                                         self.MP_alpha * np.absolute(C[ind_edge_star]), np.angle(C[ind_edge_star])])
             # PURSUIT
             C = self.backprop(C, ind_edge_star)
 #            if verbose: print 'Residual activity : ',  C[ind_edge_star]
@@ -98,20 +101,6 @@ class SparseEdges:
                 if self.do_mask: C[:, :, i_theta, i_sf_0] *= self.mask
         return C
 
-    def reconstruct(self, edges):
-#        Fimage = np.zeros((self.N_X, self.N_Y), dtype=np.complex)
-        image = np.zeros((self.N_X, self.N_Y))
-#        print edges.shape, edges[:, 0]
-        for i_edge in range(edges.shape[1]):#self.N):
-            # TODO : check that it is correct when we remove alpha when making new MP
-            image += self.im.invert(edges[4, i_edge] * self.lg.loggabor(
-                                                                        edges[0, i_edge].real, edges[1, i_edge].real,
-                                                                        theta=edges[2, i_edge].real, B_theta=self.B_theta,
-                                                                        sf_0=edges[3, i_edge].real, B_sf=self.B_sf,
-                                                                        ),
-                                    full=False)
-        return image
-
     def argmax(self, C):
         """
         Returns the ArgMax from C by returning the
@@ -124,15 +113,16 @@ class SparseEdges:
         ind = np.absolute(C).argmax()
         return np.unravel_index(ind, C.shape)
 
-    def backprop(self, C, edge_star):
+    def backprop(self, C, ind_edge_star):
         """
         Removes edge_star from the activity
 
         """
-        C_star = self.MP_alpha * C[edge_star]
-        FT_lg_star = self.lg.loggabor(edge_star[0]*1., edge_star[1]*1., sf_0=self.sf_0[edge_star[3]],
-                         B_sf=self.B_sf,#_ratio*self.sf_0[edge_star[3]],
-                    theta= self.theta_[edge_star[2]], B_theta=self.B_theta)
+        C_star = self.MP_alpha * C[ind_edge_star]
+        FT_lg_star = self.lg.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
+                                      theta=self.theta_[ind_edge_star[2]], B_theta=self.B_theta,
+                                      sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.B_sf,
+                                      )
         lg_star = self.im.invert(C_star*FT_lg_star, full=False)
 
         for i_sf_0, sf_0 in enumerate(self.sf_0):
@@ -141,6 +131,20 @@ class SparseEdges:
                 C[:, :, i_theta, i_sf_0] -= self.im.FTfilter(lg_star, FT_lg, full=True)
                 if self.do_mask: C[:, :, i_theta, i_sf_0] *= self.mask
         return C
+
+    def reconstruct(self, edges):
+        image = np.zeros((self.N_X, self.N_Y))
+#        print edges.shape, edges[:, 0]
+        for i_edge in range(edges.shape[1]):#self.N):
+            # TODO : check that it is correct when we remove alpha when making new MP
+            image += self.im.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
+                                    self.lg.loggabor(
+                                                    edges[0, i_edge], edges[1, i_edge],
+                                                    theta=edges[2, i_edge], B_theta=self.B_theta,
+                                                    sf_0=edges[3, i_edge], B_sf=self.B_sf,
+                                                    ),
+                                    full=False)
+        return image
 
     def adapt(self, edges):
         # TODO : implement a COMP adaptation of the thetas and scales tesselation of Fourier space
@@ -186,7 +190,7 @@ class SparseEdges:
             # draw the segments
             segments, colors, linewidths = list(), list(), list()
 
-            X, Y, Theta, Sf_0 = edges[1, :].real+.5, edges[0, :].real+.5, np.pi -  edges[2, :].real, edges[3, :].real
+            X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :]
             weights = edges[4, :]
 
             #show_phase, pedestal = False, .2 # color edges according to phase or hue? pedestal value for alpha when weights= 0
@@ -309,13 +313,22 @@ class SparseEdges:
             return 'locked'
         else:
             try:
-                edgeslist = np.zeros((5, self.N, N_image), dtype=np.complex)
+                edgeslist = np.zeros((6, self.N, N_image))
                 i_image = 0
                 for filename, croparea in imagelist:
                     matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
                     edgeslist[:, :, i_image] = np.load(matname)
                     i_image += 1
 
+#                 # HACK to convert 
+#                 if edgeslist.dtype == np.complex:
+#                     edgeslist_ = np.zeros((6, edgeslist.shape[1], edgeslist.shape[2]))
+#                     edgeslist_[:4, :, :] = edgeslist[:4, :, :].real
+#                     edgeslist_[3, :, :] /= pe.N_X
+#                     edgeslist_[4, :, :] = np.absolute(edgeslist[4, :, :])
+#                     edgeslist_[5, :, :] = np.angle(edgeslist[4, :, :])
+#                     return edgeslist_
+#                 else:
                 return edgeslist
             except:
                 log.error(' some locked edge extractions ')
@@ -339,7 +352,7 @@ class SparseEdges:
         """
         self.init_edges()
 
-        theta = (edgeslist[2, ...].real.ravel())
+        theta = (edgeslist[2, ...].ravel())
         theta = ((theta + np.pi/2 - np.pi/self.pe.N_Dtheta/2)  % np.pi ) - np.pi/2  + np.pi/self.pe.N_Dtheta/2
         value = edgeslist[4, ...].ravel()
 
@@ -372,7 +385,7 @@ class SparseEdges:
         """
         self.init_edges()
 
-        sf_0 = (edgeslist[3, ...].real.ravel())
+        sf_0 = (edgeslist[3, ...].ravel())
         value = edgeslist[4, ...].ravel()
         if self.pe.edge_mask:
             # remove edges whose center position is not on the central disk
@@ -413,10 +426,11 @@ class SparseEdges:
             # TODO: vectorize over images?
             for i_image in range(N_image):
                 # retrieve individual positions, orientations, scales and coefficients
-                X, Y = edgeslist[0, :, i_image].real, edgeslist[1, :, i_image].real
-                Theta = edgeslist[2, :, i_image].real
-                Sf_0 = edgeslist[3, :, i_image].real
+                X, Y = edgeslist[0, :, i_image], edgeslist[1, :, i_image]
+                Theta = edgeslist[2, :, i_image]
+                Sf_0 = edgeslist[3, :, i_image]
                 value = edgeslist[4, :, i_image]
+                phase = edgeslist[5, :, i_image]
                 if self.pe.edge_mask:
                     # remove edges whose center position is not on the central disk
                     mask = ((X/self.N_X -.5)**2+(Y/self.N_Y -.5)**2) < .5**2
@@ -425,9 +439,10 @@ class SparseEdges:
                     Theta = Theta[mask]
                     Sf_0 = Sf_0[mask]
                     value = value[mask]
+                    phase = phase[mask]
 
                 # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
-                Weights = np.absolute(value)#/(np.absolute(value)).sum()
+                Weights = value # np.absolute(value)#/(np.absolute(value)).sum()
                 if self.pe.do_rank: Weights[Weights.argsort()] = np.linspace(1./Weights.size, 1., Weights.size)
                 # TODO: include phases or use that to modify center of the edge
                 # TODO: or at least on the value (ON or OFF) of the edge
@@ -459,7 +474,6 @@ class SparseEdges:
                 if self.pe.kappa_phase>0:
                     # TODO: should we use the phase information to refine position?
                     # https://en.wikipedia.org/wiki/Atan2
-                    phase = np.angle(value)
                     weights *= np.exp(self.pe.kappa_phase*np.cos(np.arctan2(phase[:, np.newaxis], phase[np.newaxis, :])))
 
                 if weights.sum()>0:
@@ -554,7 +568,7 @@ class SparseEdges:
                     if a==None:
                         a = fig.add_subplot(111)
                 v_hist_noscale = v_hist.sum(axis=3)
-                colin_edgelist = np.zeros((5, self.pe.N_r * self.pe.N_phi * 2 + 1 ))
+                colin_edgelist = np.zeros((6, self.pe.N_r * self.pe.N_phi * 2 + 1 ))
                 colin_argmax = np.argmax(v_hist_noscale, axis=2)
                 for i_r, d_r in enumerate(self.edges_d[:-1]):
                     for i_phi, phi in enumerate(self.edges_phi[:-1]):
@@ -582,7 +596,7 @@ class SparseEdges:
                     if a==None:
                         a = fig.add_subplot(111)
                 v_hist_noscale = v_hist.sum(axis=3)
-                cocir_edgelist = np.zeros((5, self.pe.N_r * self.pe.N_Dtheta * 2 + 1 ))
+                cocir_edgelist = np.zeros((6, self.pe.N_r * self.pe.N_Dtheta * 2 + 1 ))
                 cocir_proba = np.argmax(v_hist_noscale, axis=1)
                 for i_r, d_r in enumerate(self.edges_d[:-1]):
                     for i_theta, theta in enumerate(self.edges_theta[:-1]):
@@ -662,7 +676,7 @@ class SparseEdges:
             import matplotlib.colors as mplcolors
             mypatches, colors = [], []
             fc=cm.gray(.6, alpha=.2) #cm.hsv(2./3., alpha=weight)#))
-            angle_edgelist = np.zeros((5,  s_phi * s_theta * 2 ))
+            angle_edgelist = np.zeros((6,  s_phi * s_theta * 2 ))
             for i_phi, phi in enumerate(v_phi):
                 for i_theta, theta in enumerate(v_theta):
                     value = v_hist_angle[(s_phi - i_phi - i_phi_shift) % self.pe.N_phi, (i_theta + i_theta_shift) % self.pe.N_Dtheta]
