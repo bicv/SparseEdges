@@ -1,4 +1,8 @@
 {
+# COMPUTATIONAL PARAMETERS
+'ncpus' : None, # for a SMP machine
+#'ncpus' : 16, # Cluster
+# 'ncpus' : 1, # on the cluster we can run many batches - no need for pp
 # Image
 'N_X' : 256, # size of images
 'N_Y' : 256, # size of images

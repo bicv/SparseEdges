@@ -35,35 +35,44 @@ class SparseEdges:
 
         self.lg = lg
         self.im = lg.im
-        self.n_x = lg.n_x
-        self.n_y = lg.n_y
+        self.N_X = lg.N_X
+        self.N_Y = lg.N_Y
 
         self.base_levels = self.pe.base_levels
-        self.n_levels = int(np.log(np.max((self.n_x, self.n_y)))/np.log(self.base_levels)) #  self.pe.n_levels
-        self.MP_alpha = self.pe.MP_alpha
-
-        self.sf_0 = lg.n_x / np.logspace(1, self.n_levels, self.n_levels, base=self.base_levels)
+        self.n_levels = int(np.log(np.max((self.N_X, self.N_Y)))/np.log(self.base_levels)) + 1
+        self.sf_0 = 1. / np.logspace(1, self.n_levels, self.n_levels, base=self.base_levels)
 
         self.n_theta = self.pe.n_theta
         self.theta_ = np.linspace(0., np.pi, self.n_theta, endpoint=False)
         self.B_theta = self.pe.B_theta
         self.B_sf = self.pe.B_sf
+
         self.N = self.pe.N
         self.do_whitening = self.pe.do_whitening
         self.do_mask = self.pe.do_mask
+        self.MP_alpha = self.pe.MP_alpha
         if self.do_mask:
-            X, Y = np.mgrid[-1:1:1j*self.n_x, -1:1:1j*self.n_y]
+            X, Y = np.mgrid[-1:1:1j*self.N_X, -1:1:1j*self.N_Y]
             self.mask = (X**2 + Y**2) < 1.
         for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
             if not(os.path.isdir(path)): os.mkdir(path)
+        if self.pe['ncpus'] == 1 :
+            self.parallel = False
+        else:
+            try:
+                import pp
+                self.job_server = pp.Server(ncpus=self.pe.ncpus, ppservers=())
+                log.info("Starting pp with %d workers", self.job_server.get_ncpus())
+                self.jobs = []
+                self.parallel = True
+            except:
+                self.parallel = False
 
-
-# class MatchingPursuit(SparseEdges):
-#     """
-#     defines a MatchingPursuit algorithm
-# 
-#     """
     def run_mp(self, image, verbose=False):
+        """
+        runs the MatchingPursuit algorithm on image
+
+        """
         edges = np.zeros((5, self.N), dtype=np.complex)
         image_ = image.copy()
         if self.do_whitening: image_ = self.im.whitening(image_)
@@ -80,7 +89,7 @@ class SparseEdges:
         return edges, C
 #
     def init(self, image):
-        C = np.empty((self.n_x, self.n_y, self.n_theta, self.n_levels), dtype=np.complex)
+        C = np.empty((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
         for i_sf_0, sf_0 in enumerate(self.sf_0):
             for i_theta, theta in enumerate(self.theta_):
                 FT_lg = self.lg.loggabor(0, 0, sf_0=sf_0, B_sf=self.B_sf,
@@ -90,8 +99,8 @@ class SparseEdges:
         return C
 
     def reconstruct(self, edges):
-#        Fimage = np.zeros((self.n_x, self.n_y), dtype=np.complex)
-        image = np.zeros((self.n_x, self.n_y))
+#        Fimage = np.zeros((self.N_X, self.N_Y), dtype=np.complex)
+        image = np.zeros((self.N_X, self.N_Y))
 #        print edges.shape, edges[:, 0]
         for i_edge in range(edges.shape[1]):#self.N):
             # TODO : check that it is correct when we remove alpha when making new MP
@@ -158,7 +167,7 @@ class SparseEdges:
             linewidth = self.pe.line_width
             scale = self.pe.scale
 
-        opts= {'extent': (0, self.n_x, self.n_y, 0),
+        opts= {'extent': (0, self.N_X, self.N_Y, 0),
                'cmap': cm.gray,
                'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest', 'origin':'upper'}
 #         origin : [‘upper’ | ‘lower’], optional, default: None
@@ -188,7 +197,7 @@ class SparseEdges:
             weights = weights/(np.abs(weights)).max()
 
             for x, y, theta, sf_0, weight in zip(X, Y, Theta, Sf_0, weights):
-                u_, v_ = np.cos(theta)*scale/sf_0*self.n_x, np.sin(theta)*scale/sf_0*self.n_y
+                u_, v_ = np.cos(theta)*scale/sf_0*self.N_X, np.sin(theta)*scale/sf_0*self.N_Y
                 segment = [(x - u_, y - v_), (x + u_, y + v_)]
                 segments.append(segment)
                 if color=='auto':
@@ -209,7 +218,6 @@ class SparseEdges:
                 linewidths.append(linewidth) # *weight thinning byalpha...
 
             # TODO : put circle in front
-            n_ = np.sqrt(self.n_x**2+self.n_y**2)
             for x, y, theta, sf_0, weight in zip(X, Y, Theta, Sf_0, weights):
                 if color=='auto':
                     if show_phase:
@@ -228,7 +236,7 @@ class SparseEdges:
                 else:
                     fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
                 # http://matplotlib.sourceforge.net/users/transforms_tutorial.html
-                circ = patches.Circle((x,y), self.pe.scale_circle*scale/sf_0*n_, facecolor=fc, edgecolor='none')#, alpha=0.5*weight)
+                circ = patches.Circle((x,y), self.pe.scale_circle*scale/sf_0, facecolor=fc, edgecolor='none')#, alpha=0.5*weight)
                 # (0.5, 0.5), 0.25, transform=ax.transAxes, facecolor='yellow', alpha=0.5)
                 a.add_patch(circ)
 
@@ -239,7 +247,7 @@ class SparseEdges:
             plt.setp(a, xticks=[])
             plt.setp(a, yticks=[])
 
-        a.axis([0, self.n_x, self.n_y, 0])
+        a.axis([0, self.N_X, self.N_Y, 0])
         plt.draw()
         if mappable:
             return fig, a, line_segments
@@ -255,9 +263,8 @@ class SparseEdges:
         # TODO control number of jobs to not clutter the cluster
 
         def do_edge(edge, image, exp, name_database, filename, croparea):
-            if not(os.path.isdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))): os.mkdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))
             matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
-
+            if not(os.path.isdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))): os.mkdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))
             if not(os.path.isfile(matname)):
                 if not(os.path.isfile(matname + '_lock')):
                     file(matname + '_lock', 'w').close()
@@ -320,7 +327,7 @@ class SparseEdges:
         self.edges_d = np.linspace(self.pe.d_min, self.pe.d_max, self.pe.N_r+1)
         self.edges_phi = np.linspace(-np.pi/2, np.pi/2, self.pe.N_phi+1) + np.pi/self.pe.N_phi/2
         self.edges_theta = np.linspace(-np.pi/2, np.pi/2, self.pe.N_Dtheta+1) + np.pi/self.pe.n_theta/2
-        self.edges_sf_0 = 2**np.arange(np.ceil(np.log2(self.n_x)))
+        self.edges_sf_0 = 2**np.arange(np.ceil(np.log2(self.N_X)))
         self.edges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
     def histedges_theta(self, edgeslist, fig=None, a=None, display=True):
@@ -339,7 +346,7 @@ class SparseEdges:
         if self.pe.edge_mask:
             # remove edges whose center position is not on the central disk
             x , y = edgeslist[0, ...].ravel().real, edgeslist[1, ...].ravel().real
-            mask = ((x/self.n_x -.5)**2+(y/self.n_y -.5)**2) < .5**2
+            mask = ((x/self.N_X -.5)**2+(y/self.N_Y -.5)**2) < .5**2
             theta = theta[mask]
             value = value[mask]
 
@@ -370,7 +377,7 @@ class SparseEdges:
         if self.pe.edge_mask:
             # remove edges whose center position is not on the central disk
             x , y = edgeslist[0, ...].ravel().real, edgeslist[1, ...].ravel().real
-            mask = ((x/self.n_x -.5)**2+(y/self.n_y -.5)**2) < .5**2
+            mask = ((x/self.N_X -.5)**2+(y/self.N_Y -.5)**2) < .5**2
             sf_0 = sf_0[mask]
             value = value[mask]
 
@@ -412,7 +419,7 @@ class SparseEdges:
                 value = edgeslist[4, :, i_image]
                 if self.pe.edge_mask:
                     # remove edges whose center position is not on the central disk
-                    mask = ((X/self.n_x -.5)**2+(Y/self.n_y -.5)**2) < .5**2
+                    mask = ((X/self.N_X -.5)**2+(Y/self.N_Y -.5)**2) < .5**2
                     X = X[mask]
                     Y = Y[mask]
                     Theta = Theta[mask]
@@ -431,9 +438,9 @@ class SparseEdges:
                 dx = X[:, np.newaxis] - X[np.newaxis, :]
                 dy = Y[:, np.newaxis] - Y[np.newaxis, :]
                 # TODO : make an histogram on log-radial coordinates and theta versus scale
-                d = np.sqrt(dx**2 + dy**2) / self.n_x  # distance
+                d = np.sqrt(dx**2 + dy**2) / self.N_X  # distance normalized by the image size
                 # TODO: check that we correctly normalize position by the scale of the current edge
-                if self.pe.scale_invariant: d *= np.sqrt(Sf_0[:, np.newaxis]*Sf_0[np.newaxis, :])/np.sqrt(self.n_x)
+                if self.pe.scale_invariant: d *= np.sqrt(Sf_0[:, np.newaxis]*Sf_0[np.newaxis, :])#*np.sqrt(self.N_X)
                 d *= self.pe.d_width # distance in visual angle
                 theta = Theta[:, np.newaxis] - Theta[np.newaxis, :]
                 phi = np.arctan2(dy, dx) - np.pi/2 - Theta[np.newaxis, :]
@@ -551,17 +558,17 @@ class SparseEdges:
                 colin_argmax = np.argmax(v_hist_noscale, axis=2)
                 for i_r, d_r in enumerate(self.edges_d[:-1]):
                     for i_phi, phi in enumerate(self.edges_phi[:-1]):
-                        rad = d_r / self.pe.d_max * max(self.n_x, self.n_y) /2
+                        rad = d_r / self.pe.d_max * max(self.N_X, self.N_Y) /2
                         ii_phi = i_r * self.pe.N_phi
-                        colin_edgelist[0:2, ii_phi + i_phi] =  self.n_x /2 - rad * np.sin(phi + np.pi/self.pe.N_phi/2), self.n_y /2 + rad * np.cos(phi + np.pi/self.pe.N_phi/2)
+                        colin_edgelist[0:2, ii_phi + i_phi] =  self.N_X /2 - rad * np.sin(phi + np.pi/self.pe.N_phi/2), self.N_Y /2 + rad * np.cos(phi + np.pi/self.pe.N_phi/2)
                         colin_edgelist[2, ii_phi + i_phi] = self.edges_theta[colin_argmax[i_r, i_phi]] + np.pi/self.pe.N_Dtheta/2
                         colin_edgelist[3, ii_phi + i_phi] = edge_scale
                         colin_edgelist[4, ii_phi + i_phi] = v_hist_noscale[i_r, i_phi, colin_argmax[i_r, i_phi]]
                         # symmetric
                         colin_edgelist[:, ii_phi + i_phi +  self.pe.N_r * self.pe.N_phi] = colin_edgelist[:, ii_phi + i_phi]
-                        colin_edgelist[0:2, ii_phi + i_phi +  self.pe.N_r * self.pe.N_phi] = self.n_x - colin_edgelist[0, ii_phi + i_phi], self.n_y - colin_edgelist[1, ii_phi + i_phi]
+                        colin_edgelist[0:2, ii_phi + i_phi +  self.pe.N_r * self.pe.N_phi] = self.N_X - colin_edgelist[0, ii_phi + i_phi], self.N_Y - colin_edgelist[1, ii_phi + i_phi]
                 # reference angle
-                colin_edgelist[:, -1] = [self.n_x /2, self.n_y /2, 0, edge_scale, colin_edgelist[4,:].max() *1.2 ]
+                colin_edgelist[:, -1] = [self.N_X /2, self.N_Y /2, 0, edge_scale, colin_edgelist[4,:].max() *1.2 ]
                 return self.show_edges(colin_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
             except Exception, e:
                 log.error(' failed to generate colin_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
@@ -579,16 +586,16 @@ class SparseEdges:
                 cocir_proba = np.argmax(v_hist_noscale, axis=1)
                 for i_r, d_r in enumerate(self.edges_d[:-1]):
                     for i_theta, theta in enumerate(self.edges_theta[:-1]):
-                        rad = d_r / self.pe.d_max * max(self.n_x, self.n_y) /2
+                        rad = d_r / self.pe.d_max * max(self.N_X, self.N_Y) /2
                         ii_theta = i_r * self.pe.N_Dtheta
-                        cocir_edgelist[0:2, ii_theta + i_theta] =  self.n_x /2 - rad * np.sin( self.edges_phi[cocir_proba[i_r, i_theta]] + np.pi/self.pe.N_phi/2), self.n_y /2 + rad * np.cos( self.edges_phi[cocir_proba[i_r, i_theta]] + np.pi/self.pe.N_phi/2)
+                        cocir_edgelist[0:2, ii_theta + i_theta] =  self.N_X /2 - rad * np.sin( self.edges_phi[cocir_proba[i_r, i_theta]] + np.pi/self.pe.N_phi/2), self.N_Y /2 + rad * np.cos( self.edges_phi[cocir_proba[i_r, i_theta]] + np.pi/self.pe.N_phi/2)
                         cocir_edgelist[2, ii_theta + i_theta] = theta + np.pi/self.pe.N_Dtheta/2
                         cocir_edgelist[3, ii_theta + i_theta] = edge_scale
                         cocir_edgelist[4, ii_theta + i_theta] = v_hist_noscale[i_r, cocir_proba[i_r, i_theta], i_theta]
                         # symmetric
                         cocir_edgelist[:, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = cocir_edgelist[:,  ii_theta + i_theta]
-                        cocir_edgelist[0:2, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = self.n_x - cocir_edgelist[0,  ii_theta + i_theta], self.n_y - cocir_edgelist[1, ii_theta + i_theta]
-                cocir_edgelist[:, -1] = [self.n_x /2, self.n_y /2, 0, edge_scale, cocir_edgelist[4,:].max() *1.2 ]
+                        cocir_edgelist[0:2, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = self.N_X - cocir_edgelist[0,  ii_theta + i_theta], self.N_Y - cocir_edgelist[1, ii_theta + i_theta]
+                cocir_edgelist[:, -1] = [self.N_X /2, self.N_Y /2, 0, edge_scale, cocir_edgelist[4,:].max() *1.2 ]
                 return self.show_edges(cocir_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
             except Exception, e:
                 log.error(' failed to generate cocir_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
@@ -636,7 +643,7 @@ class SparseEdges:
                 i_phi_shift, i_theta_shift = 2, -1
             s_phi, s_theta = len(v_phi), len(v_theta)
             #print 'DEBUG: s_phi, s_theta, self.pe.N_phi, self.pe.N_Dtheta', s_phi, s_theta, self.pe.N_phi, self.pe.N_Dtheta
-            rad_X, rad_Y = 1.* self.n_x/s_theta, 1.*self.n_y/s_phi
+            rad_X, rad_Y = 1.* self.N_X/s_theta, 1.*self.N_Y/s_phi
             rad = min(rad_X, rad_Y) / 2.619
             if radius==None: radius = np.ones((self.pe.N_phi, self.pe.N_Dtheta))
 
@@ -661,7 +668,7 @@ class SparseEdges:
                     value = v_hist_angle[(s_phi - i_phi - i_phi_shift) % self.pe.N_phi, (i_theta + i_theta_shift) % self.pe.N_Dtheta]
                     score = radius[(s_phi - i_phi - i_phi_shift) % self.pe.N_phi, (i_theta + i_theta_shift) % self.pe.N_Dtheta]
                     circ = patches.Circle((rad_Y * (i_phi + .5) + .5,
-                                       self.n_x - rad_X * (s_theta - i_theta - .5) + .5),
+                                       self.N_X - rad_X * (s_theta - i_theta - .5) + .5),
 #                                             facecolor=fc, edgecolor=fc,
                                        rad, lw=self.pe.line_width_chevrons/2)
                     mypatches.append(circ)
@@ -669,13 +676,13 @@ class SparseEdges:
 
                     # first edge
 #                    print i_phi, i_theta,  s_phi, s_theta, v_hist_angle.shape
-                    angle_edgelist[0, i_phi * s_theta + i_theta] = self.n_x - rad_X * (s_theta - i_theta - .5)
+                    angle_edgelist[0, i_phi * s_theta + i_theta] = self.N_X - rad_X * (s_theta - i_theta - .5)
                     angle_edgelist[1, i_phi * s_theta + i_theta] = rad_Y * (i_phi + .5) - rad * 1.
                     angle_edgelist[2, i_phi * s_theta + i_theta] = phi + theta/2
                     angle_edgelist[3, i_phi * s_theta + i_theta] = self.pe.edge_scale_chevrons
                     angle_edgelist[4, i_phi * s_theta + i_theta] = 1.
                     # second edge
-                    angle_edgelist[0, i_phi * s_theta + i_theta + s_phi * s_theta] = self.n_x - rad_X * (s_theta - i_theta - .5)
+                    angle_edgelist[0, i_phi * s_theta + i_theta + s_phi * s_theta] = self.N_X - rad_X * (s_theta - i_theta - .5)
                     angle_edgelist[1, i_phi * s_theta + i_theta + s_phi * s_theta] = rad_Y * (i_phi + .5) +  rad * 1.
                     angle_edgelist[2, i_phi * s_theta + i_theta + s_phi * s_theta] = phi - theta/2
                     angle_edgelist[3, i_phi * s_theta + i_theta + s_phi * s_theta] = self.pe.edge_scale_chevrons
@@ -730,25 +737,25 @@ class SparseEdges:
             if not(xticks==False):
                 eps = 0.55 # HACK to center grid. dunnon what's happening here
                 if half:
-                    plt.setp(a, xticks=[(1./self.pe.N_phi/1.25)*self.n_x, (1. - 1./self.pe.N_phi/1.25)*self.n_x])
+                    plt.setp(a, xticks=[(1./self.pe.N_phi/1.25)*self.N_X, (1. - 1./self.pe.N_phi/1.25)*self.N_X])
                     if not(xticks=='left'):
                         plt.setp(a, xticklabels=[r'$0$', r'$\frac{\pi}{2}$'])
                     else:
                         plt.setp(a, xticklabels=[r'', r''])
                 else:
-                    plt.setp(a, xticks=[(1./(self.pe.N_phi+1)/2)*self.n_x, .5*self.n_x+eps, (1. - 1./(self.pe.N_phi+1)/2)*self.n_x])
+                    plt.setp(a, xticks=[(1./(self.pe.N_phi+1)/2)*self.N_X, .5*self.N_X+eps, (1. - 1./(self.pe.N_phi+1)/2)*self.N_X])
                     if not(xticks=='left'):
                         plt.setp(a, xticklabels=[r'$-\frac{\pi}{2}$', r'$0$', r'$\frac{\pi}{2}$'])
                     else:
                         plt.setp(a, xticklabels=[r'', r''])
                 if half:
-                    plt.setp(a, yticks=[(1./self.pe.N_Dtheta)*self.n_y, (1. - 1./(self.pe.N_Dtheta+.45))*self.n_y])
+                    plt.setp(a, yticks=[(1./self.pe.N_Dtheta)*self.N_Y, (1. - 1./(self.pe.N_Dtheta+.45))*self.N_Y])
                     if not(xticks=='bottom'):
                         plt.setp(a, yticklabels=[r'$0$', r'$\frac{\pi}{2}$'])
                     else:
                         plt.setp(a, yticklabels=[r'', r''])
                 else:
-                    plt.setp(a, yticks=[1./(self.pe.N_Dtheta+1)/2*self.n_x, .5*self.n_y+eps, (1. - 1./(self.pe.N_Dtheta+1)/2)*self.n_y])
+                    plt.setp(a, yticks=[1./(self.pe.N_Dtheta+1)/2*self.N_X, .5*self.N_Y+eps, (1. - 1./(self.pe.N_Dtheta+1)/2)*self.N_Y])
                     if not(xticks=='bottom'):
                         plt.setp(a, yticklabels=[r'$-\frac{\pi}{2}$', r'$0$', r'$\frac{\pi}{2}$'])
                     else:
@@ -874,7 +881,7 @@ class SparseEdges:
                         if self.do_whitening: image = self.im.whitening(image)
                         image_ = self.reconstruct(edgeslist[:, :, i_image])
 #                        print image.mean(), image.std(), image_.mean(), image_.std()
-                        X, Y = np.mgrid[-1:1:1j*self.n_x, -1:1:1j*self.n_y]
+                        X, Y = np.mgrid[-1:1:1j*self.N_X, -1:1:1j*self.N_Y]
                         mask = (X**2 + Y**2) < 1.
                         RMSE[i_image] =  ((image*mask-image_*mask)**2).sum()/((image*mask)**2).sum()
     #                    print 'RMSE = ', RMSE[i_image]
