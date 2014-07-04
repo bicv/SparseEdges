@@ -34,3 +34,5 @@ def init_pylab():
                   'savefig.dpi': 100,
                 }
         pylab.rcParams.update(params)
+
+init_pylab()

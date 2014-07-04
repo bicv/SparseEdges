@@ -22,6 +22,8 @@ log = logging.getLogger("SparseEdges")
 #log.setLevel(level=logging.WARN)
 log.setLevel(level=logging.INFO)
 # log.setLevel(logging.DEBUG) #set verbosity to show all messages of severity >= DEBUG
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 class SparseEdges:
@@ -810,7 +812,7 @@ class SparseEdges:
                         if noise >0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
 #                        if self.do_whitening: image = self.im.whitening(image)
                         fig, a = self.show_edges(edgeslist[:, :, i_image], image=image*1.)
-                        fig.savefig(figname)
+                        plt.savefig(figname)
                         plt.close(fig)
                         try:
                             os.remove(figname + '_lock')
@@ -829,7 +831,7 @@ class SparseEdges:
                         image_ = self.reconstruct(edgeslist[:, :, i_image])
                         #if self.do_whitening: image_ = self.im.dewhitening(image_)
                         fig, a = self.show_edges(edgeslist[:, :, i_image], image=image_*1.)
-                        fig.savefig(figname)
+                        plt.savefig(figname)
                         plt.close(fig)
                         try:
                             os.remove(figname + '_lock')
@@ -874,37 +876,37 @@ class SparseEdges:
 #            figname = os.path.join(self.pe.figpath, exp + '_proba-scale_' + name_database + note + self.pe.ext)
 #            if not(os.path.isfile(figname)):
 #                fig, a = self.histedges_scale(edgeslist, display=True)
-#                fig.savefig(figname)
+#                plt.savefig(figname)
 #                plt.close(fig)
 #
             figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note + self.pe.ext)
             if not(os.path.isfile(figname)):
                 fig, a = self.histedges_theta(edgeslist, display=True)
-                fig.savefig(figname)
+                plt.savefig(figname)
                 plt.close(fig)
 
 #            figname = os.path.join(self.pe.figpath, exp + '_proba-cohist_scale_' + name_database + note + self.pe.ext)
 #            if not(os.path.isfile(figname)):
 #                fig, a = self.cohistedges(edgeslist, display='cohist_scale')
-#                fig.savefig(figname)
+#                plt.savefig(figname)
 #                plt.close(fig)
 #
             figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note + self.pe.ext)
             if not(os.path.isfile(figname)):
                 fig, a = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
-                fig.savefig(figname)
+                plt.savefig(figname)
                 plt.close(fig)
 
             figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_cocir_' + name_database + note + self.pe.ext)
             if not(os.path.isfile(figname)):
                 fig, a = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
-                fig.savefig(figname)
+                plt.savefig(figname)
                 plt.close(fig)
 
             figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note + self.pe.ext)
             if not(os.path.isfile(figname)):
                 fig, a = self.cohistedges(edgeslist, display='chevrons')
-                fig.savefig(figname)
+                plt.savefig(figname)
                 plt.close(fig)
 
             return imagelist, edgeslist
