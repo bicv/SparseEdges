@@ -162,7 +162,7 @@ class SparseEdges:
             linewidth = self.pe.line_width
             scale = self.pe.scale
 
-        opts= {#'extent': (0, self.N_X, self.N_Y, 0),
+        opts= {'extent': (0, self.N_X, self.N_Y, 0),
                'cmap': cm.gray,
                'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest', 'origin':'upper'}
 #         origin : [‘upper’ | ‘lower’], optional, default: None
@@ -185,17 +185,17 @@ class SparseEdges:
             X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :]
             weights = edges[4, :]
             weights = weights/(np.abs(weights)).max()
-            phase = edges[5, :]
+            phases = edges[5, :]
 
-            for x, y, theta, sf_0, weight in zip(X, Y, Theta, Sf_0, weights):
+            for x, y, theta, sf_0, weight, phase in zip(X, Y, Theta, Sf_0, weights, phases):
                 u_, v_ = np.cos(theta)*scale/sf_0, np.sin(theta)*scale/sf_0
                 segment = [(x - u_, y - v_), (x + u_, y + v_)]
                 segments.append(segment)
                 if color=='auto':
                     if not(show_phase):
-                        fc = cm.hsv(0, alpha=pedestal + (1. - pedestal)*weight**gamma)[0]
+                        fc = cm.hsv(0, alpha=pedestal + (1. - pedestal)*weight**gamma)
                     else:
-                        fc = cm.hsv((phase)/np.pi, alpha=pedestal + (1. - pedestal)*weight**gamma)[0]
+                        fc = cm.hsv((phase/np.pi/2) % 1., alpha=pedestal + (1. - pedestal)*weight**gamma)
                 elif color == 'black':
                     fc = (0, 0, 0, 1)# black
                 elif color == 'green': # figure 1DE
@@ -208,12 +208,11 @@ class SparseEdges:
                     fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
                 colors.append(fc)
                 linewidths.append(linewidth) # *weight thinning byalpha...
-#                 print fc
-                patch_circles.append(patches.Circle((x,y), self.pe.scale_circle*scale/sf_0, facecolor=fc, edgecolor='none'))
+                patch_circles.append(patches.Circle((x,y), self.pe.scale_circle*scale/sf_0, lw=0., facecolor=fc, edgecolor='none'))
 
             line_segments = LineCollection(segments, linewidths=linewidths, colors=colors, linestyles='solid')
             a.add_collection(line_segments)
-            circles = PatchCollection(patch_circles)
+            circles = PatchCollection(patch_circles, match_original=True)
             a.add_collection(circles)
 
         if not(color=='auto'):# chevrons maps etc...

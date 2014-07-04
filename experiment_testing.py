@@ -23,9 +23,9 @@ pe = ParameterSet('default_param.py')
 
 def init_pe(pe):
     pe.datapath = '../AssoField/database/'
-    pe.N_image = 8 #None
+    pe.N_image = 100
     pe.N_X = 256
-    pe.N = 16
+    pe.N = 1024
     im = Image(pe)
     lg = LogGabor(im)
     mp = SparseEdges(lg)
@@ -39,45 +39,47 @@ def init_pe(pe):
 #!--------------------
 mp = init_pe(pe)
 mp.process('testing_vanilla')
+mp.process('testing_noise', noise=pe.noise)
+mp.process('testing_vanilla', name_database='serre07_targets')
 
 # TODO : make an experiment showing that using scale does not bring much
 ##! comparing representation parameters
 ##!------------------------------------
 #! shorter log-gabor filters
 pe_ = ParameterSet('default_param.py')# = pe.copy()
-pe_.B_theta=pe.B_theta*2
+pe_.B_theta = pe.B_theta*2
 mp = init_pe(pe_)
 mp.process('testing_short')
 
 #! longer log-gabor filters
 pe_= ParameterSet('default_param.py')# = pe.copy()
-pe_.B_theta=pe.B_theta/2
+pe_.B_theta = pe.B_theta/2
 mp = init_pe(pe_)
 mp.process('testing_long')
 
 ## other candidate parameters from class SparseEdges:
 ##    n_levels = 5, n_theta = 16, B_sf_ratio = 3.
-pe_= ParameterSet('default_param.py')# = pe.copy()
-pe_.n_theta=pe.n_theta*2
+pe_ = ParameterSet('default_param.py')# = pe.copy()
+pe_.n_theta = pe.n_theta*2
 mp = init_pe(pe_)
 mp.process('testing_moretheta')
 
 # is whitening important?
-pe_= ParameterSet('default_param.py')
-pe_.do_whitening=False
+pe_ = ParameterSet('default_param.py')
+pe_.do_whitening = False
 mp = init_pe(pe_)
-mp.process('testing_nowhite')
+# mp.process('testing_nowhite')
 
 #! softy MP with a lower alpha value
 pe_ = ParameterSet('default_param.py')
-pe_.N=pe.N*2
+pe_.N = pe.N*2
 pe_.MP_alpha = .25
 mp = init_pe(pe_)
 mp.process('testing_smooth')
 
 #! hard MP with a full alpha value
 pe_ = ParameterSet('default_param.py')#
-pe_.N=pe.N/2
+pe_.N = pe.N/2
 pe_.MP_alpha = 1.
 mp = init_pe(pe_)
 mp.process('testing_hard')
