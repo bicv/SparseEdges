@@ -15,7 +15,7 @@ TAG = 'host-' + HOST + '_pid-' + str(PID)
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 import time
-
+import sys, traceback
 import logging
 logging.basicConfig(filename='log-sparseedges-debug.log', format='%(asctime)s@[' + TAG + '] %(message)s', datefmt='%Y%m%d-%H:%M:%S')
 log = logging.getLogger("SparseEdges")
@@ -56,17 +56,6 @@ class SparseEdges:
             self.mask = (X**2 + Y**2) < 1.
         for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
             if not(os.path.isdir(path)): os.mkdir(path)
-        if self.pe['ncpus'] == 1 :
-            self.parallel = False
-        else:
-            try:
-                import pp
-                self.job_server = pp.Server(ncpus=self.pe.ncpus, ppservers=())
-                log.info("Starting pp with %d workers", self.job_server.get_ncpus())
-                self.jobs = []
-                self.parallel = True
-            except:
-                self.parallel = False
 
     def run_mp(self, image, verbose=False):
         """
@@ -264,49 +253,28 @@ class SparseEdges:
 
         """
         N_image = len(imagelist)
-        # TODO control number of jobs to not clutter the cluster
 
-        def do_edge(edge, image, exp, name_database, filename, croparea):
+        global_lock = False # switch to True when we resume a batch and detect that one edgelist is not finished in another process
+        for filename, croparea in imagelist:
+#                 signal = do_edge(self, image, exp, name_database, filename, croparea)
+#                         def do_edge(self, image, exp, name_database, filename, croparea):
             matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
-            if not(os.path.isdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))): os.mkdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))
+            if not(os.path.isdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))):
+                os.mkdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))
             if not(os.path.isfile(matname)):
                 if not(os.path.isfile(matname + '_lock')):
                     file(matname + '_lock', 'w').close()
-                    edges, C = run_mp(image)
+                    image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
+                    if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
+                    edges, C = self.run_mp(image)
                     np.save(matname, edges)
                     try:
                         os.remove(matname + '_lock')
                     except Exception, e:
                         log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
-                    return 'run'
                 else:
                     log.info('The edge extraction at step %s is locked', matname)
-                    return 'locked'
-            return 'ran'
-
-        global_lock = False # switch to True when we resume a batch and detect that one edgelist is not finished in another process
-        if self.parallel:
-            for filename, croparea in imagelist:
-                image, filename_, croparea_  = self.im.patch(name_database, filename=filename, croparea=croparea)
-                if noise >0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
-                # Submit a job which will compute edges for different images
-                # do_edge - the function
-                # (self.edge, name_database, i_image,) - tuple with arguments for do_edge
-                # () - tuple with functions on which function do_edge depends
-                # ("SparseEdges","plt",) - tuple with module names which must be imported before
-                # do_edge execution
-                self.jobs.append(self.job_server.submit(do_edge, (self.edge, image, exp, name_database, filename, croparea,), (), ("SparseEdges", "np", "plt",)))
-            for job in self.jobs:
-                signal = job()
-                if signal == 'locked': global_lock = True
-            self.job_server.print_stats()
-
-        else: # sequential case
-            for filename, croparea in imagelist:
-                image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
-                if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
-                signal = do_edge(self.edge, image, exp, name_database, filename, croparea)
-                if signal == 'locked': global_lock = True
+                    global_lock = True
 
         if global_lock is True:
             log.error(' some locked edge extractions ')
@@ -319,16 +287,6 @@ class SparseEdges:
                     matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
                     edgeslist[:, :, i_image] = np.load(matname)
                     i_image += 1
-
-#                 # HACK to convert 
-#                 if edgeslist.dtype == np.complex:
-#                     edgeslist_ = np.zeros((6, edgeslist.shape[1], edgeslist.shape[2]))
-#                     edgeslist_[:4, :, :] = edgeslist[:4, :, :].real
-#                     edgeslist_[3, :, :] /= pe.N_X
-#                     edgeslist_[4, :, :] = np.absolute(edgeslist[4, :, :])
-#                     edgeslist_[5, :, :] = np.angle(edgeslist[4, :, :])
-#                     return edgeslist_
-#                 else:
                 return edgeslist
             except:
                 log.error(' some locked edge extractions ')
