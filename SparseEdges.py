@@ -778,11 +778,11 @@ class SparseEdges:
             if not(os.path.isfile(txtname)) and not(os.path.isfile(txtname + '_lock')):
                 file(txtname + '_lock', 'w').close() # touching
                 log.info(' >> Doing check_independence')
-                out = check_independence(self.cohistedges(edgeslist, name_database, symmetry=False, display=None), name_database)
+                out = self.check_independence(self.cohistedges(edgeslist, name_database, symmetry=False, display=None), name_database)
                 f = file(txtname, 'w')
                 f.write(out)
                 f.close()
-                out = check_independence(self.cohistedges(edgeslist, name_database, symmetry=True, display=None), name_database)
+                out = self.check_independence(self.cohistedges(edgeslist, name_database, symmetry=True, display=None), name_database)
                 f = file(os.path.join(self.pe.figpath, exp + '_dependence_sym_' + name_database + note + '.txt'), 'w')
                 f.write(out)
                 f.close()
@@ -911,6 +911,77 @@ class SparseEdges:
         else:
             return 'locked', 'locked edgeslist'
 
+    # some helper funtion to compare the databases
+    def KL(self, v_hist, v_hist_obs):
+        if v_hist.sum()==0 or v_hist_obs.sum()==0: log.error('>X>X>X KL function:  problem with null histograms! <X<X<X<')
+        if True:
+            v_hist /= v_hist.sum()
+            v_hist_obs /= v_hist_obs.sum()
+            # taking advantage of log(True) = 0 and canceling out null bins in v_hist_obs
+            return np.sum(v_hist.ravel()*(np.log(v_hist.ravel()+(v_hist == 0).ravel()) - np.log(v_hist_obs.ravel()+(v_hist_obs == 0).ravel())))
+        else:
+            from scipy.stats import entropy
+            return entropy(v_hist_obs, v_hist, base=2)
+
+    def check_independence(self, v_hist, name_database, labels=['d', 'phi', 'theta', 'scale']):
+        v_hist /= v_hist.sum()
+        fullset = [0, 1, 2, 3]
+#    from scipy.stats import entropy
+#    print KL(v_hist, v_hist),  entropy(v_hist.ravel(), v_hist.ravel())
+        flat = np.ones_like(v_hist)
+        flat /= flat.sum()
+        out = 'Checking dependence in ' + name_database + '\n'
+        out += '-'*60 + '\n'
+        out += 'Entropy: ' + str(self.KL(v_hist, flat)) + '\n'
+        out += '-'*60 + '\n'
+        combinations = [[[0, 1, 2, 3]], # full dependence
+                         [[1, 2, 3], [0]],
+                         [[2, 3, 0], [1]],
+                         [[3, 0, 1], [2]],
+                         [[0, 1, 2], [3]],
+                         [[1, 2], [3, 0]],
+                         [[2, 3], [0, 1]],
+                         [[3, 1], [0, 2]],
+                         [[1, 2], [3], [0]],
+                         [[2, 3], [0], [1]],
+                         [[3, 0], [1], [2]],
+                         [[0, 1], [2], [3]],
+                         [[0], [1], [2], [3]], # full independence
+                         ]
+        out += '-'*60 + '\n'
+        
+        def marginal(v_hist, subset):
+            """
+            marginalize the distribution v_hist over the variables given in subset
+            uses a recursive approach, marginaluzung over axis individually
+
+            """
+            if subset == []:
+                return v_hist
+            else:
+                v_hist_ = v_hist.copy() # np.ones_like(v_hist)
+                for axis_ in subset:
+                    v_hist_ = np.expand_dims(v_hist_.mean(axis=axis_), axis=axis_)*np.ones_like(v_hist_)
+                return v_hist_
+
+        for combination in combinations:
+            combination_str = str([[labels[k] for k in subset ] for subset in combination])
+#        print combination_str
+            combination_str.replace('[[', 'p(')
+            combination_str.replace(']]', ')')
+            combination_str.replace(', [', '.p(')
+            combination_str.replace(')', ')')
+            combination_str.strip("'")
+#        print combination_str
+            # computing marginalized distribution as an approximation
+            v_hist_ = np.ones_like(v_hist)
+            for subset in combination:
+#            print subset, [k for k in fullset if k not in subset]
+                v_hist_ *= marginal(v_hist, [k for k in fullset if k not in subset])
+            v_hist_ /= v_hist_.sum()
+            out += combination_str + ' KL= ' + '%.5f' % self.KL(v_hist, v_hist_) + ' ; ' + '%.3f' % (self.KL(v_hist, v_hist_)/self.KL(v_hist, flat)*100) + '\n'
+        out += '-'*60 + '\n'
+        return out
 
 def _test():
     import doctest
@@ -930,5 +1001,4 @@ if __name__ == '__main__':
 #     # whitening
 #     image = imread('database/gris512.png')[:,:,0]
 #     lg = LogGabor(image.shape)
-
 

@@ -10,6 +10,8 @@ frioul_batch  -n "14,15,16"  -M 36 'python experiment_testing.py'
 
 """
 __author__ = "(c) Laurent Perrinet INT - CNRS"
+import matplotlib
+matplotlib.use("Agg") # agg-backend, so we can create figures without x-server (no PDF, just PNG etc.)
 
 import numpy as np
 from NeuroTools.parameters import ParameterSet
