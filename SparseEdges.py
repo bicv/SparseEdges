@@ -469,6 +469,7 @@ class SparseEdges:
 
         v_hist /= v_hist.sum()
 
+        import matplotlib.pyplot as plt
         import matplotlib.cm as cm
         if display=='full':
             if fig==None:
@@ -632,7 +633,6 @@ class SparseEdges:
             import matplotlib.patches as patches
             from matplotlib.collections import PatchCollection
             import matplotlib.cm as cm
-            import matplotlib.pyplot as plt
             import matplotlib.colors as mplcolors
             mypatches, colors = [], []
             fc=cm.gray(.6, alpha=.2) #cm.hsv(2./3., alpha=weight)#))
