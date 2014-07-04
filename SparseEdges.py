@@ -742,7 +742,7 @@ class SparseEdges:
             return v_hist
 
 
-    def process(self, exp, note='', name_database='natural', noise=0.):
+    def process(self, exp, note='', name_database='serre07_distractors', noise=0.):
         """
         The pipeline to go from one database to a list of edge lists
 
