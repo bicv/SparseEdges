@@ -142,7 +142,7 @@ class SparseEdges:
         pass
 
     def show_edges(self, edges, fig=None, a=None, image=None, norm=True,
-                   color='auto', v_min=-1., v_max=1., show_phase=False, gamma=1., pedestal=.2, mappable=False):
+                   color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1., pedestal=.2, mappable=False):
         """
         Shows the quiver plot of a set of edges, optionally associated to an image.
 
@@ -162,7 +162,7 @@ class SparseEdges:
             linewidth = self.pe.line_width
             scale = self.pe.scale
 
-        opts= {'extent': (0, self.N_X, self.N_Y, 0),
+        opts= {#'extent': (0, self.N_X, self.N_Y, 0),
                'cmap': cm.gray,
                'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest', 'origin':'upper'}
 #         origin : [‘upper’ | ‘lower’], optional, default: None
@@ -176,50 +176,26 @@ class SparseEdges:
         else:
             a.imshow([[v_max]], **opts)
         if edges.shape[1] > 0:
-            from matplotlib.collections import LineCollection#, EllipseCollection
+            from matplotlib.collections import LineCollection, PatchCollection
             import matplotlib.patches as patches
             # draw the segments
             segments, colors, linewidths = list(), list(), list()
+            patch_circles = []
 
             X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :]
             weights = edges[4, :]
-
-            #show_phase, pedestal = False, .2 # color edges according to phase or hue? pedestal value for alpha when weights= 0
-
-    #        print X, Y, Theta, Sf_0, weights, scale_
-    #        print 'Min theta ', Theta.min(), ' Max theta ', Theta.max()
-#            weights = np.absolute(weights)/(np.abs(weights)).max()
             weights = weights/(np.abs(weights)).max()
+            phase = edges[5, :]
 
             for x, y, theta, sf_0, weight in zip(X, Y, Theta, Sf_0, weights):
-                u_, v_ = np.cos(theta)*scale/sf_0*self.N_X, np.sin(theta)*scale/sf_0*self.N_Y
+                u_, v_ = np.cos(theta)*scale/sf_0, np.sin(theta)*scale/sf_0
                 segment = [(x - u_, y - v_), (x + u_, y + v_)]
                 segments.append(segment)
                 if color=='auto':
-                    if show_phase:
-                        #colors.append(cm.hsv(np.angle(weight), alpha=pedestal + (1. - pedestal)*weight**gamma))#))
-                        colors.append(cm.hsv(0., alpha=pedestal + (1. - pedestal)*weight**gamma))#)) # HACK
-                    else: colors.append(cm.hsv((theta % np.pi)/np.pi, alpha=pedestal + (1. - pedestal)*weight))#))
-                elif color == 'black':
-                    colors.append((0, 0, 0, 1))# black
-                elif color == 'green': # figure 1DE
-                    colors.append((0.05, 0.5, 0.05, np.abs(weight)**gamma))
-                elif color == 'blue': # figure 1DE
-                    colors.append((0.05, 0.05, 0.5, np.abs(weight)**gamma))
-                elif color == 'brown': # figure 1DE
-                    colors.append((0.5, 0.05, 0.05, np.abs(weight)**gamma))
-                else: # geisler maps etc...
-                    colors.append(((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma))#weight*(1-weight)))# between red and blue
-                linewidths.append(linewidth) # *weight thinning byalpha...
-
-            # TODO : put circle in front
-            for x, y, theta, sf_0, weight in zip(X, Y, Theta, Sf_0, weights):
-                if color=='auto':
-                    if show_phase:
-                        #fc = cm.hsv(np.angle(weight), alpha=pedestal + (1. - pedestal)*weight**gamma)
-                        fc = cm.hsv(0., alpha=pedestal + (1. - pedestal)*weight**gamma) # HACK
+                    if not(show_phase):
+                        fc = cm.hsv(0, alpha=pedestal + (1. - pedestal)*weight**gamma)[0]
                     else:
-                        fc = cm.hsv((theta % np.pi)/np.pi, alpha=pedestal + (1. - pedestal)*weight**gamma)
+                        fc = cm.hsv((phase)/np.pi, alpha=pedestal + (1. - pedestal)*weight**gamma)[0]
                 elif color == 'black':
                     fc = (0, 0, 0, 1)# black
                 elif color == 'green': # figure 1DE
@@ -230,13 +206,15 @@ class SparseEdges:
                     fc = (0.5, 0.05, 0.05, np.abs(weight)**gamma)
                 else:
                     fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
-                # http://matplotlib.sourceforge.net/users/transforms_tutorial.html
-                circ = patches.Circle((x,y), self.pe.scale_circle*scale/sf_0, facecolor=fc, edgecolor='none')#, alpha=0.5*weight)
-                # (0.5, 0.5), 0.25, transform=ax.transAxes, facecolor='yellow', alpha=0.5)
-                a.add_patch(circ)
+                colors.append(fc)
+                linewidths.append(linewidth) # *weight thinning byalpha...
+#                 print fc
+                patch_circles.append(patches.Circle((x,y), self.pe.scale_circle*scale/sf_0, facecolor=fc, edgecolor='none'))
 
             line_segments = LineCollection(segments, linewidths=linewidths, colors=colors, linestyles='solid')
             a.add_collection(line_segments)
+            circles = PatchCollection(patch_circles)
+            a.add_collection(circles)
 
         if not(color=='auto'):# chevrons maps etc...
             plt.setp(a, xticks=[])
@@ -543,7 +521,7 @@ class SparseEdges:
                         colin_edgelist[:, ii_phi + i_phi +  self.pe.N_r * self.pe.N_phi] = colin_edgelist[:, ii_phi + i_phi]
                         colin_edgelist[0:2, ii_phi + i_phi +  self.pe.N_r * self.pe.N_phi] = self.N_X - colin_edgelist[0, ii_phi + i_phi], self.N_Y - colin_edgelist[1, ii_phi + i_phi]
                 # reference angle
-                colin_edgelist[:, -1] = [self.N_X /2, self.N_Y /2, 0, edge_scale, colin_edgelist[4,:].max() *1.2 ]
+                colin_edgelist[:, -1] = [self.N_X /2, self.N_Y /2, 0, edge_scale, colin_edgelist[4,:].max() *1.2, 0.]
                 return self.show_edges(colin_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
             except Exception, e:
                 log.error(' failed to generate colin_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
@@ -570,7 +548,7 @@ class SparseEdges:
                         # symmetric
                         cocir_edgelist[:, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = cocir_edgelist[:,  ii_theta + i_theta]
                         cocir_edgelist[0:2, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = self.N_X - cocir_edgelist[0,  ii_theta + i_theta], self.N_Y - cocir_edgelist[1, ii_theta + i_theta]
-                cocir_edgelist[:, -1] = [self.N_X /2, self.N_Y /2, 0, edge_scale, cocir_edgelist[4,:].max() *1.2 ]
+                cocir_edgelist[:, -1] = [self.N_X /2, self.N_Y /2, 0, edge_scale, cocir_edgelist[4,:].max() *1.2, 0.]
                 return self.show_edges(cocir_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
             except Exception, e:
                 log.error(' failed to generate cocir_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
@@ -621,8 +599,7 @@ class SparseEdges:
             rad_X, rad_Y = 1.* self.N_X/s_theta, 1.*self.N_Y/s_phi
             rad = min(rad_X, rad_Y) / 2.619
             if radius==None: radius = np.ones((self.pe.N_phi, self.pe.N_Dtheta))
-	
-            import matplotlib.pyplot as plt
+
             if fig==None:
                 fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
                 if a==None:
@@ -781,14 +758,14 @@ class SparseEdges:
             if not(os.path.isfile(txtname)) and not(os.path.isfile(txtname + '_lock')):
                 file(txtname + '_lock', 'w').close() # touching
                 log.info(' >> Doing check_independence')
-                out = self.check_independence(self.cohistedges(edgeslist, name_database, symmetry=False, display=None), name_database)
+                out = self.check_independence(self.cohistedges(edgeslist, name_database, symmetry=False, display=None), name_database, exp)
                 f = file(txtname, 'w')
                 f.write(out)
                 f.close()
-                out = self.check_independence(self.cohistedges(edgeslist, name_database, symmetry=True, display=None), name_database)
-                f = file(os.path.join(self.pe.figpath, exp + '_dependence_sym_' + name_database + note + '.txt'), 'w')
-                f.write(out)
-                f.close()
+#                 out = self.check_independence(self.cohistedges(edgeslist, name_database, symmetry=True, display=None), name_database, exp)
+#                 f = file(os.path.join(self.pe.figpath, exp + '_dependence_sym_' + name_database + note + '.txt'), 'w')
+#                 f.write(out)
+#                 f.close()
                 print out
                 try:
                     os.remove(txtname + '_lock')
@@ -856,9 +833,7 @@ class SparseEdges:
                         if self.do_whitening: image = self.im.whitening(image)
                         image_ = self.reconstruct(edgeslist[:, :, i_image])
 #                        print image.mean(), image.std(), image_.mean(), image_.std()
-                        X, Y = np.mgrid[-1:1:1j*self.N_X, -1:1:1j*self.N_Y]
-                        mask = (X**2 + Y**2) < 1.
-                        RMSE[i_image] =  ((image*mask-image_*mask)**2).sum()/((image*mask)**2).sum()
+                        RMSE[i_image] =  ((image*self.mask-image_*self.mask)**2).sum()/((image*self.mask)**2).sum()
     #                    print 'RMSE = ', RMSE[i_image]
                     np.save(matname + '_RMSE.npy', RMSE)
                     try:
@@ -926,14 +901,14 @@ class SparseEdges:
             from scipy.stats import entropy
             return entropy(v_hist_obs, v_hist, base=2)
 
-    def check_independence(self, v_hist, name_database, labels=['d', 'phi', 'theta', 'scale']):
+    def check_independence(self, v_hist, name_database, exp, labels=['d', 'phi', 'theta', 'scale']):
         v_hist /= v_hist.sum()
         fullset = [0, 1, 2, 3]
 #    from scipy.stats import entropy
 #    print KL(v_hist, v_hist),  entropy(v_hist.ravel(), v_hist.ravel())
         flat = np.ones_like(v_hist)
         flat /= flat.sum()
-        out = 'Checking dependence in ' + name_database + '\n'
+        out = 'Checking dependence in ' + name_database + '_' + exp + '\n'
         out += '-'*60 + '\n'
         out += 'Entropy: ' + str(self.KL(v_hist, flat)) + '\n'
         out += '-'*60 + '\n'
@@ -952,7 +927,7 @@ class SparseEdges:
                          [[0], [1], [2], [3]], # full independence
                          ]
         out += '-'*60 + '\n'
-        
+
         def marginal(v_hist, subset):
             """
             marginalize the distribution v_hist over the variables given in subset
