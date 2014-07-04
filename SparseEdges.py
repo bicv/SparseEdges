@@ -621,7 +621,8 @@ class SparseEdges:
             rad_X, rad_Y = 1.* self.N_X/s_theta, 1.*self.N_Y/s_phi
             rad = min(rad_X, rad_Y) / 2.619
             if radius==None: radius = np.ones((self.pe.N_phi, self.pe.N_Dtheta))
-
+	
+            import matplotlib.pyplot as plt
             if fig==None:
                 fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
                 if a==None:
@@ -813,7 +814,7 @@ class SparseEdges:
 #                        if self.do_whitening: image = self.im.whitening(image)
                         fig, a = self.show_edges(edgeslist[:, :, i_image], image=image*1.)
                         plt.savefig(figname)
-                        plt.close(fig)
+                        plt.close('all')
                         try:
                             os.remove(figname + '_lock')
                         except Exception, e:
@@ -832,7 +833,7 @@ class SparseEdges:
                         #if self.do_whitening: image_ = self.im.dewhitening(image_)
                         fig, a = self.show_edges(edgeslist[:, :, i_image], image=image_*1.)
                         plt.savefig(figname)
-                        plt.close(fig)
+                        plt.close('all')
                         try:
                             os.remove(figname + '_lock')
                         except Exception, e:
@@ -877,37 +878,37 @@ class SparseEdges:
 #            if not(os.path.isfile(figname)):
 #                fig, a = self.histedges_scale(edgeslist, display=True)
 #                plt.savefig(figname)
-#                plt.close(fig)
+#                plt.close('all')
 #
             figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note + self.pe.ext)
             if not(os.path.isfile(figname)):
                 fig, a = self.histedges_theta(edgeslist, display=True)
                 plt.savefig(figname)
-                plt.close(fig)
+                plt.close('all')
 
 #            figname = os.path.join(self.pe.figpath, exp + '_proba-cohist_scale_' + name_database + note + self.pe.ext)
 #            if not(os.path.isfile(figname)):
 #                fig, a = self.cohistedges(edgeslist, display='cohist_scale')
 #                plt.savefig(figname)
-#                plt.close(fig)
+#                plt.close('all')
 #
             figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note + self.pe.ext)
             if not(os.path.isfile(figname)):
                 fig, a = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
                 plt.savefig(figname)
-                plt.close(fig)
+                plt.close('all')
 
             figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_cocir_' + name_database + note + self.pe.ext)
             if not(os.path.isfile(figname)):
                 fig, a = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
                 plt.savefig(figname)
-                plt.close(fig)
+                plt.close('all')
 
             figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note + self.pe.ext)
             if not(os.path.isfile(figname)):
                 fig, a = self.cohistedges(edgeslist, display='chevrons')
                 plt.savefig(figname)
-                plt.close(fig)
+                plt.close('all')
 
             return imagelist, edgeslist
         else:
