@@ -719,7 +719,7 @@ class SparseEdges:
             return v_hist
 
 
-    def process(self, exp, note='', name_database='serre07_distractors', noise=0.):
+    def process(self, exp, name_database='serre07_distractors', note='', noise=0.):
         """
         The pipeline to go from one database to a list of edge lists
 
@@ -732,7 +732,6 @@ class SparseEdges:
         locked = False
         matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
         #while os.path.isfile(matname + '_images_lock'):
-        time.sleep(.1*np.random.rand())
         imagelist = self.im.get_imagelist(exp, name_database=name_database)
         locked = (imagelist=='locked')
 
@@ -743,6 +742,7 @@ class SparseEdges:
             except Exception, e:
                 log.info(' >> There is no edgeslist: %s ', e)
                 log.info('>> Doing the edge extraction')
+                time.sleep(.1*np.random.rand())
                 edgeslist = self.full_run(exp, name_database, imagelist, noise=noise)
                 if edgeslist == 'locked':
                     log.info('>> Edge extraction %s is locked', matname)
