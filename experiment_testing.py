@@ -21,7 +21,7 @@ from SparseEdges import SparseEdges
 from NeuroTools.parameters import ParameterSet
 pe = ParameterSet('default_param.py')
 
-def init_pe(pe, N_X=256, N_image = 40):
+def init_pe(pe, N_X=256, N_image=40):
     pe.datapath = '../AssoField/database/'
     pe.N_image = N_image
     pe.N_X = N_X
@@ -44,10 +44,10 @@ mp.process('testing_vanilla')
 mp.process('testing_noise', noise=pe.noise)
 mp.process('testing_vanilla', name_database='serre07_targets')
 
-mp = init_pe(pe, N_X=16)
-mp.process('testing_vanilla_016', N_image=40*16)
-mp = init_pe(pe, N_X=32)
-mp.process('testing_vanilla_032', N_image=40*8)
+mp = init_pe(pe, N_X=16, N_image=40*16)
+mp.process('testing_vanilla_016')
+mp = init_pe(pe, N_X=32, N_image=40*8)
+mp.process('testing_vanilla_032')
 mp = init_pe(pe, N_X=64, N_image=40*4)
 mp.process('testing_vanilla_064')
 mp = init_pe(pe, N_X=128, N_image=40*2)
