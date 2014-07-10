@@ -21,11 +21,13 @@ from SparseEdges import SparseEdges
 from NeuroTools.parameters import ParameterSet
 pe = ParameterSet('default_param.py')
 
-def init_pe(pe):
+def init_pe(pe, N_X=256, N_image = 40):
     pe.datapath = '../AssoField/database/'
-    pe.N_image = 100
-    pe.N_X = 256
-    pe.N = 1024
+    pe.N_image = N_image
+    pe.N_X = N_X
+#     pe.N = 1024
+    pe.N = 2048
+    print pe
     im = Image(pe)
     lg = LogGabor(im)
     mp = SparseEdges(lg)
@@ -41,6 +43,15 @@ mp = init_pe(pe)
 mp.process('testing_vanilla')
 mp.process('testing_noise', noise=pe.noise)
 mp.process('testing_vanilla', name_database='serre07_targets')
+
+mp = init_pe(pe, N_X=16)
+mp.process('testing_vanilla_016', N_image=40*16)
+mp = init_pe(pe, N_X=32)
+mp.process('testing_vanilla_032', N_image=40*8)
+mp = init_pe(pe, N_X=64, N_image=40*4)
+mp.process('testing_vanilla_064')
+mp = init_pe(pe, N_X=128, N_image=40*2)
+mp.process('testing_vanilla_128')
 
 # TODO : make an experiment showing that using scale does not bring much
 ##! comparing representation parameters
@@ -72,14 +83,12 @@ mp = init_pe(pe_)
 
 #! softy MP with a lower alpha value
 pe_ = ParameterSet('default_param.py')
-pe_.N = pe.N*2
 pe_.MP_alpha = .25
 mp = init_pe(pe_)
 mp.process('testing_smooth')
 
 #! hard MP with a full alpha value
 pe_ = ParameterSet('default_param.py')#
-pe_.N = pe.N/2
 pe_.MP_alpha = 1.
 mp = init_pe(pe_)
 mp.process('testing_hard')
@@ -88,7 +97,7 @@ mp.process('testing_hard')
 ##!-----------------------
 ## parameters from class EdgeFactory:
 pe_ = ParameterSet('default_param.py')#
-pe_.N = pe.N*4
+pe_.N = pe.N*2
 mp = init_pe(pe_)
 mp.process('testing_moreN')
 

@@ -51,9 +51,9 @@ class SparseEdges:
 
         self.N = self.pe.N
         self.do_whitening = self.pe.do_whitening
-        self.do_mask = self.pe.do_mask
+        self.MP_do_mask = self.pe.MP_do_mask
         self.MP_alpha = self.pe.MP_alpha
-        if self.do_mask:
+        if self.MP_do_mask:
             X, Y = np.mgrid[-1:1:1j*self.N_X, -1:1:1j*self.N_Y]
             self.mask = (X**2 + Y**2) < 1.
         for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
@@ -89,7 +89,7 @@ class SparseEdges:
                 FT_lg = self.lg.loggabor(0, 0, sf_0=sf_0, B_sf=self.B_sf,
                                     theta=theta, B_theta=self.B_theta)
                 C[:, :, i_theta, i_sf_0] = self.im.FTfilter(image, FT_lg, full=True)
-                if self.do_mask: C[:, :, i_theta, i_sf_0] *= self.mask
+                if self.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.mask
         return C
 
     def argmax(self, C):
@@ -120,7 +120,7 @@ class SparseEdges:
             for i_theta, theta in enumerate(self.theta_):
                 FT_lg = self.lg.loggabor(0, 0, sf_0=sf_0, B_sf=self.B_sf, theta=theta, B_theta=self.B_theta)
                 C[:, :, i_theta, i_sf_0] -= self.im.FTfilter(lg_star, FT_lg, full=True)
-                if self.do_mask: C[:, :, i_theta, i_sf_0] *= self.mask
+                if self.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.mask
         return C
 
     def reconstruct(self, edges):

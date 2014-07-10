@@ -40,6 +40,6 @@ clean_tmp:
 	rm frioul.*
 	rm log-edge-debug.log
 clean:
-	rm -fr figures/* *.pyc *.py~ build dist
+	rm -fr mat/* figures/* *.pyc *.py~ build dist
 
 .PHONY: clean
