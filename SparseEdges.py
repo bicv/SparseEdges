@@ -824,15 +824,18 @@ class SparseEdges:
                 log.info(' >> There is no RMSE: %s ', e)
                 if not(os.path.isfile(matname + '_RMSE.npy_lock')):
                     file(matname + '_RMSE.npy_lock', 'w').close()
+                    N = edgeslist.shape[1]
                     N_image = edgeslist.shape[2]
-                    RMSE = np.zeros((N_image,))
+                    RMSE = np.zeros((N_image, N))
                     for i_image in range(N_image):
                         filename, croparea = imagelist[i_image]
                         image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
                         if self.do_whitening: image = self.im.whitening(image)
-                        image_ = self.reconstruct(edgeslist[:, :, i_image])
+                        # TODO : make sthg less expensive
+                        for i_N in range(N):
+                            image_ = self.reconstruct(edgeslist[:, :N, i_image])
 #                        print image.mean(), image.std(), image_.mean(), image_.std()
-                        RMSE[i_image] =  ((image*self.mask-image_*self.mask)**2).sum()/((image*self.mask)**2).sum()
+                            RMSE[i_image, i_N] =  ((image*self.mask-image_*self.mask)**2).sum()/((image*self.mask)**2).sum()
     #                    print 'RMSE = ', RMSE[i_image]
                     np.save(matname + '_RMSE.npy', RMSE)
                     try:
@@ -884,7 +887,7 @@ class SparseEdges:
                 plt.savefig(figname)
                 plt.close('all')
 
-            return imagelist, edgeslist
+            return imagelist, edgeslist, RMSE
         else:
             return 'locked', 'locked edgeslist'
 
