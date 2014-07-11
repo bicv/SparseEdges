@@ -339,7 +339,7 @@ class SparseEdges:
             if a==None: a = fig.add_subplot(111, axisbg='w')
             a.bar(v_sf_0_edges_[:-1], v_hist)
             plt.setp(a, yticks=[])
-            plt.xlabel('SF_0')
+            plt.xlabel(r'SF_0')
             plt.ylabel('probability')
             return fig,a
         else:
