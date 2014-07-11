@@ -16,7 +16,7 @@
 # Matching Pursuit
 # TODO : use 1 ??
 'alpha' : .0, # exponent of the color envelope
-'MP_alpha' : 1., # ratio of inhibition in alpha-Matching Pursuit
+'MP_alpha' : .8, # ratio of inhibition in alpha-Matching Pursuit
 # 'N' : 512 # number of edges extracted
 'N' : 2**11,
 'do_whitening'  : True, # = self.pe.do_whitening
