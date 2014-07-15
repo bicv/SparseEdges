@@ -800,8 +800,8 @@ class SparseEdges:
                     try:
                         file(figname + '_lock', 'w').close()
                         log.info(' reconstructing figure %s ', figname)
-                        image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
-                        if self.do_whitening: image = self.im.whitening(image)
+#                         image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
+#                         if self.do_whitening: image = self.im.whitening(image)
                         image_ = self.reconstruct(edgeslist[:, :, i_image])
                         #if self.do_whitening: image_ = self.im.dewhitening(image_)
                         fig, a = self.show_edges(edgeslist[:, :, i_image], image=image_*1.)
@@ -826,8 +826,8 @@ class SparseEdges:
                     N_image = edgeslist.shape[2]
                     RMSE = np.ones((N_image, N))
                     for i_image in range(N_image):
-#                         filename, croparea = imagelist[i_image]
-#                         image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
+                        filename, croparea = imagelist[i_image]
+                        image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
 #                         if self.do_whitening: image = self.im.whitening(image)
 #                         # TODO : make sthg less expensive
 #                         for i_N in range(N):
@@ -835,6 +835,8 @@ class SparseEdges:
 # #                        print image.mean(), image.std(), image_.mean(), image_.std()
 #                             RMSE[i_image, i_N] =  ((image*self.im.mask-image_*self.im.mask)**2).sum()/((image*self.im.mask)**2).sum()
 #     #                    print 'RMSE = ', RMSE[i_image]
+                        image_W = self.im.whitening(image)
+                        RMSE_0 = (image_W**2).sum()
                         RMSE[i_image, 1:] = 1. - np.cumsum(edgeslist[4, :-1, i_image]**2) * (2 -  mp.pe.MP_alpha)/mp.pe.MP_alpha / RMSE_0
                     np.save(matname + '_RMSE.npy', RMSE)
                     try:
