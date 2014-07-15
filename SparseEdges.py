@@ -818,6 +818,7 @@ class SparseEdges:
                         log.error('Failed to make reconstruct image  %s , error : %s  ', figname, e)
 
             # 5- Computing RMSE to check the edge extraction process
+            RMSE = None
             try:
                 RMSE = np.load(matname + '_RMSE.npy')
             except Exception, e:

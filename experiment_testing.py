@@ -21,12 +21,11 @@ from SparseEdges import SparseEdges
 from NeuroTools.parameters import ParameterSet
 pe = ParameterSet('default_param.py')
 
-def init_pe(pe, N_X=256, N_image=40):
+def init_pe(pe, N_X=256, N_image=40, N=2048):
     pe.datapath = '../AssoField/database/'
     pe.N_image = N_image
     pe.N_X = N_X
-#     pe.N = 1024
-    pe.N = 2048
+    pe.N = N
     im = Image(pe)
     lg = LogGabor(im)
     mp = SparseEdges(lg)
@@ -43,15 +42,15 @@ mp.process('testing_vanilla')
 mp.process('testing_noise', noise=pe.noise)
 mp.process('testing_vanilla', name_database='serre07_targets')
 
-# for N_X in [16, 32, 64, 128]:
-mp = init_pe(pe, N_X=16, N_image=40*16)
-mp.process('testing_vanilla_016')
-mp = init_pe(pe, N_X=32, N_image=40*8)
-mp.process('testing_vanilla_032')
-mp = init_pe(pe, N_X=64, N_image=40*4)
-mp.process('testing_vanilla_064')
-mp = init_pe(pe, N_X=128, N_image=40*2)
-mp.process('testing_vanilla_128')
+for size, size_str in zip([16, 32, 64, 128, 256], ['_016', '_064', '_032', '_128', '']):
+    mp = init_pe(pe, N_X=size, N_image=40*256/size, N=2048*size**2/256**2)
+    mp.process('testing_vanilla' + size_str)
+# mp = init_pe(pe, N_X=32, N_image=40*8)
+# mp.process('testing_vanilla_032')
+# mp = init_pe(pe, N_X=64, N_image=40*4)
+# mp.process('testing_vanilla_064')
+# mp = init_pe(pe, N_X=128, N_image=40*2)
+# mp.process('testing_vanilla_128')
 
 pe = ParameterSet('default_param.py')
 for B_sf in np.logspace(-1., 1., 5, base=10, endpoint=True)*pe.B_sf:
