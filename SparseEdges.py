@@ -815,7 +815,7 @@ class SparseEdges:
                         log.error('Failed to make reconstruct image  %s , error : %s  ', figname, e)
 
             # 5- Computing RMSE to check the edge extraction process
-            RMSE = None
+            RMSE = np.ones((N_image, N))
             try:
                 RMSE = np.load(matname + '_RMSE.npy')
             except Exception, e:
@@ -824,7 +824,6 @@ class SparseEdges:
                     file(matname + '_RMSE.npy_lock', 'w').close()
                     N = edgeslist.shape[1]
                     N_image = edgeslist.shape[2]
-                    RMSE = np.ones((N_image, N))
                     for i_image in range(N_image):
                         filename, croparea = imagelist[i_image]
                         image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
@@ -847,7 +846,7 @@ class SparseEdges:
                     log.warn(' Some process is building the RMSE: %s_RMSE.npy', matname)
 
             if not(os.path.isfile(matname + '_RMSE.npy_lock')):
-                log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, RMSE.mean())
+                log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, RMSE[-1, :].mean())
 
 
             # 6- Plotting the histogram
