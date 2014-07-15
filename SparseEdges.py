@@ -823,7 +823,6 @@ class SparseEdges:
                 if not(os.path.isfile(matname + '_RMSE.npy_lock')):
                     file(matname + '_RMSE.npy_lock', 'w').close()
                     N = edgeslist.shape[1]
-                    N_image = edgeslist.shape[2]
                     RMSE = np.ones((N_image, N))
                     for i_image in range(N_image):
                         filename, croparea = imagelist[i_image]
@@ -890,7 +889,7 @@ class SparseEdges:
 
             return imagelist, edgeslist, RMSE
         else:
-            return 'locked', 'locked edgeslist'
+            return 'locked', 'locked edgeslist', ' locked RMSE '
 
     # some helper funtion to compare the databases
     def KL(self, v_hist, v_hist_obs):
