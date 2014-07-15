@@ -835,7 +835,7 @@ class SparseEdges:
 # #                        print image.mean(), image.std(), image_.mean(), image_.std()
 #                             RMSE[i_image, i_N] =  ((image*self.im.mask-image_*self.im.mask)**2).sum()/((image*self.im.mask)**2).sum()
 #     #                    print 'RMSE = ', RMSE[i_image]
-                        RMSE[i_image, 1:] = 1. - np.cumsum(edgeslist[4, :-1, i_image]**2) * (2 -  mp.pe.MP_alpha)/mp.pe.MP_alpha / RMSE_0
+                        RMSE[i_image, 1:] = 1. - np.cumsum(edgeslist[4, :-1, i_image]**2) * (2 -  self.pe.MP_alpha)/self.pe.MP_alpha / RMSE_0
                     np.save(matname + '_RMSE.npy', RMSE)
                     try:
                         os.remove(matname + '_RMSE.npy_lock')
