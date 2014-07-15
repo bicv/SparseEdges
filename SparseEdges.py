@@ -836,7 +836,7 @@ class SparseEdges:
 #     #                    print 'RMSE = ', RMSE[i_image]
                         image_W = self.im.whitening(image)
                         RMSE_0 = (image_W**2).sum()
-                        RMSE[i_image, 1:] = 1. - np.cumsum(edgeslist[4, :-1, i_image]**2) * (2 -  mp.pe.MP_alpha)/mp.pe.MP_alpha / RMSE_0
+                        RMSE[i_image, 1:] = 1. - np.cumsum(edgeslist[4, :-1, i_image]**2) * (2 -  self.pe.MP_alpha)/self.pe.MP_alpha / RMSE_0
                     np.save(matname + '_RMSE.npy', RMSE)
                     try:
                         os.remove(matname + '_RMSE.npy_lock')
