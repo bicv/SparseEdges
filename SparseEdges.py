@@ -33,8 +33,6 @@ class SparseEdges:
 
         """
         self.pe = lg.pe
-        self.MP_alpha = self.pe.MP_alpha
-
         self.lg = lg
         self.im = lg.im
         self.N_X = lg.N_X
@@ -51,11 +49,10 @@ class SparseEdges:
 
         self.N = self.pe.N
         self.do_whitening = self.pe.do_whitening
-        self.MP_do_mask = self.pe.MP_do_mask
-        self.MP_alpha = self.pe.MP_alpha
-        if self.MP_do_mask:
+        #self.MP_do_mask = self.pe.MP_do_mask
+        if True: #self.MP_do_mask:
             X, Y = np.mgrid[-1:1:1j*self.N_X, -1:1:1j*self.N_Y]
-            self.mask = (X**2 + Y**2) < 1.
+            self.MP_mask = (X**2 + Y**2) < .9
         for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
             if not(os.path.isdir(path)): os.mkdir(path)
 
@@ -71,15 +68,15 @@ class SparseEdges:
         for i_edge in range(self.N):
             # MATCHING
             ind_edge_star = self.argmax(C)
-            # recording
-            if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta_[ind_edge_star[2]],
                                          self.sf_0[ind_edge_star[3]],
-                                         self.MP_alpha * np.absolute(C[ind_edge_star]), np.angle(C[ind_edge_star])])
+                                         self.pe.MP_alpha * np.absolute(C[ind_edge_star]), np.angle(C[ind_edge_star])])
+            # recording
+            if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             # PURSUIT
             C = self.backprop(C, ind_edge_star)
-#            if verbose: print 'Residual activity : ',  C[ind_edge_star]
+#             if verbose: print 'Residual activity : ',  np.absolute(C[ind_edge_star])
         return edges, C
 #
     def init(self, image):
@@ -89,7 +86,7 @@ class SparseEdges:
                 FT_lg = self.lg.loggabor(0, 0, sf_0=sf_0, B_sf=self.B_sf,
                                     theta=theta, B_theta=self.B_theta)
                 C[:, :, i_theta, i_sf_0] = self.im.FTfilter(image, FT_lg, full=True)
-                if self.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.mask
+                if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
         return C
 
     def argmax(self, C):
@@ -109,18 +106,18 @@ class SparseEdges:
         Removes edge_star from the activity
 
         """
-        C_star = self.MP_alpha * C[ind_edge_star]
+        C_star = self.pe.MP_alpha * C[ind_edge_star]
         FT_lg_star = self.lg.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                       theta=self.theta_[ind_edge_star[2]], B_theta=self.B_theta,
                                       sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.B_sf,
                                       )
+        # image of the winning filter
         lg_star = self.im.invert(C_star*FT_lg_star, full=False)
-
         for i_sf_0, sf_0 in enumerate(self.sf_0):
             for i_theta, theta in enumerate(self.theta_):
                 FT_lg = self.lg.loggabor(0, 0, sf_0=sf_0, B_sf=self.B_sf, theta=theta, B_theta=self.B_theta)
                 C[:, :, i_theta, i_sf_0] -= self.im.FTfilter(lg_star, FT_lg, full=True)
-                if self.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.mask
+                if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
         return C
 
     def reconstruct(self, edges):
@@ -827,17 +824,18 @@ class SparseEdges:
                     file(matname + '_RMSE.npy_lock', 'w').close()
                     N = edgeslist.shape[1]
                     N_image = edgeslist.shape[2]
-                    RMSE = np.zeros((N_image, N))
+                    RMSE = np.ones((N_image, N))
                     for i_image in range(N_image):
-                        filename, croparea = imagelist[i_image]
-                        image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
-                        if self.do_whitening: image = self.im.whitening(image)
-                        # TODO : make sthg less expensive
-                        for i_N in range(N):
-                            image_ = self.reconstruct(edgeslist[:, :N, i_image])
-#                        print image.mean(), image.std(), image_.mean(), image_.std()
-                            RMSE[i_image, i_N] =  ((image*self.mask-image_*self.mask)**2).sum()/((image*self.mask)**2).sum()
-    #                    print 'RMSE = ', RMSE[i_image]
+#                         filename, croparea = imagelist[i_image]
+#                         image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
+#                         if self.do_whitening: image = self.im.whitening(image)
+#                         # TODO : make sthg less expensive
+#                         for i_N in range(N):
+#                             image_ = self.reconstruct(edgeslist[:, :i_N, i_image])
+# #                        print image.mean(), image.std(), image_.mean(), image_.std()
+#                             RMSE[i_image, i_N] =  ((image*self.im.mask-image_*self.im.mask)**2).sum()/((image*self.im.mask)**2).sum()
+#     #                    print 'RMSE = ', RMSE[i_image]
+                        RMSE[i_image, 1:] = 1. - np.cumsum(edgeslist[4, :-1, i_image]**2) * (2 -  mp.pe.MP_alpha)/mp.pe.MP_alpha / RMSE_0
                     np.save(matname + '_RMSE.npy', RMSE)
                     try:
                         os.remove(matname + '_RMSE.npy_lock')

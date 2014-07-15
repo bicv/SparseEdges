@@ -6,7 +6,7 @@
 # Image
 'N_X' : 256, # size of images
 'N_Y' : 256, # size of images
-'do_mask'  : False, # used in MAtching Pursuit self.pe.do_mask
+'do_mask'  : True, # used in MAtching Pursuit self.pe.do_mask
 # Log-Gabor
 #'base_levels' : 2.,
 'base_levels' : 1.618,
@@ -20,7 +20,7 @@
 # 'N' : 512 # number of edges extracted
 'N' : 2**11,
 'do_whitening'  : True, # = self.pe.do_whitening
-'MP_do_mask'  : True, # used in MAtching Pursuit self.pe.do_mask
+'MP_do_mask'  : False, # used in MAtching Pursuit self.pe.do_mask
 #do_real=False # do we consider log-gabors with a complex part?
 'figpath' : 'figures/',
 'edgefigpath' : 'figures/edges/',
