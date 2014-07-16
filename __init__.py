@@ -11,7 +11,7 @@ def init_pylab():
     if HAVE_PYLAB:
         import pylab
         # parameters for plots
-        fig_width_pt = 500.  # Get this from LaTeX using \showthe\columnwidth
+        fig_width_pt = 318.670  # Get this from LaTeX using \showthe\columnwidth
         inches_per_pt = 1.0/72.27               # Convert pt to inches
         fig_width = fig_width_pt*inches_per_pt  # width in inches
         fontsize = 8

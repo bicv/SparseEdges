@@ -42,21 +42,11 @@ mp.process('testing_vanilla')
 mp.process('testing_noise', noise=pe.noise)
 mp.process('testing_vanilla', name_database='serre07_targets')
 
-for size, size_str in zip([16, 32, 64, 128, 256], ['_016', '_064', '_032', '_128', '']):
-    mp = init_pe(pe, N_X=size, N_image=40*256/size, N=2048*size**2/256**2)
-    mp.process('testing_vanilla' + size_str)
-# mp = init_pe(pe, N_X=32, N_image=40*8)
-# mp.process('testing_vanilla_032')
-# mp = init_pe(pe, N_X=64, N_image=40*4)
-# mp.process('testing_vanilla_064')
-# mp = init_pe(pe, N_X=128, N_image=40*2)
-# mp.process('testing_vanilla_128')
-
 pe = ParameterSet('default_param.py')
-for B_sf in np.logspace(-1., 1., 5, base=10, endpoint=True)*pe.B_sf:
+for B_sf in np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_sf:
     pe.B_sf = B_sf
     mp = init_pe(pe)
-    mp.process('testing_B_sf_' + str(B_sf).replace('.', '__'))
+    mp.process('testing_B_sf_' + str(B_sf).replace('.', '_'))
 
 # TODO : make an experiment showing that using scale does not bring much
 ##! comparing representation parameters
