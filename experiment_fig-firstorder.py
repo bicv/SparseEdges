@@ -17,5 +17,4 @@ v_hist, v_theta_edges = mp.histedges_theta(edgeslist, display=False)
 
 z = np.linspace(.5/pe.n_theta, 1.-.5/pe.n_theta, pe.n_theta)
 mp.theta = np.interp(z, np.hstack((0, np.cumsum(v_hist))), v_theta_edges)
-
 mp.process('testing_vanilla_firstorder')

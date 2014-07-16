@@ -43,7 +43,7 @@ class SparseEdges:
         self.sf_0 = 1. / np.logspace(1, self.n_levels, self.n_levels, base=self.base_levels)
 
         self.n_theta = self.pe.n_theta
-        self.theta_ = np.linspace(0., np.pi, self.n_theta, endpoint=False)
+        self.theta = np.linspace(0., np.pi, self.n_theta, endpoint=False)
         self.B_theta = self.pe.B_theta
         self.B_sf = self.pe.B_sf
 
@@ -69,7 +69,7 @@ class SparseEdges:
             # MATCHING
             ind_edge_star = self.argmax(C)
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
-                                         self.theta_[ind_edge_star[2]],
+                                         self.theta[ind_edge_star[2]],
                                          self.sf_0[ind_edge_star[3]],
                                          self.pe.MP_alpha * np.absolute(C[ind_edge_star]), np.angle(C[ind_edge_star])])
             # recording
@@ -82,7 +82,7 @@ class SparseEdges:
     def init(self, image):
         C = np.empty((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
         for i_sf_0, sf_0 in enumerate(self.sf_0):
-            for i_theta, theta in enumerate(self.theta_):
+            for i_theta, theta in enumerate(self.theta):
                 FT_lg = self.lg.loggabor(0, 0, sf_0=sf_0, B_sf=self.B_sf,
                                     theta=theta, B_theta=self.B_theta)
                 C[:, :, i_theta, i_sf_0] = self.im.FTfilter(image, FT_lg, full=True)
@@ -108,13 +108,13 @@ class SparseEdges:
         """
         C_star = self.pe.MP_alpha * C[ind_edge_star]
         FT_lg_star = self.lg.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
-                                      theta=self.theta_[ind_edge_star[2]], B_theta=self.B_theta,
+                                      theta=self.theta[ind_edge_star[2]], B_theta=self.B_theta,
                                       sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.B_sf,
                                       )
         # image of the winning filter
         lg_star = self.im.invert(C_star*FT_lg_star, full=False)
         for i_sf_0, sf_0 in enumerate(self.sf_0):
-            for i_theta, theta in enumerate(self.theta_):
+            for i_theta, theta in enumerate(self.theta):
                 FT_lg = self.lg.loggabor(0, 0, sf_0=sf_0, B_sf=self.B_sf, theta=theta, B_theta=self.B_theta)
                 C[:, :, i_theta, i_sf_0] -= self.im.FTfilter(lg_star, FT_lg, full=True)
                 if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
