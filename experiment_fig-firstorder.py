@@ -6,6 +6,7 @@ from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 
 pe = ParameterSet('default_param.py')
+pe.datapath = '../AssoField/database/'
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
