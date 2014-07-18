@@ -265,6 +265,7 @@ class SparseEdges:
                             RMSE[i_N] =  ((image_*self.im.mask-image_rec*self.im.mask)**2).sum()
                         else:
                             RMSE[i_N] =  ((image_-image_rec)**2).sum()
+                    np.save(matname_RMSE, RMSE)
                     try:
                         os.remove(matname + '_lock')
                     except Exception, e:
