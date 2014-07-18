@@ -1,5 +1,4 @@
 
-import matplotlib.pyplot as plt
 import numpy as np
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
@@ -7,7 +6,8 @@ from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 
 # defining input image as Lena
-image = plt.imread('../AssoField/database/yelmo256.png')[:,:,0]#.flipud().fliplr()
+from pylab import imread
+image = imread('../AssoField/database/yelmo256.png')[:,:,0]#.flipud().fliplr()
 print image.mean(), image.std()
 
 pe = ParameterSet('default_param.py')
@@ -32,4 +32,3 @@ except:
     edges, C_res = mp.run_mp(image, verbose=True)
     np.save(matname, edges)    
     
-fig, a = mp.show_edges(edges, image=image)
