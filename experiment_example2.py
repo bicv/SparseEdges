@@ -14,10 +14,6 @@ print image.mean(), image.std()
 pe.datapath = '../AssoField/database/'
 pe.figsize_edges =12
 
-#pe.N = 32 # number of edges
-
-pe.N_X, pe.N_Y = image.shape
-print pe
 im = Image(pe)
 image = im.normalize(image, center=True)
 print image.mean(), image.std()
