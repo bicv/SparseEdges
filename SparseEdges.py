@@ -95,7 +95,8 @@ class SparseEdges:
         (x_pos, y_pos, theta, scale)  tuple
 
         >>> C = np.random.randn(10, 10, 5, 4)
-        >>> C[x_pos][y_pos][level][level] = C.max()
+        >>> x_pos, y_pos, theta, scale = mp.argmax(C)
+        >>> C[x_pos][y_pos][theta][scale] = C.max()
 
         """
         ind = np.absolute(C).argmax()
