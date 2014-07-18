@@ -63,9 +63,12 @@ class SparseEdges:
         """
         edges = np.zeros((6, self.N))
         image_ = image.copy()
+        residual = image.copy()
+        RMSE = np.ones(self.N)
         if self.do_whitening: image_ = self.im.whitening(image_)
         C = self.init(image_)
         for i_edge in range(self.N):
+            RMSE[i_edge] = np.sum((residual - image)**2)
             # MATCHING
             ind_edge_star = self.argmax(C)
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
@@ -75,9 +78,16 @@ class SparseEdges:
             # recording
             if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             # PURSUIT
+            FT_lg_star = self.lg.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
+                                          theta=self.theta[ind_edge_star[2]], B_theta=self.B_theta,
+                                          sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.B_sf,
+                                          )
+            # image of the winning filter
+            lg_star = self.im.invert(self.pe.MP_alpha * C[ind_edge_star] * FT_lg_star, full=False)
+            residual -= lg_star
             C = self.backprop(C, ind_edge_star)
 #             if verbose: print 'Residual activity : ',  np.absolute(C[ind_edge_star])
-        return edges, C
+        return edges, C, RMSE
 #
     def init(self, image):
         C = np.empty((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
@@ -236,6 +246,7 @@ class SparseEdges:
 #                 signal = do_edge(self, image, exp, name_database, filename, croparea)
 #                         def do_edge(self, image, exp, name_database, filename, croparea):
             matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
+            matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
             if not(os.path.isdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))):
                 os.mkdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))
             if not(os.path.isfile(matname)):
@@ -243,8 +254,9 @@ class SparseEdges:
                     file(matname + '_lock', 'w').close()
                     image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
                     if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
-                    edges, C = self.run_mp(image)
+                    edges, C, RMSE = self.run_mp(image)
                     np.save(matname, edges)
+                    np.save(matname_RMSE, RMSE)
                     try:
                         os.remove(matname + '_lock')
                     except Exception, e:
@@ -827,7 +839,9 @@ class SparseEdges:
                     RMSE = np.ones((N_image, N))
                     for i_image in range(N_image):
                         filename, croparea = imagelist[i_image]
-                        image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
+                        #image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
+                        matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
+                        RMSE[i_image, :] = np.load(matname_RMSE)
 #                         if self.do_whitening: image = self.im.whitening(image)
 #                         # TODO : make sthg less expensive
 #                         for i_N in range(N):
@@ -835,9 +849,9 @@ class SparseEdges:
 # #                        print image.mean(), image.std(), image_.mean(), image_.std()
 #                             RMSE[i_image, i_N] =  ((image*self.im.mask-image_*self.im.mask)**2).sum()/((image*self.im.mask)**2).sum()
 #     #                    print 'RMSE = ', RMSE[i_image]
-                        image_W = self.im.whitening(image)
-                        RMSE_0 = (image_W**2).sum()
-                        RMSE[i_image, 1:] = 1. - np.cumsum(edgeslist[4, :-1, i_image]**2) * (2 -  self.pe.MP_alpha)/self.pe.MP_alpha / RMSE_0
+#                         image_W = self.im.whitening(image)
+                        #RMSE_0 = (image_W**2).sum()
+#                         RMSE[i_image, 1:] = 1. - np.cumsum(edgeslist[4, :-1, i_image]**2) * (2 -  self.pe.MP_alpha)/self.pe.MP_alpha / RMSE_0
                     np.save(matname + '_RMSE.npy', RMSE)
                     try:
                         os.remove(matname + '_RMSE.npy_lock')

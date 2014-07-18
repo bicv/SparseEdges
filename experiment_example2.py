@@ -26,9 +26,11 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 
 matname = 'mat/example2.npy'
+matname_RMSE = 'mat/example2_RMSE.npy'
 try:
     edges = np.load(matname)
+    RMSE = np.load(matname_RMSE)
 except:
-    edges, C_res = mp.run_mp(image, verbose=True)
+    edges, C_res, RMSE = mp.run_mp(image, verbose=True)
     np.save(matname, edges)    
-    
+    np.save(matname_RMSE, RMSE)        
