@@ -13,7 +13,7 @@ mp = SparseEdges(lg)
 
 imageslist, edgeslist, RMSE = mp.process(exp='testing_vanilla', name_database='serre07_distractors')
 
-if not(imagelist=='locked'):
+if not(imageslist=='locked'):
     v_hist, v_theta_edges = mp.histedges_theta(edgeslist, display=False)
 
     z = np.linspace(.5/pe.n_theta, 1.-.5/pe.n_theta, pe.n_theta)
