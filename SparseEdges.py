@@ -845,13 +845,16 @@ class SparseEdges:
                 log.info(' >> There is no RMSE: %s ', e)
                 if not(os.path.isfile(matname + '_RMSE.npy_lock')):
                     file(matname + '_RMSE.npy_lock', 'w').close()
-                    N = edgeslist.shape[1]
-                    RMSE = np.ones((N_image, N))
-                    for i_image in range(N_image):
-                        filename, croparea = imagelist[i_image]
-                        matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
-                        RMSE[i_image, :] = np.load(matname_RMSE)
-                    np.save(matname + '_RMSE.npy', RMSE)
+                    try:
+                        N = edgeslist.shape[1]
+                        RMSE = np.ones((N_image, N))
+                        for i_image in range(N_image):
+                            filename, croparea = imagelist[i_image]
+                            matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
+                            RMSE[i_image, :] = np.load(matname_RMSE)
+                        np.save(matname + '_RMSE.npy', RMSE)
+                    except Exception, e:
+                        log.error('Failed to compute RMSE %s , error : %s ', matname_RMSE, e)
                     try:
                         os.remove(matname + '_RMSE.npy_lock')
                     except Exception, e:

@@ -4,10 +4,10 @@
 #'ncpus' : 16, # Cluster
 'ncpus' : 1, # on the cluster we can run many batches - no need for pp
 # Image
-# 'N_X' : 256, # size of images
-# 'N_Y' : 256, # size of images
-'N_X' : 64, # size of images
-'N_Y' : 64, # size of images
+'N_X' : 256, # size of images
+'N_Y' : 256, # size of images
+# 'N_X' : 64, # size of images
+# 'N_Y' : 64, # size of images
 'do_mask'  : True, # used in MAtching Pursuit self.pe.do_mask
 # Log-Gabor
 #'base_levels' : 2.,
@@ -19,8 +19,8 @@
 # TODO : use 1 ??
 'alpha' : .0, # exponent of the color envelope
 'MP_alpha' : .8, # ratio of inhibition in alpha-Matching Pursuit
-'N' : 32, # number of edges extracted
-# 'N' : 2**11,
+# 'N' : 32, # number of edges extracted
+'N' : 2**11,
 'do_whitening'  : True, # = self.pe.do_whitening
 'MP_do_mask'  : False, # used in MAtching Pursuit self.pe.do_mask
 #do_real=False # do we consider log-gabors with a complex part?
@@ -47,7 +47,8 @@
 'N_scale' : 5, #
 'loglevel_max': 7,
 'alpha' : .0, # exponent of the color envelope
-'N_image' : 4, #use all images in the folder 200, #None
+'N_image' : 100, #use all images in the folder 200, #None
+# 'N_image' : 4, #use all images in the folder 200, #None
 'noise' : 0.5, #
 'figsize_hist' : 3.41, # width of a column in inches
 'figsize_cohist' : 3.41, #
