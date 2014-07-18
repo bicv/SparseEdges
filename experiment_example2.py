@@ -4,14 +4,13 @@ from NeuroTools.parameters import ParameterSet
 from SLIP import Image
 from LogGabor import LogGabor
 from SparseEdges import SparseEdges
+pe = ParameterSet('default_param.py')
 
 # defining input image as Lena
 from pylab import imread
-#image = imread('../AssoField/database/yelmo256.png')[:,:,0]#.flipud().fliplr()
-image = imread('../AssoField/database/yelmo64.png')[:,:,0]#.flipud().fliplr()
+image = imread('../AssoField/database/yelmo' + str(pe.N_X) + '.png')[:,:,0]#.flipud().fliplr()
 print image.mean(), image.std()
 
-pe = ParameterSet('default_param.py')
 pe.datapath = '../AssoField/database/'
 pe.figsize_edges =12
 

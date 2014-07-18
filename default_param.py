@@ -6,8 +6,8 @@
 # Image
 # 'N_X' : 256, # size of images
 # 'N_Y' : 256, # size of images
-'N_X' : 32, # size of images
-'N_Y' : 32, # size of images
+'N_X' : 64, # size of images
+'N_Y' : 64, # size of images
 'do_mask'  : True, # used in MAtching Pursuit self.pe.do_mask
 # Log-Gabor
 #'base_levels' : 2.,

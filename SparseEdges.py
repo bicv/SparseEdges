@@ -68,7 +68,7 @@ class SparseEdges:
         if self.do_whitening: image_ = self.im.whitening(image_)
         C = self.init(image_)
         for i_edge in range(self.N):
-            RMSE[i_edge] = np.sum((residual - image)**2)
+            RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
             ind_edge_star = self.argmax(C)
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
