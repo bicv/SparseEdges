@@ -256,11 +256,12 @@ class SparseEdges:
                     edges, C = self.run_mp(image)
                     np.save(matname, edges)
                     # computing RMSE
+                    RMSE = np.ones(self.N)
                     image_ = image.copy()
-                    if self.do_whitening: image = self.im.whitening(image)
+                    if self.do_whitening: image_ = self.im.whitening(image_)
                     for i_N in range(N):
-                        image_ = self.reconstruct(edges[:, :i_N])
-                        RMSE[i_image, i_N] =  ((image*self.im.mask-image_*self.im.mask)**2).sum()#/((image*self.im.mask)**2).sum()
+                        image_rec = self.reconstruct(edges[:, :i_N])
+                        RMSE[i_N] =  ((image_*self.im.mask-image_rec*self.im.mask)**2).sum()#/((image*self.im.mask)**2).sum()
                     try:
                         os.remove(matname + '_lock')
                     except Exception, e:

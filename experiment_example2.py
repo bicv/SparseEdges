@@ -27,6 +27,13 @@ try:
     edges = np.load(matname)
     RMSE = np.load(matname_RMSE)
 except:
-    edges, C_res, RMSE = mp.run_mp(image, verbose=True)
+    edges, C_res = mp.run_mp(image, verbose=True)
+    RMSE = np.ones(mp.N)
+    image_ = image.copy()
+    if mp.do_whitening: image_ = mp.im.whitening(image_)
+    for i_N in range(mp.N):
+        image_rec = mp.reconstruct(edges[:, :i_N])
+        RMSE[i_N] =  ((image_*mp.im.mask-image_rec*mp.im.mask)**2).sum()#/((image*self.im.mask)**2).sum()
+
     np.save(matname, edges)    
     np.save(matname_RMSE, RMSE)        
