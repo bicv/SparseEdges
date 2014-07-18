@@ -1,4 +1,4 @@
-
+import __init__
 import numpy as np
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
@@ -7,7 +7,8 @@ from SparseEdges import SparseEdges
 
 # defining input image as Lena
 from pylab import imread
-image = imread('../AssoField/database/yelmo256.png')[:,:,0]#.flipud().fliplr()
+#image = imread('../AssoField/database/yelmo256.png')[:,:,0]#.flipud().fliplr()
+image = imread('../AssoField/database/yelmo64.png')[:,:,0]#.flipud().fliplr()
 print image.mean(), image.std()
 
 pe = ParameterSet('default_param.py')
