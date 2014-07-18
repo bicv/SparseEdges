@@ -860,21 +860,21 @@ class SparseEdges:
                     log.warn(' Some process is building the RMSE: %s_RMSE.npy', matname)
 
             if not(os.path.isfile(matname + '_RMSE.npy_lock')):
-                log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, RMSE[-1, :].mean())
+                log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[-1, :]/RMSE[0, :]).mean())
 
             # 6- Plotting the histogram
-
+            try:
 #            figname = os.path.join(self.pe.figpath, exp + '_proba-scale_' + name_database + note + self.pe.ext)
 #            if not(os.path.isfile(figname)):
 #                fig, a = self.histedges_scale(edgeslist, display=True)
 #                plt.savefig(figname)
 #                plt.close('all')
 #
-            figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note + self.pe.ext)
-            if not(os.path.isfile(figname)):
-                fig, a = self.histedges_theta(edgeslist, display=True)
-                plt.savefig(figname)
-                plt.close('all')
+                figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note + self.pe.ext)
+                if not(os.path.isfile(figname)):
+                    fig, a = self.histedges_theta(edgeslist, display=True)
+                    plt.savefig(figname)
+                    plt.close('all')
 
 #            figname = os.path.join(self.pe.figpath, exp + '_proba-cohist_scale_' + name_database + note + self.pe.ext)
 #            if not(os.path.isfile(figname)):
@@ -882,23 +882,25 @@ class SparseEdges:
 #                plt.savefig(figname)
 #                plt.close('all')
 #
-            figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note + self.pe.ext)
-            if not(os.path.isfile(figname)):
-                fig, a = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
-                plt.savefig(figname)
-                plt.close('all')
+                figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note + self.pe.ext)
+                if not(os.path.isfile(figname)):
+                    fig, a = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
+                    plt.savefig(figname)
+                    plt.close('all')
 
-            figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_cocir_' + name_database + note + self.pe.ext)
-            if not(os.path.isfile(figname)):
-                fig, a = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
-                plt.savefig(figname)
-                plt.close('all')
+                figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_cocir_' + name_database + note + self.pe.ext)
+                if not(os.path.isfile(figname)):
+                    fig, a = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
+                    plt.savefig(figname)
+                    plt.close('all')
 
-            figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note + self.pe.ext)
-            if not(os.path.isfile(figname)):
-                fig, a = self.cohistedges(edgeslist, display='chevrons')
-                plt.savefig(figname)
-                plt.close('all')
+                figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note + self.pe.ext)
+                if not(os.path.isfile(figname)):
+                    fig, a = self.cohistedges(edgeslist, display='chevrons')
+                    plt.savefig(figname)
+                    plt.close('all')
+            except Exception, e:
+                log.error('Failed to remove lock file %s_RMSE.npy_lock, error : %s ', matname, e)
 
             return imagelist, edgeslist, RMSE
         else:

@@ -21,7 +21,7 @@ from SparseEdges import SparseEdges
 from NeuroTools.parameters import ParameterSet
 pe = ParameterSet('default_param.py')
 
-def init_pe(pe, N_X=256, N_image=40, N=2048):
+def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
     pe.datapath = '../AssoField/database/'
     pe.N_image = N_image
     pe.N_X = N_X
@@ -47,6 +47,21 @@ for B_sf in np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_sf:
     pe.B_sf = B_sf
     mp = init_pe(pe)
     mp.process('testing_B_sf_' + str(B_sf).replace('.', '_'))
+
+for B_theta in np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_theta:
+    pe.B_theta = B_theta
+    mp = init_pe(pe)
+    mp.process('testing_B_theta_' + str(B_theta).replace('.', '_'))
+
+for n_theta in [2, 3, 5, 8, 13, 21, 34]:
+    pe.n_theta = n_theta
+    mp = init_pe(pe)
+    mp.process('testing_n_theta_' + str(n_theta).replace('.', '_'))
+
+for base_levels in np.logspace(.25, 1.25, 15, base=2, endpoint=True):
+    pe.base_levels = base_levels
+    mp = init_pe(pe)
+    mp.process('testing_base_levels_' + str(base_levels).replace('.', '_'))
 
 # TODO : make an experiment showing that using scale does not bring much
 ##! comparing representation parameters

@@ -33,7 +33,7 @@ except:
     if mp.do_whitening: image_ = mp.im.whitening(image_)
     for i_N in range(mp.N):
         image_rec = mp.reconstruct(edges[:, :i_N])
-        RMSE[i_N] =  ((image_*mp.im.mask-image_rec*mp.im.mask)**2).sum()#/((image*self.im.mask)**2).sum()
+        RMSE[i_N] =  ((image_-image_rec)**2).sum()
 
     np.save(matname, edges)    
     np.save(matname_RMSE, RMSE)        
