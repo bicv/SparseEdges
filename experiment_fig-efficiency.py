@@ -1,4 +1,5 @@
 import __init__
+import numpy as np
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
 from LogGabor import LogGabor
