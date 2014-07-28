@@ -28,7 +28,7 @@
 'edgefigpath' : 'figures/edges/',
 'matpath' : 'mat/',
 'edgematpath' : 'mat/edges/',
-'datapath' : 'database/',
+'datapath' : '../AssoField/database/',
 'ext' : '.pdf',
 'scale' : .2,
 'scale_circle' : 0.08, # relativesize of segments and pivot
@@ -37,7 +37,7 @@
 'line_width_chevrons': .75,
 'edge_scale_chevrons': 180.,
 'figsize_edges' : 6,
-# EdgeFactory PARAMETERS
+# parameters for computing the histograms
 'd_width' : 45., # Geisler 1.23 deg (full image = 45deg)
 'd_min' : .25, # Geisler 1.23 deg (full image = 45deg)
 'd_max' : 2., # Geisler 1.23 deg (full image = 45deg)

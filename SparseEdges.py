@@ -49,6 +49,9 @@ class SparseEdges:
 
         self.N = self.pe.N
         self.do_whitening = self.pe.do_whitening
+
+        self.oc = (self.N_X * self.N_Y * self.n_theta * (1 - self.base_levels**-2)**-1) / self.N
+
         #self.MP_do_mask = self.pe.MP_do_mask
         if True: #self.MP_do_mask:
             X, Y = np.mgrid[-1:1:1j*self.N_X, -1:1:1j*self.N_Y]
@@ -838,7 +841,6 @@ class SparseEdges:
                         log.error('Failed to make reconstruct image  %s , error : %s  ', figname, e)
 
             # 5- Computing RMSE to check the edge extraction process
-            RMSE = np.ones(1, )
             try:
                 RMSE = np.load(matname + '_RMSE.npy')
             except Exception, e:
@@ -862,11 +864,10 @@ class SparseEdges:
                 else:
                     log.warn(' Some process is building the RMSE: %s_RMSE.npy', matname)
 
-            if not(os.path.isfile(matname + '_RMSE.npy_lock')):
-                try:
-                    log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[-1, :]/RMSE[0, :]).mean())
-                except Exception, e:
-                        log.error('Failed to display RMSE')
+            try:
+                log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
+            except Exception, e:
+                    log.error('Failed to display RMSE')
             # 6- Plotting the histogram
             try:
 #            figname = os.path.join(self.pe.figpath, exp + '_proba-scale_' + name_database + note + self.pe.ext)
@@ -910,6 +911,73 @@ class SparseEdges:
             return imagelist, edgeslist, RMSE
         else:
             return 'locked', 'locked edgeslist', ' locked RMSE '
+
+    def plot(self, experiments, databases, labels, color=[1., 0., 0.]):
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import matplotlib
+
+        # parameters for plots
+        fig_width_pt = 318.670  # Get this from LaTeX using \showthe\columnwidth
+        inches_per_pt = 1.0/72.27               # Convert pt to inches
+        fig_width = fig_width_pt*inches_per_pt  # width in inches
+        fontsize = 8
+        # pe.edge_scale_chevrons, line_width = 64., .75
+        params = {'text.usetex': True,
+        #          'mathtext.fontset': 'stix', #http://matplotlib.sourceforge.net/users/mathtext.html
+                  'interpolation':'nearest',
+                  #'axes.labelsize': fontsize,
+                  #'text.fontsize': fontsize,
+                  #'legend.fontsize': fontsize,
+                  'figure.subplot.bottom': 0.15,
+                  'figure.subplot.top': 0.97,
+                  'figure.subplot.left': 0.17,
+                  'ytick.labelsize': fontsize,
+                  'xtick.labelsize': fontsize,
+                  'savefig.dpi': 100,
+                }
+        matplotlib.rcParams.update(params)
+        matplotlib.rcParams.update({'font.size': 12, 'font.family': 'serif'})
+
+        fig = plt.figure(figsize=(fig_width, fig_width/1.618))
+        # main axis
+        ax = fig.add_subplot(111, axisbg='w')
+        # this is another inset axes over the main axes
+        inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
+        #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
+        CCycle = np.array(color)[np.newaxis, :] * np.linspace(0, 1, len(experiments))[:, np.newaxis]
+        ax.set_color_cycle(CCycle)
+        inset.set_color_cycle(CCycle)
+
+        for experiment, name_database, label in zip(experiments, databases, labels):
+            try:
+                imagelist, edgeslist, RMSE = self.process(exp=experiment, name_database=name_database)
+                RMSE /= RMSE[:, 0][:, np.newaxis]
+                N = RMSE.shape[1]
+                l0_axis = np.linspace(0, 1./self.oc, N)
+                ax.errorbar(l0_axis, RMSE.mean(axis=0),
+                            yerr=RMSE.std(axis=0), errorevery=RMSE.shape[1]/8)
+
+                inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
+                           yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=RMSE.shape[1]/8)
+
+            except Exception, e:
+                log.error('Failed to plot experiment %s with error : %s ', experiment, e)
+
+        ax.set_xlabel(r'$\ell_0$-norm')
+        ax.set_ylabel(r'Squared error')
+        ax.grid(b=False, which="both")
+        ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+
+        #plt.setp(inset, xticks=[], yticks=[])
+        inset.set_xscale('log')
+        inset.set_yscale('log')
+        inset.axis('tight')
+        inset.set_xlabel(r'$\ell_0$-norm')
+        inset.set_ylabel(r'Coefficient')
+        inset.grid(b=False, which="both")
+        inset.legend(loc='lower left', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+        return fig, ax, inset
 
     # some helper funtion to compare the databases
     def KL(self, v_hist, v_hist_obs):
