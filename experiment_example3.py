@@ -11,7 +11,6 @@ from pylab import imread
 image = imread('../AssoField/database/yelmo' + str(pe.N_X) + '.png')[:,:,0]#.flipud().fliplr()
 print image.mean(), image.std()
 
-pe.datapath = '../AssoField/database/'
 pe.figsize_edges = 12
 
 im = Image(pe)
