@@ -5,7 +5,7 @@ from SLIP import Image
 from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 
-
+pe = ParameterSet('default_param.py')
 def init_pe(pe):
     im = Image(pe)
     lg = LogGabor(im)
