@@ -863,8 +863,10 @@ class SparseEdges:
                     log.warn(' Some process is building the RMSE: %s_RMSE.npy', matname)
 
             if not(os.path.isfile(matname + '_RMSE.npy_lock')):
-                log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[-1, :]/RMSE[0, :]).mean())
-
+                try:
+                    log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[-1, :]/RMSE[0, :]).mean())
+                except Exception, e:
+                        log.error('Failed to display RMSE')
             # 6- Plotting the histogram
             try:
 #            figname = os.path.join(self.pe.figpath, exp + '_proba-scale_' + name_database + note + self.pe.ext)

@@ -12,7 +12,7 @@ image = imread('../AssoField/database/yelmo' + str(pe.N_X) + '.png')[:,:,0]#.fli
 print image.mean(), image.std()
 
 pe.datapath = '../AssoField/database/'
-pe.figsize_edges =12
+pe.figsize_edges = 12
 
 im = Image(pe)
 image = im.normalize(image, center=True)
