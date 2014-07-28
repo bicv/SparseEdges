@@ -4,7 +4,7 @@ from NeuroTools.parameters import ParameterSet
 from SLIP import Image
 from LogGabor import LogGabor
 from SparseEdges import SparseEdges
-
+import sys
 pe = ParameterSet('default_param.py')
 def init_pe(pe):
     im = Image(pe)
@@ -12,7 +12,11 @@ def init_pe(pe):
     mp = SparseEdges(lg)
     return mp
 
-figpath = '../../BICV-book/BICV_INT/BICV-sparse/figures/'
+try:
+    figpath = sys.argv[1]
+except:
+    figpath = None
+
 experiments = []
 v_B_sf = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_sf
 for B_sf in v_B_sf:
