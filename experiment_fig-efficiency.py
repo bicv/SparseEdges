@@ -16,7 +16,7 @@ try:
     figpath = sys.argv[1]
 except:
     figpath = None
-
+    
 experiments = []
 v_B_sf = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_sf
 for B_sf in v_B_sf:
