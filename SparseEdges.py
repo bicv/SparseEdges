@@ -945,23 +945,23 @@ class SparseEdges:
         fig_width_pt = 318.670  # Get this from LaTeX using \showthe\columnwidth
         inches_per_pt = 1.0/72.27               # Convert pt to inches
         fig_width = fig_width_pt*inches_per_pt  # width in inches
-        fontsize = 8
-        # pe.edge_scale_chevrons, line_width = 64., .75
-        params = {'text.usetex': True,
-        #          'mathtext.fontset': 'stix', #http://matplotlib.sourceforge.net/users/mathtext.html
-                  'interpolation':'nearest',
-                  #'axes.labelsize': fontsize,
-                  #'text.fontsize': fontsize,
-                  #'legend.fontsize': fontsize,
-                  'figure.subplot.bottom': 0.15,
-                  'figure.subplot.top': 0.97,
-                  'figure.subplot.left': 0.17,
-                  'ytick.labelsize': fontsize,
-                  'xtick.labelsize': fontsize,
-                  'savefig.dpi': 100,
-                }
-        matplotlib.rcParams.update(params)
-        matplotlib.rcParams.update({'font.size': 12, 'font.family': 'serif'})
+#         fontsize = 8
+#         # pe.edge_scale_chevrons, line_width = 64., .75
+#         params = {'text.usetex': True,
+#         #          'mathtext.fontset': 'stix', #http://matplotlib.sourceforge.net/users/mathtext.html
+#                   'interpolation':'nearest',
+#                   #'axes.labelsize': fontsize,
+#                   #'text.fontsize': fontsize,
+#                   #'legend.fontsize': fontsize,
+#                   'figure.subplot.bottom': 0.15,
+#                   'figure.subplot.top': 0.97,
+#                   'figure.subplot.left': 0.17,
+#                   'ytick.labelsize': fontsize,
+#                   'xtick.labelsize': fontsize,
+#                   'savefig.dpi': 100,
+#                 }
+#         matplotlib.rcParams.update(params)
+        #matplotlib.rcParams.update({'font.size': 12, 'font.family': 'serif'})
 
         fig = plt.figure(figsize=(fig_width, fig_width/1.618))
         # main axis

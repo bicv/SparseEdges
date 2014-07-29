@@ -1,4 +1,4 @@
-default: pypi_docs
+default: index.html
 NAME = SparseEdges
 
 edit:
@@ -18,8 +18,9 @@ pypi_push:
 pypi_upload:
 	python setup.py sdist upload
 
-pypi_docs:
+pypi_docs: index.html
 	runipy $(NAME).ipynb  --html  index.html
+	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to latex --post PDF $<
 	zip web.zip index.html
 	open http://pypi.python.org/pypi?action=pkg_edit&name=$(NAME)
 
@@ -27,8 +28,9 @@ todo:
 	grep -R * (^|#)[ ]*(TODO|FIXME|XXX|HINT|TIP)( |:)([^#]*)
 
 # macros for tests
-%.html: %.ipynb
-	runipy $< --html $@
+index.html: $(NAME).ipynb
+	runipy $(NAME).ipynb -o
+	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to html index.html
 
 %.pdf: %.ipynb
 	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to latex --post PDF $<

@@ -6,7 +6,10 @@ from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 import sys
 pe = ParameterSet('default_param.py')
-def init_pe(pe):
+def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
+    pe.N_image = N_image
+    pe.N_X = N_X
+    pe.N = N
     im = Image(pe)
     lg = LogGabor(im)
     mp = SparseEdges(lg)
@@ -52,7 +55,7 @@ v_n_theta = [2, 3, 5, 8, 13, 21, 34]
 for n_theta in v_n_theta:
     pe = ParameterSet('default_param.py')
     pe.n_theta = n_theta
-    mp = init_pe(pe)
+    mp = init_pe(pe, N_image=10)
     exp = 'testing_n_theta_' + str(n_theta).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -63,11 +66,11 @@ fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels
 if not(figpath==None): fig.savefig(figpath + 'efficiency_C.pdf')
     
 experiments = []
-v_base_levels = np.logspace(.25, 1.25, 15, base=2, endpoint=True)
+v_base_levels = np.logspace(.25, 1.25, 5, base=2, endpoint=True)
 for base_levels in v_base_levels:
     pe = ParameterSet('default_param.py')
     pe.base_levels = base_levels
-    mp = init_pe(pe)
+    mp = init_pe(pe, N_image=10)
     exp = 'testing_base_levels_' + str(base_levels).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
