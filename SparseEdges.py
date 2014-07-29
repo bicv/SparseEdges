@@ -878,23 +878,15 @@ class SparseEdges:
                 RMSE = np.load(matname + '_RMSE.npy')
             except Exception, e:
                 log.info(' >> There is no RMSE: %s ', e)
-                if not(os.path.isfile(matname + '_RMSE.npy_lock')):
-                    file(matname + '_RMSE.npy_lock', 'w').close()
-                    try:
-                        RMSE = self.full_RMSE(exp, name_database, imagelist, noise=noise)
-                        if RMSE == 'locked':
-                            log.info('>> RMSE extraction %s is locked', matname)
-                            locked = True
-                        else:
-                            np.save(matname + '_RMSE.npy', RMSE)
-                    except Exception, e:
-                        log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
-                    try:
-                        os.remove(matname + '_RMSE.npy_lock')
-                    except Exception, e:
-                        log.error('Failed to remove lock file %s_RMSE.npy_lock, error : %s ', matname, e)
-                else:
-                    log.warn(' Some process is building the RMSE: %s_RMSE.npy', matname)
+                try:
+                    RMSE = self.full_RMSE(exp, name_database, imagelist, noise=noise)
+                    if RMSE == 'locked':
+                        log.info('>> RMSE extraction %s is locked', matname)
+                        locked = True
+                    else:
+                        np.save(matname + '_RMSE.npy', RMSE)
+                except Exception, e:
+                    log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
 
             try:
                 log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
