@@ -241,14 +241,12 @@ class SparseEdges:
         runs the edge extraction for a list of images
 
         """
-        N_image = len(imagelist)
 
-        global_lock = False # switch to True when we resume a batch and detect that one edgelist is not finished in another process
+        global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
         for filename, croparea in imagelist:
 #                 signal = do_edge(self, image, exp, name_database, filename, croparea)
 #                         def do_edge(self, image, exp, name_database, filename, croparea):
             matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
-            matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
             if not(os.path.isdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))):
                 os.mkdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))
             if not(os.path.isfile(matname)):
@@ -258,6 +256,40 @@ class SparseEdges:
                     if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
                     edges, C = self.run_mp(image)
                     np.save(matname, edges)
+                    try:
+                        os.remove(matname + '_lock')
+                    except Exception, e:
+                        log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
+                else:
+                    log.info('The edge extraction at step %s is locked', matname)
+                    global_lock = True
+        if global_lock is True:
+            log.error(' some locked edge extractions ')
+            return 'locked'
+        else:
+            try:
+                N_image = len(imagelist)
+                edgeslist = np.zeros((6, self.N, N_image))
+                i_image = 0
+                for filename, croparea in imagelist:
+                    matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
+                    edgeslist[:, :, i_image] = np.load(matname)
+                    i_image += 1
+                return edgeslist
+            except Exception, e:
+                log.error(' some locked edge extractions %s, error ', e)
+                return 'locked'
+
+    def full_RMSE(self, exp, name_database, imagelist, noise):
+        global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
+        for filename, croparea in imagelist:
+            matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
+            if not(os.path.isfile(matname)):
+                if not(os.path.isfile(matname + '_lock')):
+                    file(matname + '_lock', 'w').close()
+                    image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
+                    if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
+                    edges = np.load(os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy'))
                     # computing RMSE
                     RMSE = np.ones(self.N)
                     image_ = image.copy()
@@ -268,7 +300,7 @@ class SparseEdges:
                             RMSE[i_N] =  ((image_*self.im.mask-image_rec*self.im.mask)**2).sum()
                         else:
                             RMSE[i_N] =  ((image_-image_rec)**2).sum()
-                    np.save(matname_RMSE, RMSE)
+                    np.save(matname, RMSE)
                     try:
                         os.remove(matname + '_lock')
                     except Exception, e:
@@ -276,23 +308,23 @@ class SparseEdges:
                 else:
                     log.info('The edge extraction at step %s is locked', matname)
                     global_lock = True
-
         if global_lock is True:
-            log.error(' some locked edge extractions ')
+            log.error(' some locked RMSE extractions ')
             return 'locked'
         else:
             try:
+                N_image = len(imagelist)
+                N = edgeslist.shape[1]
+                RMSE = np.ones((N_image, N))
+                for i_image in range(N_image):
+                    filename, croparea = imagelist[i_image]
+                    matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
+                    RMSE[i_image, :] = np.load(matname_RMSE)
                 edgeslist = np.zeros((6, self.N, N_image))
-                i_image = 0
-                for filename, croparea in imagelist:
-                    matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
-                    edgeslist[:, :, i_image] = np.load(matname)
-                    i_image += 1
-                return edgeslist
-            except:
-                log.error(' some locked edge extractions ')
+                return RMSE
+            except Exception, e:
+                log.error(' some locked RMSE extractions %s, error ', e)
                 return 'locked'
-
 
     def init_edges(self):
         # configuring histograms
@@ -772,7 +804,8 @@ class SparseEdges:
                     locked = True
                 else:
                     np.save(matname + '_edges.npy', edgeslist)
-        else: return 'locked', 'locked imagelist'
+        else:
+            return 'locked imagelist', 'not done', 'not done'
 
         # 3- Doing the independence check for this set
         if not(locked):
@@ -848,15 +881,14 @@ class SparseEdges:
                 if not(os.path.isfile(matname + '_RMSE.npy_lock')):
                     file(matname + '_RMSE.npy_lock', 'w').close()
                     try:
-                        N = edgeslist.shape[1]
-                        RMSE = np.ones((N_image, N))
-                        for i_image in range(N_image):
-                            filename, croparea = imagelist[i_image]
-                            matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
-                            RMSE[i_image, :] = np.load(matname_RMSE)
-                        np.save(matname + '_RMSE.npy', RMSE)
+                        RMSE = self.full_RMSE(exp, name_database, imagelist, noise=noise)
+                        if RMSE == 'locked':
+                            log.info('>> RMSE extraction %s is locked', matname)
+                            locked = True
+                        else:
+                            np.save(matname + '_RMSE.npy', RMSE)
                     except Exception, e:
-                        log.error('Failed to compute RMSE %s , error : %s ', matname_RMSE, e)
+                        log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
                     try:
                         os.remove(matname + '_RMSE.npy_lock')
                     except Exception, e:
@@ -867,7 +899,7 @@ class SparseEdges:
             try:
                 log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
             except Exception, e:
-                    log.error('Failed to display RMSE')
+                log.error('Failed to display RMSE %s ', e)
             # 6- Plotting the histogram
             try:
 #            figname = os.path.join(self.pe.figpath, exp + '_proba-scale_' + name_database + note + self.pe.ext)
