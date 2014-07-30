@@ -6,8 +6,9 @@ from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 pe = ParameterSet('default_param.py')
 pe.N = 210
+pe.B_sf = 1.5
 #pe.do_whitening = False
-pe.base_levels = 4
+#pe.base_levels = 4
 
 
 # defining input image as Lena
