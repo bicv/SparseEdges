@@ -3,7 +3,7 @@ import numpy as np
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
 from LogGabor import LogGabor
-from SparseEdges import SparseEdges
+from SparseEdges import SparseEdges, plot
 import sys
 pe = ParameterSet('default_param.py')
 
