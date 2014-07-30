@@ -15,6 +15,8 @@ def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
     mp = SparseEdges(lg)
     return mp
 
+mps = []
 for size, size_str in zip([16, 32, 64, 128, 256], ['_016', '_032', '_064',  '_128', '']):
     mp = init_pe(pe, N_X=size, N_image=pe.N_image*pe.N_X/size, N=pe.N*size**2/pe.N_X**2)
     mp.process('testing_vanilla' + size_str)
+    mps.append(mp)

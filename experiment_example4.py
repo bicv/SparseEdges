@@ -7,6 +7,8 @@ from SparseEdges import SparseEdges
 pe = ParameterSet('default_param.py')
 pe.N = 210
 #pe.do_whitening = False
+pe.base_levels = 4
+
 
 # defining input image as Lena
 from pylab import imread
@@ -19,6 +21,7 @@ print image.mean(), image.std()
 
 lg = LogGabor(im)
 mp = SparseEdges(lg)
+print mp.n_levels, mp.sf_0
 
 matname = 'mat/example4.npy'
 try:
