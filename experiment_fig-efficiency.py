@@ -35,7 +35,7 @@ for B_sf in v_B_sf:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(B_sf) for B_sf in v_B_sf]
-fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels)    
+fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
 if not(figpath==''): fig.savefig(figpath + 'efficiency_A.pdf')
     
 experiments = []
@@ -50,7 +50,7 @@ for B_theta in v_B_theta:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(B_theta) for B_theta in v_B_theta]
-fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels)    
+fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
 if not(figpath==''): fig.savefig(figpath + 'efficiency_B.pdf')
     
 experiments = []
@@ -65,7 +65,7 @@ for n_theta in v_n_theta:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(n_theta) for n_theta in v_n_theta]
-fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels)    
+fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
 if not(figpath==''): fig.savefig(figpath + 'efficiency_C.pdf')
     
 experiments = []
@@ -81,5 +81,5 @@ for base_levels in v_base_levels:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(base_levels) for base_levels in v_base_levels]
-fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels)    
+fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
 if not(figpath==''): fig.savefig(figpath + 'efficiency_D.pdf')
