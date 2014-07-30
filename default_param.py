@@ -3,6 +3,7 @@
 # 'ncpus' : 'autodetect', # for a SMP machine
 #'ncpus' : 16, # Cluster
 'ncpus' : 1, # on the cluster we can run many batches - no need for pp
+'seed' : None, # seed used in the number generator for collecting images etc...
 # Image
 'N_X' : 256, # size of images
 'N_Y' : 256, # size of images
@@ -13,8 +14,8 @@
 #'base_levels' : 2.,
 'base_levels' : 1.618,
 'n_theta' : 24, # number of (unoriented) angles between 0. radians (included) and np.pi radians (excluded)
-'B_sf' : 1.5, # 1.5 in Geisler
-'B_theta' : 3.14159/8.,
+'B_sf' : 3., # 1.5 in Geisler
+'B_theta' : 1.,
 # Matching Pursuit
 # TODO : use 1 ??
 'alpha' : .0, # exponent of the color envelope
