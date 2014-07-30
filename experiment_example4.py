@@ -6,6 +6,7 @@ from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 pe = ParameterSet('default_param.py')
 pe.N = 210
+pe.do_whitening = False
 
 # defining input image as Lena
 from pylab import imread
@@ -13,7 +14,7 @@ image = imread('database/Geisler01Fig7A.png').mean(axis=-1)
 print image.mean(), image.std()
 
 im = Image(pe)
-image = im.normalize(image, center=True)
+image = im.normalize(image, center=False)
 print image.mean(), image.std()
 
 lg = LogGabor(im)
