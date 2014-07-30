@@ -293,9 +293,10 @@ class SparseEdges:
                     # computing RMSE
                     RMSE = np.ones(self.N)
                     image_ = image.copy()
+                    image_rec = np.zeros_like(image_)
                     if self.do_whitening: image_ = self.im.whitening(image_)
                     for i_N in range(self.N):
-                        image_rec = self.reconstruct(edges[:, :i_N])
+                        image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis])
                         if self.pe.do_mask:
                             RMSE[i_N] =  ((image_*self.im.mask-image_rec*self.im.mask)**2).sum()
                         else:
