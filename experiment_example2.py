@@ -8,7 +8,7 @@ pe = ParameterSet('default_param.py')
 
 # defining input image as Lena
 from pylab import imread
-#image = imread('../AssoField/database/yelmo' + str(pe.N_X) + '.png')[:,:,0]#.flipud().fliplr()
+#image = imread('../AssoField/database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
 image = imread('../AssoField/database/serre07_targets/B_N107001.jpg').mean(axis=-1)
 #print image.mean(), image.std()
 

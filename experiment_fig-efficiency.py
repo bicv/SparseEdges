@@ -9,6 +9,7 @@ pe = ParameterSet('default_param.py')
 
 
 def init_pe(pe, N_X=128, N_image=10, N=512):
+    pe.seed = 123456
     pe.N_image = N_image
     pe.N_X = N_X
     pe.N = N
@@ -53,7 +54,7 @@ fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels
 if not(figpath==''): fig.savefig(figpath + 'efficiency_B.pdf')
     
 experiments = []
-v_n_theta = [2, 3, 5, 8, 13, 21, 34]
+v_n_theta = [4, 6, 12, 24, 48]
 for n_theta in v_n_theta:
     pe = ParameterSet('default_param.py')
     pe.n_theta = n_theta
@@ -68,7 +69,8 @@ fig, a, ax = mp.plot(experiments=experiments, databases=databases, labels=labels
 if not(figpath==''): fig.savefig(figpath + 'efficiency_C.pdf')
     
 experiments = []
-v_base_levels = np.logspace(.25, 1.25, 5, base=2, endpoint=True)
+v_base_levels = [np.sqrt(2), np.sqrt(5)/2.+.5, np.sqrt(3), 2. , np.sqrt(5)]
+#np.logspace(.25, 1.25, 5, base=2, endpoint=True)
 for base_levels in v_base_levels:
     pe = ParameterSet('default_param.py')
     pe.base_levels = base_levels
