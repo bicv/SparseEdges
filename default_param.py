@@ -14,8 +14,8 @@
 #'base_levels' : 2.,
 'base_levels' : 1.618,
 'n_theta' : 24, # number of (unoriented) angles between 0. radians (included) and np.pi radians (excluded)
-'B_sf' : 3., # 1.5 in Geisler
-'B_theta' : 1.,
+'B_sf' : 4., # 1.5 in Geisler
+'B_theta' : 1.5,
 # Matching Pursuit
 # TODO : use 1 ??
 'alpha' : .0, # exponent of the color envelope
