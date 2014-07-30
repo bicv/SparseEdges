@@ -8,10 +8,10 @@ import sys
 pe = ParameterSet('default_param.py')
 
 
-def init_pe(pe, N_X=256, N_image=10, N=512):
+def init_pe(pe, N_image=10, N=512):
     pe.seed = 123456
     pe.N_image = N_image
-    pe.N_X = N_X
+    #pe.N_X = N_X
     pe.N = N
     im = Image(pe)
     lg = LogGabor(im)
@@ -60,7 +60,7 @@ v_n_theta = [4, 6, 12, 24, 48]
 for n_theta in v_n_theta:
     pe = ParameterSet('default_param.py')
     pe.n_theta = n_theta
-    mp = init_pe(pe, N_image=10)
+    mp = init_pe(pe)
     exp = 'efficiency_n_theta_' + str(n_theta).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -77,7 +77,7 @@ v_base_levels = [np.sqrt(2), np.sqrt(5)/2.+.5, np.sqrt(3), 2. , np.sqrt(5)]
 for base_levels in v_base_levels:
     pe = ParameterSet('default_param.py')
     pe.base_levels = base_levels
-    mp = init_pe(pe, N_image=10)
+    mp = init_pe(pe)
     exp = 'efficiency_base_levels_' + str(base_levels).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
