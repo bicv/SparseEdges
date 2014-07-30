@@ -315,13 +315,11 @@ class SparseEdges:
         else:
             try:
                 N_image = len(imagelist)
-                N = edgeslist.shape[1]
-                RMSE = np.ones((N_image, N))
+                RMSE = np.ones((N_image, self.N))
                 for i_image in range(N_image):
                     filename, croparea = imagelist[i_image]
                     matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
                     RMSE[i_image, :] = np.load(matname_RMSE)
-                edgeslist = np.zeros((6, self.N, N_image))
                 return RMSE
             except Exception, e:
                 log.error(' some locked RMSE extractions %s, error ', e)
