@@ -5,6 +5,7 @@ from SLIP import Image
 from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 pe = ParameterSet('default_param.py')
+pe.N = 128
 
 # defining input image as Lena
 from pylab import imread
