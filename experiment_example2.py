@@ -12,7 +12,6 @@ from pylab import imread
 image = imread('../AssoField/database/serre07_targets/B_N107001.jpg').mean(axis=-1)
 #print image.mean(), image.std()
 
-pe.figsize_edges = 12
 pe.N = 512
 
 im = Image(pe)
