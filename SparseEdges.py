@@ -81,15 +81,8 @@ class SparseEdges:
             # recording
             if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             # PURSUIT
-#             FT_lg_star = self.lg.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
-#                                           theta=self.theta[ind_edge_star[2]], B_theta=self.B_theta,
-#                                           sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.B_sf,
-#                                           )
-#             # image of the winning filter
-#             residual -= self.im.invert(self.pe.MP_alpha * C[ind_edge_star] * FT_lg_star, full=False)
             C = self.backprop(C, ind_edge_star)
-#             if verbose: print 'Residual activity : ',  np.absolute(C[ind_edge_star])
-        return edges, C#, RMSE
+        return edges, C
 #
     def init(self, image):
         C = np.empty((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
@@ -1006,6 +999,56 @@ class SparseEdges:
             out += combination_str + ' KL= ' + '%.5f' % self.KL(v_hist, v_hist_) + ' ; ' + '%.3f' % (self.KL(v_hist, v_hist_)/self.KL(v_hist, flat)*100) + '\n'
         out += '-'*60 + '\n'
         return out
+
+def plot(mps, experiments, databases, labels, color=[1., 0., 0.]):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import matplotlib
+
+    # parameters for plots
+    fig_width_pt = 318.670  # Get this from LaTeX using \showthe\columnwidth
+    inches_per_pt = 1.0/72.27               # Convert pt to inches
+    fig_width = fig_width_pt*inches_per_pt  # width in inches
+
+    fig = plt.figure(figsize=(fig_width, fig_width/1.618))
+    # main axis
+    ax = fig.add_subplot(111, axisbg='w')
+    # this is another inset axes over the main axes
+    inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
+    #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
+    CCycle = np.array(color)[np.newaxis, :] * np.linspace(0, 1, len(experiments))[:, np.newaxis]
+    ax.set_color_cycle(CCycle)
+    inset.set_color_cycle(CCycle)
+
+    for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
+        try:
+            imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+            RMSE /= RMSE[:, 0][:, np.newaxis]
+            N = RMSE.shape[1]
+            l0_axis = np.linspace(0, 1./mp.oc, N)
+            ax.errorbar(l0_axis, RMSE.mean(axis=0),
+                        yerr=RMSE.std(axis=0), errorevery=RMSE.shape[1]/8)
+
+            inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
+                       yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=RMSE.shape[1]/8)
+
+        except Exception, e:
+            print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+
+    ax.set_xlabel(r'$\ell_0$-norm')
+    ax.set_ylabel(r'Squared error')
+    ax.grid(b=False, which="both")
+    ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+
+    #plt.setp(inset, xticks=[], yticks=[])
+    inset.set_xscale('log')
+    inset.set_yscale('log')
+    inset.axis('tight')
+    inset.set_xlabel(r'$\ell_0$-norm')
+    inset.set_ylabel(r'Coefficient')
+    inset.grid(b=False, which="both")
+    inset.legend(loc='lower left', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+    return fig, ax, inset
 
 def _test():
     import doctest
