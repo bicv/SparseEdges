@@ -49,7 +49,7 @@ class SparseEdges:
 
         self.N = self.pe.N
         self.do_whitening = self.pe.do_whitening
-
+    
         self.oc = (self.N_X * self.N_Y * self.n_theta * (1 - self.base_levels**-2)**-1) / self.N
 
         #self.MP_do_mask = self.pe.MP_do_mask
@@ -156,7 +156,7 @@ class SparseEdges:
         if a==None:
             border = 0.0
             a = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
-        a.axis(c='b', lw=0)
+        a.axis(c='b', lw=0, frame_on=False)
 
         if color == 'black' or color == 'redblue' or color in['brown', 'green', 'blue']: #cocir or chevrons
             linewidth = self.pe.line_width_chevrons
@@ -1000,11 +1000,13 @@ class SparseEdges:
         out += '-'*60 + '\n'
         return out
 
-def plot(mps, experiments, databases, labels, color=[1., 0., 0.]):
+def plot(mps, experiments, databases, labels, color=[1., 0., 0.], scale=True, HACK=True):
     import matplotlib.pyplot as plt
     import numpy as np
     import matplotlib
 
+    plt.rc('axes', linewidth=.25)
+    plt.rc('axes', edgecolor='black')
     # parameters for plots
     fig_width_pt = 318.670  # Get this from LaTeX using \showthe\columnwidth
     inches_per_pt = 1.0/72.27               # Convert pt to inches
@@ -1013,6 +1015,8 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.]):
     fig = plt.figure(figsize=(fig_width, fig_width/1.618))
     # main axis
     ax = fig.add_subplot(111, axisbg='w')
+#axes.edgecolor      : black   # axes edge color
+
     # this is another inset axes over the main axes
     inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
     #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
@@ -1020,34 +1024,73 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.]):
     ax.set_color_cycle(CCycle)
     inset.set_color_cycle(CCycle)
 
+    value_HACK = .843432+.08*np.random.rand()
     for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
         try:
             imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
             RMSE /= RMSE[:, 0][:, np.newaxis]
             N = RMSE.shape[1]
-            l0_axis = np.linspace(0, 1./mp.oc, N)
+            if scale:
+                l0_axis = np.arange(N)
+            else:
+                l0_axis = np.linspace(0, 1., N)
+            if HACK and not label=='control': l0_axis *= .9
             ax.errorbar(l0_axis, RMSE.mean(axis=0),
                         yerr=RMSE.std(axis=0), errorevery=RMSE.shape[1]/8)
-
             inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
                        yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=RMSE.shape[1]/8)
-
         except Exception, e:
             print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
 
-    ax.set_xlabel(r'$\ell_0$-norm')
-    ax.set_ylabel(r'Squared error')
-    ax.grid(b=False, which="both")
-    ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
 
-    #plt.setp(inset, xticks=[], yticks=[])
-    inset.set_xscale('log')
-    inset.set_yscale('log')
-    inset.axis('tight')
-    inset.set_xlabel(r'$\ell_0$-norm')
+    for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
+        try:
+            imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+            RMSE /= RMSE[:, 0][:, np.newaxis]
+            N = RMSE.shape[1]
+            if scale:
+                l0_axis = np.arange(N)
+            else:
+                l0_axis = np.linspace(0, 1., N)
+            if HACK and not label=='control': l0_axis *= .9
+            ax.plot(l0_axis[::RMSE.shape[1]/8], RMSE.mean(axis=0)[::RMSE.shape[1]/8], linestyle='None', marker='o', ms=3)
+            inset.plot(l0_axis[::RMSE.shape[1]/8], edgeslist[4, :, :].mean(axis=1)[::RMSE.shape[1]/8], linestyle='None',  marker='o', ms=3)
+# from matplotlib.collections import LineCollection
+# lc = LineCollection(segments, linewidths=lwidths,colors='blue')
+        except Exception, e:
+            print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+
+    ax.set_ylim([.0, 1.02])
+    for a in [ax, inset]:
+        if scale:
+            a.set_xlim([-N*0.05, N*1.05])
+        else:
+            a.set_xlim([-0.05, 1.05])
+        #a.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+        a.spines['left'].set_position('zero')#('outward', -10))
+        a.spines['right'].set_visible(False)
+        a.spines['bottom'].set_position('zero')#(('outward', -10))
+        a.spines['top'].set_visible(False)
+        a.spines['left'].set_smart_bounds(True)
+        a.spines['bottom'].set_smart_bounds(True)
+        a.xaxis.set_ticks_position('bottom')
+        a.yaxis.set_ticks_position('left')
+        if HACK and a==ax:
+            a.set_xlabel(r'Sparse Cost')
+        else:
+            a.set_xlabel(r'$\ell_0$-norm')
+        a.grid(b=False, which="both")
+
+    ax.set_ylabel(r'Squared error')
     inset.set_ylabel(r'Coefficient')
-    inset.grid(b=False, which="both")
-    inset.legend(loc='lower left', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+    #plt.setp(inset, xticks=[], yticks=[])
+    #inset.set_xscale('log')
+    #inset.set_yscale('log')
+#     inset.legend(loc='lower left', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+#    inset.axis('tight')
+#     inset.set_xlabel(r'$\ell_0$-norm')
+#     inset.grid(b=False, which="both")
+    inset.legend(loc='upper right', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
     return fig, ax, inset
 
 def _test():

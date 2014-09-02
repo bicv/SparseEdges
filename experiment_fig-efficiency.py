@@ -18,11 +18,12 @@ def init_pe(pe, N_image=10, N=512):
     mp = SparseEdges(lg)
     return mp
 
+dofig = True
 try:
     figpath = sys.argv[1]
 except:
-    figpath = ''
-    
+    dofig = False
+        
 mps, experiments = [], []
 v_B_sf = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_sf
 for B_sf in v_B_sf:
@@ -35,9 +36,9 @@ for B_sf in v_B_sf:
     mps.append(mp)
 
 databases = ['serre07_distractors'] * len(experiments)
-labels = [str(B_sf) for B_sf in v_B_sf]
+labels = ['%0.2f' % B_sf for B_sf in v_B_sf]
 fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
-if not(figpath==''): fig.savefig(figpath + 'efficiency_A.pdf')
+if dofig: fig.savefig(figpath + 'efficiency_A.pdf')
     
 mps, experiments = [], []
 v_B_theta = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_theta
@@ -51,9 +52,9 @@ for B_theta in v_B_theta:
     mps.append(mp)
 
 databases = ['serre07_distractors'] * len(experiments)
-labels = [str(B_theta) for B_theta in v_B_theta]
+labels = ['%0.2f' % B_theta for B_theta in v_B_theta]
 fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
-if not(figpath==''): fig.savefig(figpath + 'efficiency_B.pdf')
+if dofig: fig.savefig(figpath + 'efficiency_B.pdf')
     
 mps, experiments = [], []
 v_n_theta = [4, 6, 12, 24, 48]
@@ -69,7 +70,7 @@ for n_theta in v_n_theta:
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(n_theta) for n_theta in v_n_theta]
 fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
-if not(figpath==''): fig.savefig(figpath + 'efficiency_C.pdf')
+if dofig: fig.savefig(figpath + 'efficiency_C.pdf')
     
 mps, experiments = [], []
 v_base_levels = [np.sqrt(2), np.sqrt(5)/2.+.5, np.sqrt(3), 2. , np.sqrt(5)]
@@ -84,6 +85,6 @@ for base_levels in v_base_levels:
     mps.append(mp)
 
 databases = ['serre07_distractors'] * len(experiments)
-labels = [str(base_levels) for base_levels in v_base_levels]
+labels = ['%0.2f' % (base_levels) for base_levels in v_base_levels]
 fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
-if not(figpath==''): fig.savefig(figpath + 'efficiency_D.pdf')
+if dofig: fig.savefig(figpath + 'efficiency_D.pdf')
