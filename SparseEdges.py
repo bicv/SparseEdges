@@ -49,7 +49,6 @@ class SparseEdges:
 
         self.N = self.pe.N
         self.do_whitening = self.pe.do_whitening
-    
         self.oc = (self.N_X * self.N_Y * self.n_theta * (1 - self.base_levels**-2)**-1) / self.N
 
         #self.MP_do_mask = self.pe.MP_do_mask
@@ -1000,7 +999,7 @@ class SparseEdges:
         out += '-'*60 + '\n'
         return out
 
-def plot(mps, experiments, databases, labels, color=[1., 0., 0.], scale=True, HACK=True):
+def plot(mps, experiments, databases, labels, color=[1., 0., 0.], scale=False):
     import matplotlib.pyplot as plt
     import numpy as np
     import matplotlib
@@ -1024,7 +1023,6 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.], scale=True, HA
     ax.set_color_cycle(CCycle)
     inset.set_color_cycle(CCycle)
 
-    value_HACK = .843432+.08*np.random.rand()
     for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
         try:
             imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
@@ -1034,7 +1032,6 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.], scale=True, HA
                 l0_axis = np.arange(N)
             else:
                 l0_axis = np.linspace(0, 1., N)
-            if HACK and not label=='control': l0_axis *= .9
             ax.errorbar(l0_axis, RMSE.mean(axis=0),
                         yerr=RMSE.std(axis=0), errorevery=RMSE.shape[1]/8)
             inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
@@ -1052,7 +1049,6 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.], scale=True, HA
                 l0_axis = np.arange(N)
             else:
                 l0_axis = np.linspace(0, 1., N)
-            if HACK and not label=='control': l0_axis *= .9
             ax.plot(l0_axis[::RMSE.shape[1]/8], RMSE.mean(axis=0)[::RMSE.shape[1]/8], linestyle='None', marker='o', ms=3)
             inset.plot(l0_axis[::RMSE.shape[1]/8], edgeslist[4, :, :].mean(axis=1)[::RMSE.shape[1]/8], linestyle='None',  marker='o', ms=3)
 # from matplotlib.collections import LineCollection
@@ -1075,7 +1071,7 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.], scale=True, HA
         a.spines['bottom'].set_smart_bounds(True)
         a.xaxis.set_ticks_position('bottom')
         a.yaxis.set_ticks_position('left')
-        if HACK and a==ax:
+        if False and a==ax:
             a.set_xlabel(r'Sparse Cost')
         else:
             a.set_xlabel(r'$\ell_0$-norm')

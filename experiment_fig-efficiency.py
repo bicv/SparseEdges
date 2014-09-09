@@ -1,3 +1,8 @@
+"""
+
+$ python experiment_fig-efficiency.py ../../BICV-book/BICV_INT/BICV-sparse/figures/
+"""
+
 import __init__
 import numpy as np
 from NeuroTools.parameters import ParameterSet
