@@ -29,7 +29,12 @@ try:
     figpath = sys.argv[1]
 except:
     dofig = False
-        
+
+import matplotlib.pyplot as plt
+fig_width_pt = 318.670*.61 # Get this from LaTeX using \showthe\columnwidth
+inches_per_pt = 1.0/72.27               # Convert pt to inches
+fig_width = fig_width_pt*inches_per_pt  # width in inches
+
 mps, experiments = [], []
 v_B_sf = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_sf
 for B_sf in v_B_sf:
@@ -43,9 +48,10 @@ for B_sf in v_B_sf:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_sf for B_sf in v_B_sf]
+fig = plt.figure(figsize=(fig_width, fig_width/1.618))
 fig, a, ax = plot(mps=mps,
                   experiments=experiments, databases=databases, labels=labels, 
-                  color=[0., 1., 0.], threshold=threshold, scale=True)    
+                  fig=fig, color=[0., 1., 0.], threshold=threshold, scale=True)    
 a.set_xlabel(r'frequency bandwith $B_{sf}$')
 if dofig: fig.savefig(figpath + 'efficiency_A.pdf')
     
@@ -62,9 +68,10 @@ for B_theta in v_B_theta:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_theta for B_theta in v_B_theta]
+fig = plt.figure(figsize=(fig_width, fig_width/1.618))
 fig, a, ax = plot(mps=mps, 
                   experiments=experiments, databases=databases, labels=labels, 
-                  threshold=threshold, scale=True, color=[0., 1., 0.])    
+                  fig=fig, threshold=threshold, scale=True, color=[0., 1., 0.])    
 a.set_xlabel(r'orientation bandwith $B_{\theta}$')
 if dofig: fig.savefig(figpath + 'efficiency_B.pdf')
     
@@ -81,9 +88,10 @@ for n_theta in v_n_theta:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(n_theta) for n_theta in v_n_theta]
+fig = plt.figure(figsize=(fig_width, fig_width/1.618))
 fig, a, ax = plot(mps=mps, 
                   experiments=experiments, databases=databases, labels=labels, 
-                  threshold=threshold, scale=True, color=[0., 1., 0.])    
+                  fig=fig, threshold=threshold, scale=True, color=[0., 1., 0.])    
 a.set_xlabel(r'number of orientations $N_{\theta}$')
 if dofig: fig.savefig(figpath + 'efficiency_C.pdf')
     
@@ -101,8 +109,9 @@ for base_levels in v_base_levels:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % (base_levels) for base_levels in v_base_levels]
+fig = plt.figure(figsize=(fig_width, fig_width/1.618))
 fig, a, ax = plot(mps=mps, 
                   experiments=experiments, databases=databases, labels=labels, 
-                  threshold=threshold, scale=True, color=[0., 1., 0.])    
+                  fig=fig, threshold=threshold, scale=True, color=[0., 1., 0.])    
 a.set_xlabel(r'scale ratio')
 if dofig: fig.savefig(figpath + 'efficiency_D.pdf')

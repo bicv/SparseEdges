@@ -32,10 +32,16 @@ for size, size_str in zip([16, 32, 64, 128, 256], ['_016', '_032', '_064',  '_12
     mp.process('SparseLets' + size_str)
     mps.append(mp)
 
+import matplotlib.pyplot as plt
+fig_width_pt = 318.670/2 # Get this from LaTeX using \showthe\columnwidth
+inches_per_pt = 1.0/72.27               # Convert pt to inches
+fig_width = fig_width_pt*inches_per_pt  # width in inches
+fig = plt.figure(figsize=(fig_width, fig_width/1.618))
+
 sizes = [16, 32, 64, 128, 256]
 experiments = ['SparseLets_' + '%0.3d' % size for size in sizes] # ['testing_vanilla_016', 'testing_vanilla_032', 'testing_vanilla_064', 'testing_vanilla_128', 'testing_vanilla']
 experiments[-1] = 'SparseLets'
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(size) for size in sizes]
-fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, scale=True)    
+fig, a, ax = plot(fig=fig, mps=mps, experiments=experiments, databases=databases, labels=labels, scale=True)    
 if dofig: fig.savefig(figpath + 'SparseLets_B.pdf')

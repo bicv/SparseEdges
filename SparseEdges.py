@@ -999,23 +999,24 @@ class SparseEdges:
         out += '-'*60 + '\n'
         return out
 
-def plot(mps, experiments, databases, labels, color=[1., 0., 0.], threshold=None, scale=False):
+def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 0.], threshold=None, scale=False):
     import matplotlib.pyplot as plt
     import numpy as np
     import matplotlib
 
     plt.rc('axes', linewidth=.25)
     plt.rc('axes', edgecolor='black')
-    # parameters for plots
-    fig_width_pt = 318.670  # Get this from LaTeX using \showthe\columnwidth
-    inches_per_pt = 1.0/72.27               # Convert pt to inches
-    fig_width = fig_width_pt*inches_per_pt  # width in inches
+    if fig==None:
+        # parameters for plots
+        fig_width_pt = 318.670  # Get this from LaTeX using \showthe\columnwidth
+        inches_per_pt = 1.0/72.27               # Convert pt to inches
+        fig_width = fig_width_pt*inches_per_pt  # width in inches
 
-    fig = plt.figure(figsize=(fig_width, fig_width/1.618))
-    # main axis
-    ax = fig.add_subplot(111, axisbg='w')
-#axes.edgecolor      : black   # axes edge color
+        fig = plt.figure(figsize=(fig_width, fig_width/1.618))
     if (threshold==None):
+        # main axis
+        if ax==None: ax = fig.add_subplot(111, axisbg='w')
+        # axes.edgecolor      : black   # axes edge color
         # this is another inset axes over the main axes
         inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
         #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
@@ -1072,6 +1073,7 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.], threshold=None
         inset.legend(loc='upper right', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
         return fig, ax, inset
     else:
+        if ax==None: ax = fig.add_axes([0.15, 0.25, .75, .75], axisbg='w')
         ind, l0, l0_std = 0, [], []
         for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
             try:
@@ -1080,7 +1082,7 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.], threshold=None
                 N = RMSE.shape[1] #number of edges
                 l0_results = np.argmax(RMSE<threshold, axis=1)*1.
                 if (scale):
-                    l0_results *= N/mp.oc
+                    l0_results *= np.log2(mp.oc)/1024.
                 l0.append(l0_results.mean())
                 l0_std.append(l0_results.std())
                 ind += 1
@@ -1089,13 +1091,14 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.], threshold=None
 
         width = .8
         ax.bar(np.arange(ind), l0, yerr=l0_std)
+        ax.set_xlim([-width/4, ind+.0*width])
 
         if not(scale):#False and a==ax:
             ax.set_ylabel(r'$\ell_0$-norm')
         else:
-            ax.set_ylabel(r'relative $\ell_0$-norm')
+            ax.set_ylabel(r'kilobits ')#relative $\ell_0$-norm')
 
-        ax.set_xticks(np.arange(ind)+width/2)
+        ax.set_xticks(np.arange(ind)+.5*width)
         ax.set_xticklabels(labels)
         
         return fig, ax, ax
