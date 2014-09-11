@@ -1,8 +1,13 @@
+"""
+
+$ python experiment_fig-sparselets.py ../../BICV-book/BICV_INT/BICV-sparse/figures/
+"""
 import __init__
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
 from LogGabor import LogGabor
 from SparseEdges import SparseEdges, plot
+import sys
 
 pe = ParameterSet('default_param.py')
 
@@ -32,5 +37,5 @@ experiments = ['SparseLets_' + '%0.3d' % size for size in sizes] # ['testing_van
 experiments[-1] = 'SparseLets'
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(size) for size in sizes]
-fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, scale=False)    
+fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, scale=True)    
 if dofig: fig.savefig(figpath + 'SparseLets_B.pdf')

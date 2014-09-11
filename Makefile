@@ -30,7 +30,7 @@ todo:
 # macros for tests
 index.html: $(NAME).ipynb
 	runipy $(NAME).ipynb -o
-	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to html index.html
+	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to html index.html $(NAME).ipynb
 
 %.pdf: %.ipynb
 	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to latex --post PDF $<
