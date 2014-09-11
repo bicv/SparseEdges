@@ -1100,7 +1100,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
 
         ax.set_xticks(np.arange(ind)+.5*width)
         ax.set_xticklabels(labels)
-        
+
         return fig, ax, ax
 
 
