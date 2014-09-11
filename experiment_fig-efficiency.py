@@ -84,7 +84,7 @@ labels = [str(n_theta) for n_theta in v_n_theta]
 fig, a, ax = plot(mps=mps, 
                   experiments=experiments, databases=databases, labels=labels, 
                   threshold=threshold, scale=True, color=[0., 1., 0.])    
-a.set_xlabel(r'# orientation $N_{\theta}$')
+a.set_xlabel(r'number of orientations $N_{\theta}$')
 if dofig: fig.savefig(figpath + 'efficiency_C.pdf')
     
 mps, experiments = [], []

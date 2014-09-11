@@ -1088,7 +1088,6 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.], threshold=None
                 print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
 
         width = .8
-        print l0, l0_std
         ax.bar(np.arange(ind), l0, yerr=l0_std)
 
         if not(scale):#False and a==ax:
