@@ -49,7 +49,7 @@ class SparseEdges:
 
         self.N = self.pe.N
         self.do_whitening = self.pe.do_whitening
-        self.oc = (self.N_X * self.N_Y * self.n_theta * (1 - self.base_levels**-2)**-1)
+        self.oc = (self.N_X * self.N_Y * self.n_theta * self.n_levels) #(1 - self.base_levels**-2)**-1)
         if self.pe.MP_do_mask: self.oc *= np.pi / 4
         #self.MP_do_mask = self.pe.MP_do_mask
         if True: #self.MP_do_mask:
