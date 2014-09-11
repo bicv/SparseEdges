@@ -12,7 +12,8 @@ from SparseEdges import SparseEdges, plot
 import sys
 pe = ParameterSet('default_param.py')
 
-
+threshold = None # classical plots
+threshold = .2 # plot sparseness obtained when reaching this threshold
 def init_pe(pe, N_image=10, N=512):
     pe.seed = 123456
     pe.N_image = N_image
@@ -42,7 +43,10 @@ for B_sf in v_B_sf:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_sf for B_sf in v_B_sf]
-fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
+fig, a, ax = plot(mps=mps,
+                  experiments=experiments, databases=databases, labels=labels, 
+                  color=[0., 1., 0.], threshold=threshold, scale=True)    
+a.set_xlabel(r'frequency bandwith $B_{sf}$')
 if dofig: fig.savefig(figpath + 'efficiency_A.pdf')
     
 mps, experiments = [], []
@@ -58,7 +62,10 @@ for B_theta in v_B_theta:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_theta for B_theta in v_B_theta]
-fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
+fig, a, ax = plot(mps=mps, 
+                  experiments=experiments, databases=databases, labels=labels, 
+                  threshold=threshold, scale=True, color=[0., 1., 0.])    
+a.set_xlabel(r'orientation bandwith $B_{\theta}$')
 if dofig: fig.savefig(figpath + 'efficiency_B.pdf')
     
 mps, experiments = [], []
@@ -74,7 +81,10 @@ for n_theta in v_n_theta:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(n_theta) for n_theta in v_n_theta]
-fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
+fig, a, ax = plot(mps=mps, 
+                  experiments=experiments, databases=databases, labels=labels, 
+                  threshold=threshold, scale=True, color=[0., 1., 0.])    
+a.set_xlabel(r'# orientation $N_{\theta}$')
 if dofig: fig.savefig(figpath + 'efficiency_C.pdf')
     
 mps, experiments = [], []
@@ -91,5 +101,8 @@ for base_levels in v_base_levels:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % (base_levels) for base_levels in v_base_levels]
-fig, a, ax = plot(mps=mps, experiments=experiments, databases=databases, labels=labels, color=[0., 1., 0.])    
+fig, a, ax = plot(mps=mps, 
+                  experiments=experiments, databases=databases, labels=labels, 
+                  threshold=threshold, scale=True, color=[0., 1., 0.])    
+a.set_xlabel(r'scale ratio')
 if dofig: fig.savefig(figpath + 'efficiency_D.pdf')

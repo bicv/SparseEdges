@@ -49,8 +49,8 @@ class SparseEdges:
 
         self.N = self.pe.N
         self.do_whitening = self.pe.do_whitening
-        self.oc = (self.N_X * self.N_Y * self.n_theta * (1 - self.base_levels**-2)**-1) / self.N
-        if self.MP_do_mask: self.oc *= np.pi / 4
+        self.oc = (self.N_X * self.N_Y * self.n_theta * (1 - self.base_levels**-2)**-1)
+        if self.pe.MP_do_mask: self.oc *= np.pi / 4
         #self.MP_do_mask = self.pe.MP_do_mask
         if True: #self.MP_do_mask:
             X, Y = np.mgrid[-1:1:1j*self.N_X, -1:1:1j*self.N_Y]
@@ -999,7 +999,7 @@ class SparseEdges:
         out += '-'*60 + '\n'
         return out
 
-def plot(mps, experiments, databases, labels, color=[1., 0., 0.], scale=False):
+def plot(mps, experiments, databases, labels, color=[1., 0., 0.], threshold=None, scale=False):
     import matplotlib.pyplot as plt
     import numpy as np
     import matplotlib
@@ -1015,85 +1015,92 @@ def plot(mps, experiments, databases, labels, color=[1., 0., 0.], scale=False):
     # main axis
     ax = fig.add_subplot(111, axisbg='w')
 #axes.edgecolor      : black   # axes edge color
+    if (threshold==None):
+        # this is another inset axes over the main axes
+        inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
+        #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
+        grad =  np.linspace(0., 1., 2*len(experiments))
+        grad[1::2] = grad[::2]
+        CCycle = np.array(color)[np.newaxis, :] * grad[:, np.newaxis]
+        ax.set_color_cycle(CCycle)
+        inset.set_color_cycle(CCycle)
+        l0_max = 0.
+        for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
+            try:
+                imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                RMSE /= RMSE[:, 0][:, np.newaxis]
+                N = RMSE.shape[1] #number of edges
+                l0_max = max(l0_max, 1.*N/mp.oc)
+                if not(scale):
+                    l0_axis = np.arange(N)
+                else:
+                    l0_axis = np.linspace(0, 1.*N/mp.oc, N)
+                ax.errorbar(l0_axis, RMSE.mean(axis=0),
+                            yerr=RMSE.std(axis=0), errorevery=RMSE.shape[1]/8)
+                inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
+                           yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=RMSE.shape[1]/8)
+                ax.plot(l0_axis[::RMSE.shape[1]/8], RMSE.mean(axis=0)[::RMSE.shape[1]/8], linestyle='None', marker='o', ms=3)
+                inset.plot(l0_axis[::RMSE.shape[1]/8], edgeslist[4, :, :].mean(axis=1)[::RMSE.shape[1]/8], linestyle='None',  marker='o', ms=3)
+            except Exception, e:
+                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
 
-    # this is another inset axes over the main axes
-    inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
-    #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
-    grad =  np.linspace(0., 1., 2*len(experiments))
-    grad[1::2] = grad[::2]
-    CCycle = np.array(color)[np.newaxis, :] * grad[:, np.newaxis]
-    ax.set_color_cycle(CCycle)
-    inset.set_color_cycle(CCycle)
-    l0_max = 0.
-    for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-        try:
-            imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-            RMSE /= RMSE[:, 0][:, np.newaxis]
-            N = RMSE.shape[1] #number of edges
-            l0_max = max(l0_max, 1./mp.oc)
+        ax.set_ylim([.0, 1.02])
+        for a in [ax, inset]:
             if not(scale):
-                l0_axis = np.arange(N)
+                a.set_xlim([-0.05*N, 1.05*N])
             else:
-                l0_axis = np.linspace(0, 1./mp.oc, N)
-            ax.errorbar(l0_axis, RMSE.mean(axis=0),
-                        yerr=RMSE.std(axis=0), errorevery=RMSE.shape[1]/8)
-            inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
-                       yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=RMSE.shape[1]/8)
-            ax.plot(l0_axis[::RMSE.shape[1]/8], RMSE.mean(axis=0)[::RMSE.shape[1]/8], linestyle='None', marker='o', ms=3)
-            inset.plot(l0_axis[::RMSE.shape[1]/8], edgeslist[4, :, :].mean(axis=1)[::RMSE.shape[1]/8], linestyle='None',  marker='o', ms=3)
-        except Exception, e:
-            print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+                a.set_xlim([-0.05*l0_max, 1.05*l0_max])
+                a.ticklabel_format(axis='x', style='sci', scilimits=(0, 1))#, useOffset=False)
+            #a.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+            a.spines['left'].set_position('zero')#('outward', -10))
+            a.spines['right'].set_visible(False)
+            a.spines['bottom'].set_position('zero')#(('outward', -10))
+            a.spines['top'].set_visible(False)
+            a.spines['left'].set_smart_bounds(True)
+            a.spines['bottom'].set_smart_bounds(True)
+            a.xaxis.set_ticks_position('bottom')
+            a.yaxis.set_ticks_position('left')
+            if not(scale):#False and a==ax:
+                a.set_xlabel(r'$\ell_0$-norm')
+            else:
+                a.set_xlabel(r'relative $\ell_0$-norm')
+            a.grid(b=False, which="both")
 
-# 
-#     for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-#         try:
-#             imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-#             RMSE /= RMSE[:, 0][:, np.newaxis]
-#             N = RMSE.shape[1]
-#             if scale:
-#                 l0_axis = np.arange(N)
-#             else:
-#                 l0_axis = np.linspace(0, 1., N)
-#             ax.plot(l0_axis[::RMSE.shape[1]/8], RMSE.mean(axis=0)[::RMSE.shape[1]/8], linestyle='None', marker='o', ms=3)
-#             inset.plot(l0_axis[::RMSE.shape[1]/8], edgeslist[4, :, :].mean(axis=1)[::RMSE.shape[1]/8], linestyle='None',  marker='o', ms=3)
-# from matplotlib.collections import LineCollection
-# lc = LineCollection(segments, linewidths=lwidths,colors='blue')
-        except Exception, e:
-            print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+        ax.set_ylabel(r'Squared error')
+        inset.set_ylabel(r'Coefficient')
 
-    ax.set_ylim([.0, 1.02])
-    for a in [ax, inset]:
-        if not(scale):
-            a.set_xlim([-0.05*N, 1.05*N])
-        else:
-            a.set_xlim([-0.05*l0_max, 1.05*l0_max])
-            a.ticklabel_format(axis='x', style='sci', scilimits=(0, 1))#, useOffset=False)
-        #a.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-        a.spines['left'].set_position('zero')#('outward', -10))
-        a.spines['right'].set_visible(False)
-        a.spines['bottom'].set_position('zero')#(('outward', -10))
-        a.spines['top'].set_visible(False)
-        a.spines['left'].set_smart_bounds(True)
-        a.spines['bottom'].set_smart_bounds(True)
-        a.xaxis.set_ticks_position('bottom')
-        a.yaxis.set_ticks_position('left')
+        inset.legend(loc='upper right', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+        return fig, ax, inset
+    else:
+        ind, l0, l0_std = 0, [], []
+        for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
+            try:
+                imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                RMSE /= RMSE[:, 0][:, np.newaxis]
+                N = RMSE.shape[1] #number of edges
+                l0_results = np.argmax(RMSE<threshold, axis=1)*1.
+                if (scale):
+                    l0_results *= N/mp.oc
+                l0.append(l0_results.mean())
+                l0_std.append(l0_results.std())
+                ind += 1
+            except Exception, e:
+                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+
+        width = .8
+        print l0, l0_std
+        ax.bar(np.arange(ind), l0, yerr=l0_std)
+
         if not(scale):#False and a==ax:
-            a.set_xlabel(r'$\ell_0$-norm')
+            ax.set_ylabel(r'$\ell_0$-norm')
         else:
-            a.set_xlabel(r'relative $\ell_0$-norm')
-        a.grid(b=False, which="both")
+            ax.set_ylabel(r'relative $\ell_0$-norm')
 
-    ax.set_ylabel(r'Squared error')
-    inset.set_ylabel(r'Coefficient')
-    #plt.setp(inset, xticks=[], yticks=[])
-    #inset.set_xscale('log')
-    #inset.set_yscale('log')
-#     inset.legend(loc='lower left', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
-#    inset.axis('tight')
-#     inset.set_xlabel(r'$\ell_0$-norm')
-#     inset.grid(b=False, which="both")
-    inset.legend(loc='upper right', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
-    return fig, ax, inset
+        ax.set_xticks(np.arange(ind)+width/2)
+        ax.set_xticklabels(labels)
+        
+        return fig, ax, ax
+
 
 def _test():
     import doctest
