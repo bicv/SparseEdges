@@ -33,7 +33,7 @@ for size, size_str in zip([16, 32, 64, 128, 256], ['_016', '_032', '_064',  '_12
     mps.append(mp)
 
 import matplotlib.pyplot as plt
-fig_width_pt = 318.670/2 # Get this from LaTeX using \showthe\columnwidth
+fig_width_pt = 318.670 # Get this from LaTeX using \showthe\columnwidth
 inches_per_pt = 1.0/72.27               # Convert pt to inches
 fig_width = fig_width_pt*inches_per_pt  # width in inches
 fig = plt.figure(figsize=(fig_width, fig_width/1.618))
