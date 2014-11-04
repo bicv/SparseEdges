@@ -17,13 +17,13 @@ def init_pylab():
         fontsize = 8
         # pe.edge_scale_chevrons, line_width = 64., .75
         params = {'backend': 'Agg',
-                 'origin': 'upper',
+#                  'origin': 'upper',
                   'font.family': 'serif',
                   'font.serif': 'Times',
                   'font.sans-serif': 'Arial',
                   'text.usetex': True,
         #          'mathtext.fontset': 'stix', #http://matplotlib.sourceforge.net/users/mathtext.html
-                  'interpolation':'nearest',
+#                   'interpolation':'nearest',
                   'axes.labelsize': fontsize,
                   'text.fontsize': fontsize,
                   'legend.fontsize': fontsize,

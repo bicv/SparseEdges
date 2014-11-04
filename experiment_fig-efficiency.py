@@ -36,7 +36,7 @@ inches_per_pt = 1.0/72.27               # Convert pt to inches
 fig_width = fig_width_pt*inches_per_pt  # width in inches
 
 mps, experiments = [], []
-v_B_sf = np.logspace(-1., 1., 5, base=10, endpoint=True)*pe.B_sf
+v_B_sf = np.logspace(-.2, .2, 5, base=10, endpoint=True)*pe.B_sf
 for B_sf in v_B_sf:
     pe = ParameterSet('default_param.py')
     pe.B_sf = B_sf
