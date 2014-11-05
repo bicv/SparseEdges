@@ -10,6 +10,7 @@
 # 'N_X' : 64, # size of images
 # 'N_Y' : 64, # size of images
 'do_mask'  : True, # used in MAtching Pursuit self.pe.do_mask
+'seed': None, # a seed for the Random Number Generator (RNG) for picking images in databases, set to None or a given number to freeze the RNG
 # Log-Gabor
 #'base_levels' : 2.,
 'base_levels' : 1.618,

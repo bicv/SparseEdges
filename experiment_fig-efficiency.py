@@ -56,7 +56,7 @@ a.set_xlabel(r'frequency bandwith $B_{sf}$')
 if dofig: fig.savefig(figpath + 'efficiency_A.pdf')
     
 mps, experiments = [], []
-v_B_theta = np.logspace(-1., 1., 5, base=10, endpoint=True)*pe.B_theta
+v_B_theta = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_theta
 for B_theta in v_B_theta:
     pe = ParameterSet('default_param.py')
     pe.B_theta = B_theta
@@ -76,7 +76,7 @@ a.set_xlabel(r'orientation bandwith $B_{\theta}$')
 if dofig: fig.savefig(figpath + 'efficiency_B.pdf')
     
 mps, experiments = [], []
-v_n_theta = [4, 6, 12, 24, 48]
+v_n_theta = [6, 12, 24, 48]
 for n_theta in v_n_theta:
     pe = ParameterSet('default_param.py')
     pe.n_theta = n_theta
