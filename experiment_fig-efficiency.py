@@ -1,6 +1,6 @@
 """
 
-$ python experiment_fig-efficiency.py ../../BICV-book/BICV_INT/BICV-sparse/figures/
+$ python experiment_fig-efficiency.py ../../CNRS/BICV-book/BICV_INT/BICV-sparse/
 """
 
 import __init__
@@ -11,6 +11,7 @@ from LogGabor import LogGabor
 from SparseEdges import SparseEdges, plot
 import sys
 pe = ParameterSet('default_param.py')
+FORMATS = ['pdf', 'eps']
 
 threshold = None # classical plots
 threshold = .2 # plot sparseness obtained when reaching this threshold
@@ -53,7 +54,8 @@ fig, a, ax = plot(mps=mps,
                   experiments=experiments, databases=databases, labels=labels, 
                   fig=fig, color=[0., 1., 0.], threshold=threshold, scale=True)    
 a.set_xlabel(r'frequency bandwith $B_{sf}$')
-if dofig: fig.savefig(figpath + 'efficiency_A.pdf')
+if dofig: 
+    for ext in FORMATS: fig.savefig(figpath + 'efficiency_A.' + ext)
     
 mps, experiments = [], []
 v_B_theta = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_theta
@@ -73,7 +75,8 @@ fig, a, ax = plot(mps=mps,
                   experiments=experiments, databases=databases, labels=labels, 
                   fig=fig, threshold=threshold, scale=True, color=[0., 1., 0.])    
 a.set_xlabel(r'orientation bandwith $B_{\theta}$')
-if dofig: fig.savefig(figpath + 'efficiency_B.pdf')
+if dofig: 
+    for ext in FORMATS: fig.savefig(figpath + 'efficiency_B.' + ext)
     
 mps, experiments = [], []
 v_n_theta = [6, 12, 24, 48]
@@ -93,7 +96,8 @@ fig, a, ax = plot(mps=mps,
                   experiments=experiments, databases=databases, labels=labels, 
                   fig=fig, threshold=threshold, scale=True, color=[0., 1., 0.])    
 a.set_xlabel(r'number of orientations $N_{\theta}$')
-if dofig: fig.savefig(figpath + 'efficiency_C.pdf')
+if dofig: 
+    for ext in FORMATS: fig.savefig(figpath + 'efficiency_C.' + ext)
     
 mps, experiments = [], []
 v_base_levels = [np.sqrt(2), np.sqrt(5)/2.+.5, np.sqrt(3), 2. , np.sqrt(5)]
@@ -114,4 +118,5 @@ fig, a, ax = plot(mps=mps,
                   experiments=experiments, databases=databases, labels=labels, 
                   fig=fig, threshold=threshold, scale=True, color=[0., 1., 0.])    
 a.set_xlabel(r'scale ratio')
-if dofig: fig.savefig(figpath + 'efficiency_D.pdf')
+if dofig: 
+    for ext in FORMATS: fig.savefig(figpath + 'efficiency_D.' + ext)

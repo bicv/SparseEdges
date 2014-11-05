@@ -7,7 +7,6 @@ See http://pythonhosted.org/SparseEdges
 """
 __author__ = "(c) Laurent Perrinet INT - CNRS"
 import numpy as np
-import scipy.ndimage as nd
 import os
 PID, HOST = os.getpid(), os.uname()[1]
 TAG = 'host-' + HOST + '_pid-' + str(PID)

@@ -1,6 +1,6 @@
 """
 
-$ python experiment_fig-sparselets.py ../../BICV-book/BICV_INT/BICV-sparse/figures/
+$ python experiment_fig-sparselets.py ../../CNRS/BICV-book/BICV_INT/BICV-sparse/
 """
 import __init__
 from NeuroTools.parameters import ParameterSet
@@ -43,5 +43,7 @@ experiments = ['SparseLets_' + '%0.3d' % size for size in sizes] # ['testing_van
 experiments[-1] = 'SparseLets'
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(size) for size in sizes]
-fig, a, ax = plot(fig=fig, mps=mps, experiments=experiments, databases=databases, labels=labels, scale=True)    
-if dofig: fig.savefig(figpath + 'SparseLets_B.pdf')
+fig, a, ax = plot(fig=fig, mps=mps, experiments=experiments, databases=databases, labels=labels, scale=False)    
+if dofig: 
+    FORMATS = ['pdf', 'eps']
+    for ext in FORMATS: fig.savefig(figpath + 'SparseLets_B.' + ext)
