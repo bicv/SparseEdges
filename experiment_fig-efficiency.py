@@ -74,7 +74,7 @@ fig = plt.figure(figsize=(fig_width, fig_width/1.618))
 fig, a, ax = plot(mps=mps, 
                   experiments=experiments, databases=databases, labels=labels, 
                   fig=fig, threshold=threshold, scale=True, color=[0., 1., 0.])    
-a.set_xlabel(r'orientation bandwith $B_{\theta}$')
+a.set_xlabel(r'orientation bandwith $B_{\theta}$ (radians)')
 if dofig: 
     for ext in FORMATS: fig.savefig(figpath + 'efficiency_B.' + ext)
     
@@ -113,6 +113,8 @@ for base_levels in v_base_levels:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % (base_levels) for base_levels in v_base_levels]
+labels[0] = r'$\sqrt{2}$'
+labels[1] = r'$\phi$'
 fig = plt.figure(figsize=(fig_width, fig_width/1.618))
 fig, a, ax = plot(mps=mps, 
                   experiments=experiments, databases=databases, labels=labels, 
