@@ -8,8 +8,8 @@ pe = ParameterSet('default_param.py')
 
 # defining input image as Lena
 from pylab import imread
-image = imread('../AssoField/database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
-#image = imread('../AssoField/database/serre07_targets/B_N107001.jpg').mean(axis=-1)
+image = imread('database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
+image = imread('database/lena' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
 #print image.mean(), image.std()
 
 pe.N = 512
@@ -17,7 +17,6 @@ pe.N = 512
 im = Image(pe)
 image = im.normalize(image, center=True)
 #print image.mean(), image.std()
-
 lg = LogGabor(im)
 mp = SparseEdges(lg)
 

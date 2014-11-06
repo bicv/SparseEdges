@@ -10,7 +10,7 @@ im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
 
-imageslist, edgeslist, RMSE = mp.process(exp='testing_vanilla', name_database='serre07_distractors')
+imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla', name_database='serre07_distractors')
 
 if not(imageslist=='locked'):
     v_hist, v_theta_edges = mp.histedges_theta(edgeslist, display=False)
@@ -18,4 +18,4 @@ if not(imageslist=='locked'):
     z = np.linspace(.5/pe.n_theta, 1.-.5/pe.n_theta, pe.n_theta)
     mp.theta = np.interp(z, np.hstack((0, np.cumsum(v_hist))), v_theta_edges)
 
-    imageslist, edgeslist, RMSE =  mp.process('testing_vanilla_secondorder')
+    imageslist, edgeslist, RMSE =  mp.process('prior_vanilla_secondorder')

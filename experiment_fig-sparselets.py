@@ -15,6 +15,7 @@ def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
     pe.N_image = N_image
     pe.N_X = N_X
     pe.N = N
+    pe.seed = 42
     im = Image(pe)
     lg = LogGabor(im)
     mp = SparseEdges(lg)
@@ -43,7 +44,8 @@ experiments = ['SparseLets_' + '%0.3d' % size for size in sizes] # ['testing_van
 experiments[-1] = 'SparseLets'
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(size) for size in sizes]
-fig, a, ax = plot(fig=fig, mps=mps, experiments=experiments, databases=databases, labels=labels, scale=False)    
+fig, a, ax = plot(fig=fig, mps=mps, experiments=experiments, databases=databases, 
+                  labels=labels, scale=True)    
 if dofig: 
     FORMATS = ['pdf', 'eps']
     for ext in FORMATS: fig.savefig(figpath + 'SparseLets_B.' + ext)

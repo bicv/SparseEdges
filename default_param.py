@@ -7,28 +7,35 @@
 # Image
 # 'N_image' : None, #use all images in the folder
 # 'N_image' : 100, #use 100 images in the folder
-'N_image' : 4, #use 4 images in the folder
+'N_image' : 20, #use 4 images in the folder
 'N_X' : 256, # size of images
 'N_Y' : 256, # size of images
 # 'N_X' : 64, # size of images
 # 'N_Y' : 64, # size of images
-'do_mask'  : True, # used in MAtching Pursuit self.pe.do_mask
-'seed': None, # a seed for the Random Number Generator (RNG) for picking images in databases, set to None or a given number to freeze the RNG
+'do_mask'  : True, # used in Matching Pursuit self.pe.do_mask
+'seed': None, # a seed for the Random Number Generator (RNG) for picking images in databases, set to None xor set to a given number to freeze the RNG
+# whitening parameters:
+'name_database' : 'serre07_distractors',
+'n_learning' : 400,
+'N' : .6,
+'N_0' : .0, # olshausen = 0.
+'f_0' : .4, # olshausen = 0.2
+'alpha' : 1.15,
+'steepness' : 4.,
+'recompute' : False,
+'learn' : False,
 # Log-Gabor
-#'base_levels' : 2.,
-'base_levels' : 1.618,
+'base_levels' : 2.,
+#'base_levels' : 1.618,
 'n_theta' : 24, # number of (unoriented) angles between 0. radians (included) and np.pi radians (excluded)
 'B_sf' : .5, # 1.5 in Geisler
-'B_theta' : 3.14159/12.,
+'B_theta' : 3.14159/18.,
 # Matching Pursuit
-# TODO : use 1 ??
-'alpha' : .0, # exponent of the color envelope
 'MP_alpha' : .8, # ratio of inhibition in alpha-Matching Pursuit
 # 'N' : 32, # number of edges extracted
 'N' : 2**11,
 'do_whitening'  : True, # = self.pe.do_whitening
-'MP_do_mask'  : False, # used in MAtching Pursuit self.pe.do_mask
-#do_real=False # do we consider log-gabors with a complex part?
+'MP_do_mask'  : True, # used in Matching Pursuit self.pe.do_mask
 'figpath' : 'figures/',
 'edgefigpath' : 'figures/edges/',
 'matpath' : 'mat/',
@@ -50,9 +57,7 @@
 'N_Dtheta' : 24, # equal to n_theta : 24 to avoid artifacts
 'N_phi' : 12, #
 'N_scale' : 5, #
-'loglevel_max': 7,
-'alpha' : .0, # exponent of the color envelope
-'noise' : 0.5, #
+'loglevel_max': 7, # used for the statistics
 'figsize_hist' : 3.41, # width of a column in inches
 'figsize_cohist' : 3.41, #
 # doing the computation on a circular mask

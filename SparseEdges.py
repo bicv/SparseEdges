@@ -37,9 +37,8 @@ class SparseEdges:
         self.N_X = lg.N_X
         self.N_Y = lg.N_Y
 
-        self.base_levels = self.pe.base_levels
-        self.n_levels = int(np.log(np.max((self.N_X, self.N_Y)))/np.log(self.base_levels))
-        self.sf_0 = 1. / np.logspace(1, self.n_levels, self.n_levels, base=self.base_levels)
+        self.n_levels = int(np.log(np.max((self.N_X, self.N_Y)))/np.log(self.pe.base_levels))
+        self.sf_0 = 1. / np.logspace(1, self.n_levels, self.n_levels, base=self.pe.base_levels)
 
         self.n_theta = self.pe.n_theta
         self.theta = np.linspace(0., np.pi, self.n_theta, endpoint=False)
@@ -48,7 +47,7 @@ class SparseEdges:
 
         self.N = self.pe.N
         self.do_whitening = self.pe.do_whitening
-        self.oc = (self.N_X * self.N_Y * self.n_theta * self.n_levels) #(1 - self.base_levels**-2)**-1)
+        self.oc = (self.N_X * self.N_Y * self.n_theta * self.n_levels) #(1 - self.pe.base_levels**-2)**-1)
         if self.pe.MP_do_mask: self.oc *= np.pi / 4
         #self.MP_do_mask = self.pe.MP_do_mask
         if True: #self.MP_do_mask:
@@ -143,7 +142,8 @@ class SparseEdges:
         pass
 
     def show_edges(self, edges, fig=None, a=None, image=None, norm=True,
-                   color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1., pedestal=.2, mappable=False):
+                   color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1., 
+                   pedestal=.2, mappable=False):
         """
         Shows the quiver plot of a set of edges, optionally associated to an image.
 
@@ -237,9 +237,9 @@ class SparseEdges:
         for filename, croparea in imagelist:
 #                 signal = do_edge(self, image, exp, name_database, filename, croparea)
 #                         def do_edge(self, image, exp, name_database, filename, croparea):
-            matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
-            if not(os.path.isdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))):
-                os.mkdir(os.path.join(self.pe.edgematpath, exp + '_' + name_database))
+            path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+            if not(os.path.isdir(path)): os.mkdir(path)
+            matname = os.path.join(path, filename + str(croparea) + '.npy')
             if not(os.path.isfile(matname)):
                 if not(os.path.isfile(matname + '_lock')):
                     file(matname + '_lock', 'w').close()
@@ -271,7 +271,7 @@ class SparseEdges:
                 log.error(' some locked edge extractions %s, error ', e)
                 return 'locked'
 
-    def full_RMSE(self, exp, name_database, imagelist, noise):
+    def full_RMSE(self, exp, name_database, imagelist):#, noise):
         global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
         for filename, croparea in imagelist:
             matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
@@ -279,7 +279,7 @@ class SparseEdges:
                 if not(os.path.isfile(matname + '_lock')):
                     file(matname + '_lock', 'w').close()
                     image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
-                    if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
+                    #if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
                     edges = np.load(os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy'))
                     # computing RMSE
                     RMSE = np.ones(self.N)
@@ -346,7 +346,7 @@ class SparseEdges:
             value = value[mask]
 
         weights = np.absolute(value)/(np.absolute(value)).sum()
-        v_hist, v_theta_edges_ = np.histogram(theta, self.edges_theta, normed=True, weights=weights)
+        v_hist, v_theta_edges_ = np.histogram(theta, self.edges_theta, density=True, weights=weights)
         v_hist /= v_hist.sum()
         if display:
             if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
@@ -377,7 +377,7 @@ class SparseEdges:
             value = value[mask]
 
         weights = np.absolute(value)/(np.absolute(value)).sum()
-        v_hist, v_sf_0_edges_ = np.histogram(sf_0, self.edges_sf_0, normed=True, weights=weights)
+        v_hist, v_sf_0_edges_ = np.histogram(sf_0, self.edges_sf_0, density=True, weights=weights)
         v_hist /= v_hist.sum()
         if display:
             if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
@@ -475,7 +475,7 @@ class SparseEdges:
 #                 print 'theta', theta.min() - self.edges_theta.min(), ' / ', theta.max() - self.edges_theta.max()
                 v_hist_, edges_ = np.histogramdd([d.ravel(), phi.ravel(), theta.ravel(), loglevel.ravel()], #data,
                                                  bins=(self.edges_d, self.edges_phi, self.edges_theta, self.edges_loglevel),
-                                                 normed=True,
+                                                 normed=False, # TODO check if correct True,
                                                  weights=weights.ravel()
                                                 )
 #                 print v_hist_.sum(), v_hist_.min(), v_hist_.max(), d.ravel().shape
@@ -869,7 +869,7 @@ class SparseEdges:
             except Exception, e:
                 log.info(' >> There is no RMSE: %s ', e)
                 try:
-                    RMSE = self.full_RMSE(exp, name_database, imagelist, noise=noise)
+                    RMSE = self.full_RMSE(exp, name_database, imagelist)#, noise=noise)
                     if RMSE == 'locked':
                         log.info('>> RMSE extraction %s is locked', matname)
                         locked = True
@@ -1030,11 +1030,11 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
                 RMSE /= RMSE[:, 0][:, np.newaxis]
                 N = RMSE.shape[1] #number of edges
-                l0_max = max(l0_max, 1.*N/mp.oc)
+                l0_max = max(l0_max, N*np.log2(mp.oc)/1024.)
                 if not(scale):
                     l0_axis = np.arange(N)
                 else:
-                    l0_axis = np.linspace(0, 1.*N/mp.oc, N)
+                    l0_axis = np.linspace(0, N*np.log2(mp.oc)/1024., N)
                 ax.errorbar(l0_axis, RMSE.mean(axis=0),
                             yerr=RMSE.std(axis=0), errorevery=RMSE.shape[1]/8)
                 inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
@@ -1063,7 +1063,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
             if not(scale):#False and a==ax:
                 a.set_xlabel(r'$\ell_0$-norm')
             else:
-                a.set_xlabel(r'relative $\ell_0$-norm')
+                a.set_xlabel(r'relative $\ell_0$-norm (kbits)')
             a.grid(b=False, which="both")
 
         ax.set_ylabel(r'Squared error')
