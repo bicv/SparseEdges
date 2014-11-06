@@ -5,6 +5,9 @@
 'ncpus' : 1, # on the cluster we can run many batches - no need for pp
 'seed' : None, # seed used in the number generator for collecting images etc...
 # Image
+# 'N_image' : None, #use all images in the folder
+# 'N_image' : 100, #use 100 images in the folder
+'N_image' : 4, #use 4 images in the folder
 'N_X' : 256, # size of images
 'N_Y' : 256, # size of images
 # 'N_X' : 64, # size of images
@@ -49,8 +52,6 @@
 'N_scale' : 5, #
 'loglevel_max': 7,
 'alpha' : .0, # exponent of the color envelope
-'N_image' : 100, #use all images in the folder 200, #None
-# 'N_image' : 4, #use all images in the folder 200, #None
 'noise' : 0.5, #
 'figsize_hist' : 3.41, # width of a column in inches
 'figsize_cohist' : 3.41, #

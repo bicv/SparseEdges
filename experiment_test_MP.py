@@ -17,7 +17,7 @@ image[pe.N_X/2:pe.N_X/2+pe.N_X/4, pe.N_X/4:pe.N_X/2] = -1
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
-matname = 'mat/example1.npy'
+matname = 'mat/experiment_test_MP.npy'
 try:
     edges = np.load(matname)
 except:

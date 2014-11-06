@@ -170,7 +170,7 @@ class SparseEdges:
 #         Place the [0,0] index of the array in the upper left or lower left corner of the axes. If None, default to rc image.origin.
 #         extent : scalars (left, right, bottom, top), optional, default: None
 #         Data limits for the axes. The default assigns zero-based row, column indices to the x, y centers of the pixels.
-        if not(image == None):
+        if type(image)==np.ndarray:
 #             if image.ndim==2: opts['cmap'] = cm.gray
             if norm: image = self.im.normalize(image, center=True, use_max=True)
             a.imshow(image, **opts)
