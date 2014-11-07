@@ -163,7 +163,7 @@ class SparseEdges:
             linewidth = self.pe.line_width
             scale = self.pe.scale
 
-        opts= {'extent': (0, self.N_X, self.N_Y, 0),
+        opts= {'extent': (0, self.N_X, 0, self.N_Y),
                'cmap': cm.gray,
                'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest', 'origin':'upper'}
 #         origin : [‘upper’ | ‘lower’], optional, default: None
@@ -849,10 +849,8 @@ class SparseEdges:
                     try:
                         file(figname + '_lock', 'w').close()
                         log.info(' reconstructing figure %s ', figname)
-#                         image, filename_, croparea_  = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
-#                         if self.do_whitening: image = self.im.whitening(image)
                         image_ = self.reconstruct(edgeslist[:, :, i_image])
-                        #if self.do_whitening: image_ = self.im.dewhitening(image_)
+                        if self.do_whitening: image_ = self.im.dewhitening(image_)
                         fig, a = self.show_edges(edgeslist[:, :, i_image], image=image_*1.)
                         plt.savefig(figname)
                         plt.close('all')
@@ -1030,11 +1028,11 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
                 RMSE /= RMSE[:, 0][:, np.newaxis]
                 N = RMSE.shape[1] #number of edges
-                l0_max = max(l0_max, N*np.log2(mp.oc)/1024.)
+                l0_max = max(l0_max, N*np.log2(mp.oc)/mp.oc)
                 if not(scale):
                     l0_axis = np.arange(N)
                 else:
-                    l0_axis = np.linspace(0, N*np.log2(mp.oc)/1024., N)
+                    l0_axis = np.linspace(0, N*np.log2(mp.oc)/mp.oc, N)
                 ax.errorbar(l0_axis, RMSE.mean(axis=0),
                             yerr=RMSE.std(axis=0), errorevery=RMSE.shape[1]/8)
                 inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
@@ -1063,7 +1061,8 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
             if not(scale):#False and a==ax:
                 a.set_xlabel(r'$\ell_0$-norm')
             else:
-                a.set_xlabel(r'relative $\ell_0$-norm (kbits)')
+                ax.set_xlabel(r'relative $\ell_0$ pseudo-norm (bits / coefficient)')#relative $\ell_0$-norm')
+
             a.grid(b=False, which="both")
 
         ax.set_ylabel(r'Squared error')
@@ -1081,7 +1080,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 N = RMSE.shape[1] #number of edges
                 l0_results = np.argmax(RMSE<threshold, axis=1)*1.
                 if (scale):
-                    l0_results *= np.log2(mp.oc)/1024.
+                    l0_results *= np.log2(mp.oc)/mp.oc
                 l0.append(l0_results.mean())
                 l0_std.append(l0_results.std())
                 ind += 1
@@ -1093,9 +1092,9 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
         ax.set_xlim([-width/4, ind+.0*width])
 
         if not(scale):#False and a==ax:
-            ax.set_ylabel(r'$\ell_0$-norm')
+            ax.set_ylabel(r'$\ell_0$ pseudo-norm')
         else:
-            ax.set_ylabel(r'kilobits ')#relative $\ell_0$-norm')
+            ax.set_ylabel(r'relative $\ell_0$ pseudo-norm (bits / coefficient)')#relative $\ell_0$-norm')
 
         ax.set_xticks(np.arange(ind)+.5*width)
         ax.set_xticklabels(labels)
