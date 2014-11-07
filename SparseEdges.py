@@ -163,7 +163,7 @@ class SparseEdges:
             linewidth = self.pe.line_width
             scale = self.pe.scale
 
-        opts= {'extent': (0, self.N_X, self.N_Y, 0),
+        opts= {'extent': (0, self.N_Y, self.N_X, 0),
                'cmap': cm.gray,
                'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest', 'origin':'upper'}
 #         origin : [‘upper’ | ‘lower’], optional, default: None
@@ -850,7 +850,7 @@ class SparseEdges:
                         file(figname + '_lock', 'w').close()
                         log.info(' reconstructing figure %s ', figname)
                         image_ = self.reconstruct(edgeslist[:, :, i_image])
-                        if self.do_whitening: image_ = self.im.dewhitening(image_)
+#                         if self.do_whitening: image_ = self.im.dewhitening(image_)
                         fig, a = self.show_edges(edgeslist[:, :, i_image], image=image_*1.)
                         plt.savefig(figname)
                         plt.close('all')
