@@ -100,7 +100,7 @@ class SparseEdges:
             for i_theta, theta_ in enumerate(self.theta):
                 D_theta = theta - theta_ # angle between edge's orientation and the layer's one
                 phi = np.arctan2(self.im.Y-y, self.im.X-x) - np.pi/2 - theta_ - D_theta/2
-                D[:, :, i_theta, i_sf_0] = np.exp(np.cos(phi)/B_phi**2) * np.exp(np.cos(D_theta)/B_theta**2)
+                D[:, :, i_theta, i_sf_0] = np.exp(np.cos(2*phi)/B_phi**2) * np.exp(np.cos(2*D_theta)/B_theta**2)
                 if self.pe.MP_do_mask: D[:, :, i_theta, i_sf_0] *= self.MP_mask
             D[:, :, :, i_sf_0] *= C * neighborhood[..., np.newaxis]*np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / 2)
         return D
