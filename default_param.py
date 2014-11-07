@@ -7,7 +7,7 @@
 # Image
 # 'N_image' : None, #use all images in the folder
 # 'N_image' : 100, #use 100 images in the folder
-'N_image' : 20, #use 4 images in the folder
+'N_image' : 10, #use 4 images in the folder
 'N_X' : 256, # size of images
 'N_Y' : 256, # size of images
 # 'N_X' : 64, # size of images
@@ -20,7 +20,7 @@
 'N' : .6,
 'N_0' : .0, # olshausen = 0.
 'f_0' : .4, # olshausen = 0.2
-'alpha' : 1.15,
+'alpha' : 1.2,
 'steepness' : 4.,
 'recompute' : False,
 'learn' : False,
