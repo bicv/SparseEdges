@@ -93,7 +93,7 @@ class SparseEdges:
     def dipole(self, edge):
         D = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
         x, y, theta, sf_0, C, phase = edge
-        w, B_phi, B_theta, scale= pe.N_X*.1, .2, .1, 1.
+        w, B_phi, B_theta, scale= self.pe.N_X*.1, .2, .1, 1.
 
         neighborhood = np.exp(-((self.im.X-x)**2+(self.im.Y-y)**2)/2/((self.pe.N_X**2+self.pe.N_Y)**2) * w**2)
         for i_sf_0, sf_0_ in enumerate(self.sf_0):
