@@ -73,7 +73,7 @@ class SparseEdges:
                                          self.theta[ind_edge_star[2]],
                                          self.sf_0[ind_edge_star[3]],
                                          self.pe.MP_alpha * np.absolute(C[ind_edge_star]), np.angle(C[ind_edge_star])])
-            if eta_SO>0.: D+= self.dipole(edges[:, i_edge])
+            if self.pe.eta_SO>0.: D+= self.dipole(edges[:, i_edge])
             # recording
             if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             # PURSUIT
