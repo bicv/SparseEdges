@@ -14,6 +14,7 @@ pe = ParameterSet('default_param.py')
 def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
     pe.N_image = N_image
     pe.N_X = N_X
+    pe.N_Y = N_X
     pe.N = N
     pe.seed = 42
     im = Image(pe)
