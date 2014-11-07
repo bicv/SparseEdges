@@ -49,10 +49,7 @@ class SparseEdges:
         self.do_whitening = self.pe.do_whitening
         self.oc = (self.N_X * self.N_Y * self.n_theta * self.n_levels) #(1 - self.pe.base_levels**-2)**-1)
         if self.pe.MP_do_mask: self.oc *= np.pi / 4
-        #self.MP_do_mask = self.pe.MP_do_mask
-        if True: #self.MP_do_mask:
-            X, Y = np.mgrid[-1:1:1j*self.N_X, -1:1:1j*self.N_Y]
-            self.MP_mask = (X**2 + Y**2) < .9
+        self.MP_mask = (self.im.X**2 + self.im.Y**2) < .9
         for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
             if not(os.path.isdir(path)): os.mkdir(path)
 
@@ -67,20 +64,22 @@ class SparseEdges:
 #         RMSE = np.ones(self.N)
         if self.do_whitening: image_ = self.im.whitening(image_)
         C = self.init(image_)
+        D = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
         for i_edge in range(self.N):
 #             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
-            ind_edge_star = self.argmax(C)
+            ind_edge_star = self.argmax(C + self.pe.eta_SO * D)
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta[ind_edge_star[2]],
                                          self.sf_0[ind_edge_star[3]],
                                          self.pe.MP_alpha * np.absolute(C[ind_edge_star]), np.angle(C[ind_edge_star])])
+            if eta_SO>0.: D+= self.dipole(edges[:, i_edge])
             # recording
             if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             # PURSUIT
             C = self.backprop(C, ind_edge_star)
         return edges, C
-#
+
     def init(self, image):
         C = np.empty((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
         for i_sf_0, sf_0 in enumerate(self.sf_0):
@@ -90,6 +89,21 @@ class SparseEdges:
                 C[:, :, i_theta, i_sf_0] = self.im.FTfilter(image, FT_lg, full=True)
                 if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
         return C
+
+    def dipole(self, edge):
+        D = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
+        x, y, theta, sf_0, C, phase = edge
+        w, B_phi, B_theta, scale= pe.N_X*.1, .2, .1, 1.
+
+        neighborhood = np.exp(-((self.im.X-x)**2+(self.im.Y-y)**2)/2/((self.pe.N_X**2+self.pe.N_Y)**2) * w**2)
+        for i_sf_0, sf_0_ in enumerate(self.sf_0):
+            for i_theta, theta_ in enumerate(self.theta):
+                D_theta = theta - theta_ # angle between edge's orientation and the layer's one
+                phi = np.arctan2(self.im.Y-y, self.im.X-x) - np.pi/2 - theta_ - D_theta/2
+                D[:, :, i_theta, i_sf_0] = np.exp(np.cos(phi)/B_phi**2) * np.exp(np.cos(D_theta)/B_theta**2)
+                if self.pe.MP_do_mask: D[:, :, i_theta, i_sf_0] *= self.MP_mask
+            D[:, :, :, i_sf_0] *= C * neighborhood[..., np.newaxis]*np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / 2)
+        return D
 
     def argmax(self, C):
         """
