@@ -90,19 +90,22 @@ class SparseEdges:
                 if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
         return C
 
-    def dipole(self, edge):
-        D = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
+    def dipole(self, edge, w=20., B_phi=.2, B_theta=.1, scale=1.):
+
+        D = np.ones((self.N_X, self.N_Y, self.n_theta, self.n_levels))
         x, y, theta, sf_0, C, phase = edge
-        w, B_phi, B_theta, scale= self.pe.N_X*.1, .2, .1, 1.
 
         neighborhood = np.exp(-((self.im.X-x)**2+(self.im.Y-y)**2)/2/(w**2))
         for i_sf_0, sf_0_ in enumerate(self.sf_0):
             for i_theta, theta_ in enumerate(self.theta):
                 D_theta = theta - theta_ # angle between edge's orientation and the layer's one
                 phi = np.arctan2(self.im.Y-y, self.im.X-x) - np.pi/2 - theta_ - D_theta/2
-                D[:, :, i_theta, i_sf_0] = np.exp(np.cos(2*phi)/B_phi**2) * np.exp(np.cos(2*D_theta)/B_theta**2)
+                phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
+                theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
+                D[:, :, i_theta, i_sf_0] = np.exp((np.cos(2*phi)-1)/B_phi**2) * np.exp((np.cos(2*D_theta)-1)/B_theta**2)
                 if self.pe.MP_do_mask: D[:, :, i_theta, i_sf_0] *= self.MP_mask
-            D[:, :, :, i_sf_0] *= C * neighborhood[..., np.newaxis]*np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / 2)
+            D[:, :, :, i_sf_0] *= C * neighborhood[..., np.newaxis]*np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / scale)
+
         return D
 
     def argmax(self, C):

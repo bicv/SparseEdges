@@ -10,12 +10,14 @@ im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
 
-imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla', name_database='serre07_distractors')
+for name_database in ['serre07_distractors', 'laboratory']:
+    # control experiment
+    imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla', name_database=name_database)
+    imageslist, edgeslist_noise, RMSE = mp.process(exp='prior_vanilla_noise', name_database=name_database, noise=pe.noise)
 
-if not(imageslist=='locked'):
-    v_hist, v_theta_edges = mp.histedges_theta(edgeslist, display=False)
-
-    z = np.linspace(.5/pe.n_theta, 1.-.5/pe.n_theta, pe.n_theta)
-    mp.theta = np.interp(z, np.hstack((0, np.cumsum(v_hist))), v_theta_edges)
-
-    imageslist, edgeslist, RMSE =  mp.process('prior_vanilla_secondorder')
+    try:
+        mp.pe.eta_SO = .5
+        imageslist, edgeslist, RMSE =  mp.process(exp='prior_vanilla_secondorder', name_database=name_database)
+        imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla_secondorder_noise', name_database=name_database, noise=pe.noise)
+    except:
+        print('run again once first batches are finished ')

@@ -27,6 +27,10 @@ pypi_docs: index.html
 todo:
 	grep -R * (^|#)[ ]*(TODO|FIXME|XXX|HINT|TIP)( |:)([^#]*)
 
+update:
+	cd ../SLIP; git pull; pip install -U . ; cd ../SparseEdges/
+	cd ../LogGabor; git pull; pip install -U . ; cd ../SparseEdges/
+
 # macros for tests
 index.html: $(NAME).ipynb
 	runipy $(NAME).ipynb -o
