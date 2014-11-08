@@ -31,6 +31,7 @@
 'n_theta' : 24, # number of (unoriented) angles between 0. radians (included) and np.pi radians (excluded)
 'B_sf' : .5, # 1.5 in Geisler
 'B_theta' : 3.14159/18.,
+'alpha':1., # decrease profile of log-gabors
 # Matching Pursuit
 'MP_alpha' : .8, # ratio of inhibition in alpha-Matching Pursuit
 'eta_SO' : 0.1,
