@@ -12,6 +12,7 @@
 'N_Y' : 256, # size of images
 # 'N_X' : 64, # size of images
 # 'N_Y' : 64, # size of images
+'noise':0.5, # level of noise when we use some
 'do_mask'  : True, # used in Matching Pursuit self.pe.do_mask
 'seed': None, # a seed for the Random Number Generator (RNG) for picking images in databases, set to None xor set to a given number to freeze the RNG
 # whitening parameters:

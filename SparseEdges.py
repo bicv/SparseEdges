@@ -95,7 +95,7 @@ class SparseEdges:
         x, y, theta, sf_0, C, phase = edge
         w, B_phi, B_theta, scale= self.pe.N_X*.1, .2, .1, 1.
 
-        neighborhood = np.exp(-((self.im.X-x)**2+(self.im.Y-y)**2)/2/((w**2)
+        neighborhood = np.exp(-((self.im.X-x)**2+(self.im.Y-y)**2)/2/(w**2))
         for i_sf_0, sf_0_ in enumerate(self.sf_0):
             for i_theta, theta_ in enumerate(self.theta):
                 D_theta = theta - theta_ # angle between edge's orientation and the layer's one
