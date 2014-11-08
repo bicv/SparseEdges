@@ -14,7 +14,7 @@ pe.seed = 42 # this ensures that all image lists are the same for the different 
 
 name_database='serre07_distractors'
 #name_database='laboratory'
-y
+
 # control experiment
 imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla', name_database=name_database)
 imageslist, edgeslist_noise, RMSE = mp.process(exp='prior_vanilla_noise', name_database=name_database, noise=pe.noise)

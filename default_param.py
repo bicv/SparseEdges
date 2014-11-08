@@ -7,7 +7,7 @@
 # Image
 # 'N_image' : None, #use all images in the folder
 # 'N_image' : 100, #use 100 images in the folder
-'N_image' : 10, #use 4 images in the folder
+'N_image' : 50, #use 4 images in the folder
 'N_X' : 256, # size of images
 'N_Y' : 256, # size of images
 # 'N_X' : 64, # size of images
@@ -16,15 +16,15 @@
 'do_mask'  : True, # used in Matching Pursuit self.pe.do_mask
 'seed': None, # a seed for the Random Number Generator (RNG) for picking images in databases, set to None xor set to a given number to freeze the RNG
 # whitening parameters:
-'name_database' : 'serre07_distractors',
-'n_learning' : 400,
-'N' : .07,
-'N_0' : .0, # olshausen = 0.
-'f_0' : .4, # olshausen = 0.2
-'alpha' : 1.4,
-'steepness' : 4.,
-'recompute' : False,
-'learn' : False,
+'white_name_database' : 'serre07_distractors',
+'white_n_learning' : 400,
+'white_N' : .07,
+'white_N_0' : .0, # olshausen = 0.
+'white_f_0' : .4, # olshausen = 0.2
+'white_alpha' : 1.4,
+'white_steepness' : 4.,
+'white_recompute' : False,
+'white_learn' : False,
 # Log-Gabor
 'base_levels' : 2.,
 #'base_levels' : 1.618,
@@ -35,7 +35,7 @@
 'MP_alpha' : .8, # ratio of inhibition in alpha-Matching Pursuit
 'eta_SO' : 0.1,
 # 'N' : 32, # number of edges extracted
-'N' : 2**11,
+'N' : 2**9,
 'do_whitening'  : True, # = self.pe.do_whitening
 'MP_do_mask'  : False, # used in Matching Pursuit self.pe.do_mask
 'figpath' : 'figures/',
