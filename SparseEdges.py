@@ -41,7 +41,7 @@ class SparseEdges:
         self.sf_0 = 1. / np.logspace(1, self.n_levels, self.n_levels, base=self.pe.base_levels)
 
         self.n_theta = self.pe.n_theta
-        self.theta = np.linspace(0., np.pi, self.n_theta, endpoint=False)
+        self.theta = np.linspace(-np.pi/2, np.pi/2, self.n_theta, endpoint=False)
         self.B_theta = self.pe.B_theta
         self.B_sf = self.pe.B_sf
 
@@ -335,7 +335,7 @@ class SparseEdges:
         # sequence of scalars,it defines the bin edges, including the rightmost edge.
         self.edges_d = np.linspace(self.pe.d_min, self.pe.d_max, self.pe.N_r+1)
         self.edges_phi = np.linspace(-np.pi/2, np.pi/2, self.pe.N_phi+1) + np.pi/self.pe.N_phi/2
-        self.edges_theta = np.linspace(-np.pi/2, np.pi/2, self.pe.N_Dtheta+1) + np.pi/self.pe.n_theta/2
+        self.edges_theta = np.linspace(-np.pi/2, np.pi/2, self.pe.N_Dtheta+1) + np.pi/self.pe.N_Dtheta/2
         self.edges_sf_0 = 2**np.arange(np.ceil(np.log2(self.N_X)))
         self.edges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
@@ -360,13 +360,14 @@ class SparseEdges:
             value = value[mask]
 
         weights = np.absolute(value)/(np.absolute(value)).sum()
-        v_hist, v_theta_edges_ = np.histogram(theta, self.edges_theta, density=True, weights=weights)
+        theta_bin = np.hstack((self.theta, self.theta[0]+np.pi))  + np.pi/self.pe.N_Dtheta/2
+        v_hist, v_theta_edges_ = np.histogram(theta, bins=theta_bin, density=True, weights=weights)
         v_hist /= v_hist.sum()
         if display:
             if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
             if a==None: a = plt.axes(polar=True, axisbg='w')
-            a.bar(self.edges_theta[:-1], v_hist, width=np.pi/self.pe.N_Dtheta, color='b')# edgecolor="none")
-            a.bar(self.edges_theta[:-1]+np.pi, v_hist, width=np.pi/self.pe.N_Dtheta, color='g')
+            a.bar(theta_bin[1:], v_hist, width=theta_bin[:-1] - theta_bin[1:], color='b')# edgecolor="none")
+            a.bar(theta_bin[1:]+np.pi, v_hist, width=theta_bin[:-1] - theta_bin[1:], color='g')
             plt.setp(a, yticks=[])
             return fig, a
         else:
