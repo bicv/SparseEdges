@@ -18,7 +18,7 @@ import numpy as np
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
 from LogGabor import LogGabor
-from SparseEdges import SparseEdges
+from SparseEdges import SparseEdges, plot
 from NeuroTools.parameters import ParameterSet
 pe = ParameterSet('default_param.py')
 FORMATS = ['pdf', 'eps']
@@ -80,6 +80,7 @@ for MP_alpha in v_alpha:
     experiments.append(exp)
     mps.append(mp)
 
+threshold = .9
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % MP_alpha for MP_alpha in v_alpha]
 fig = plt.figure(figsize=(fig_width, fig_width/1.618))
