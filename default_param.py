@@ -31,12 +31,12 @@
 'n_theta' : 24, # number of (unoriented) angles between 0. radians (included) and np.pi radians (excluded)
 'B_sf' : .5, # 1.5 in Geisler
 'B_theta' : 3.14159/18.,
-'alpha':1., # decrease profile of log-gabors
+'alpha': 0., # decrease profile of log-gabors
 # Matching Pursuit
 'MP_alpha' : .8, # ratio of inhibition in alpha-Matching Pursuit
 'eta_SO' : 0.1,
 # 'N' : 32, # number of edges extracted
-'N' : 2**9,
+'N' : 2**11,
 'do_whitening'  : True, # = self.pe.do_whitening
 'MP_do_mask'  : False, # used in Matching Pursuit self.pe.do_mask
 'figpath' : 'figures/',

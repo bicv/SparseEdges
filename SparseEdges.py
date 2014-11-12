@@ -366,7 +366,7 @@ class SparseEdges:
 
         print theta.min(), theta.max(),
         weights = np.absolute(value)/(np.absolute(value)).sum()
-        theta_bin = np.hstack((self.theta, self.theta[0]+np.pi))  + np.pi/self.pe.N_Dtheta/2
+        theta_bin = self.edges_theta # np.hstack((self.theta, self.theta[0]+np.pi))  + np.pi/self.pe.N_Dtheta/2
         print theta_bin.min(), theta_bin.max()
         v_hist, v_theta_edges_ = np.histogram(theta, bins=theta_bin, density=True, weights=weights)
         v_hist /= v_hist.sum()
