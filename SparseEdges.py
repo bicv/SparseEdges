@@ -862,7 +862,7 @@ class SparseEdges:
                         try:
                             os.remove(figname + '_lock')
                         except Exception, e:
-                            log.info('Failed to remove lock file %s_lock', ', error : %s ', figname , e)
+                            log.info('Failed to remove lock file %s_lock , error : %s ', figname , e)
                     except Exception, e:
                         log.info('Failed to make edge image  %s, error : %s ', figname , e)
 
