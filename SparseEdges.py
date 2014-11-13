@@ -1046,11 +1046,11 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
                 RMSE /= RMSE[:, 0][:, np.newaxis]
                 N = RMSE.shape[1] #number of edges
-                l0_max = max(l0_max, N*np.log2(mp.oc)/mp.oc)
+                l0_max = max(l0_max, N*np.log2(mp.oc)/mp.N_X/mp.N_Y)
                 if not(scale):
                     l0_axis = np.arange(N)
                 else:
-                    l0_axis = np.linspace(0, N*np.log2(mp.oc)/mp.oc, N)
+                    l0_axis = np.linspace(0, N*np.log2(mp.oc)/mp.N_X/mp.N_Y, N)
                 ax.errorbar(l0_axis, RMSE.mean(axis=0),
                             yerr=RMSE.std(axis=0), errorevery=RMSE.shape[1]/8)
                 inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
@@ -1079,7 +1079,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
             if not(scale):#False and a==ax:
                 a.set_xlabel(r'$\ell_0$-norm')
             else:
-                ax.set_xlabel(r'relative $\ell_0$ pseudo-norm (bits / coefficient)')#relative $\ell_0$-norm')
+                ax.set_xlabel(r'relative $\ell_0$ pseudo-norm (bits / pixel)')#relative $\ell_0$-norm')
 
             a.grid(b=False, which="both")
 
@@ -1098,7 +1098,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 N = RMSE.shape[1] #number of edges
                 l0_results = np.argmax(RMSE<threshold, axis=1)*1.
                 if (scale):
-                    l0_results *= np.log2(mp.oc)/mp.oc
+                    l0_results *= np.log2(mp.oc)/mp.N_X/mp.N_Y
                 l0.append(l0_results.mean())
                 l0_std.append(l0_results.std())
                 ind += 1
@@ -1112,7 +1112,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
         if not(scale):#False and a==ax:
             ax.set_ylabel(r'$\ell_0$ pseudo-norm')
         else:
-            ax.set_ylabel(r'relative $\ell_0$ pseudo-norm (bits / coefficient)')#relative $\ell_0$-norm')
+            ax.set_ylabel(r'relative $\ell_0$ pseudo-norm (bits / pixel)')#relative $\ell_0$-norm')
 
         ax.set_xticks(np.arange(ind)+.5*width)
         ax.set_xticklabels(labels)
