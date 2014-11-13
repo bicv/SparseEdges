@@ -20,6 +20,8 @@ for name_database in ['serre07_distractors', 'laboratory']:
     try:
         # first-order prior
         v_hist, v_theta_edges = mp.histedges_theta(edgeslist, display=False)
+        v_theta_middles, v_theta_bin  = (v_theta_edges[1:]+v_theta_edges[:-1])/2, v_theta_edges[1]-v_theta_edges[0]
+
         z = np.linspace(0, 1.-1./pe.n_theta, pe.n_theta)
 
         mp.theta = np.interp(z, np.hstack((0, np.cumsum(v_hist))), (v_theta_edges-v_theta_bin/2))

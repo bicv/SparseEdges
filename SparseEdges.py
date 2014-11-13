@@ -41,7 +41,9 @@ class SparseEdges:
         self.sf_0 = 1. / np.logspace(1, self.n_levels, self.n_levels, base=self.pe.base_levels)
 
         self.n_theta = self.pe.n_theta
-        self.theta = np.linspace(-np.pi/2, np.pi/2, self.n_theta, endpoint=False)
+#         self.theta = - np.linspace(-np.pi/2, np.pi/2, self.n_theta, endpoint=False)[::-1]
+        self.theta = np.linspace(-np.pi/2, np.pi/2, self.n_theta+1)[1:]
+#         self.theta = np.linspace(0., np.pi, self.n_theta, endpoint=False)
         self.B_theta = self.pe.B_theta
         self.B_sf = self.pe.B_sf
 
@@ -362,8 +364,10 @@ class SparseEdges:
             theta = theta[mask]
             value = value[mask]
 
+        print theta.min(), theta.max(),
         weights = np.absolute(value)/(np.absolute(value)).sum()
-        theta_bin = np.hstack((self.theta, self.theta[0]+np.pi))  + np.pi/self.pe.N_Dtheta/2
+        theta_bin = self.edges_theta # np.hstack((self.theta, self.theta[0]+np.pi))  + np.pi/self.pe.N_Dtheta/2
+        print theta_bin.min(), theta_bin.max()
         v_hist, v_theta_edges_ = np.histogram(theta, bins=theta_bin, density=True, weights=weights)
         v_hist /= v_hist.sum()
         if display:
@@ -858,7 +862,7 @@ class SparseEdges:
                         try:
                             os.remove(figname + '_lock')
                         except Exception, e:
-                            log.info('Failed to remove lock file %s_lock', ', error : %s ', figname , e)
+                            log.info('Failed to remove lock file %s_lock , error : %s ', figname , e)
                     except Exception, e:
                         log.info('Failed to make edge image  %s, error : %s ', figname , e)
 
