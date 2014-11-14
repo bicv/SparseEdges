@@ -7,7 +7,7 @@
 # Image
 # 'N_image' : None, #use all images in the folder
 # 'N_image' : 100, #use 100 images in the folder
-'N_image' : 50, #use 4 images in the folder
+'N_image' : 10, #use 4 images in the folder
 'N_X' : 256, # size of images
 'N_Y' : 256, # size of images
 # 'N_X' : 64, # size of images
@@ -31,10 +31,9 @@
 'n_theta' : 24, # number of (unoriented) angles between 0. radians (included) and np.pi radians (excluded)
 'B_sf' : .5, # 1.5 in Geisler
 'B_theta' : 3.14159/18.,
-'alpha': 0., # decrease profile of log-gabors
 # Matching Pursuit
 'MP_alpha' : .8, # ratio of inhibition in alpha-Matching Pursuit
-'eta_SO' : 0.1,
+'eta_SO' : 0., # including a dipole
 # 'N' : 32, # number of edges extracted
 'N' : 2**11,
 'do_whitening'  : True, # = self.pe.do_whitening
