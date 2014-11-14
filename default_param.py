@@ -38,7 +38,7 @@
 # 'N' : 32, # number of edges extracted
 'N' : 2**11,
 'do_whitening'  : True, # = self.pe.do_whitening
-'MP_do_mask'  : False, # used in Matching Pursuit self.pe.do_mask
+'MP_do_mask'  : True, # used in Matching Pursuit self.pe.do_mask
 'figpath' : 'figures/',
 'edgefigpath' : 'figures/edges/',
 'matpath' : 'mat/',

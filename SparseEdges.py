@@ -51,7 +51,7 @@ class SparseEdges:
         self.do_whitening = self.pe.do_whitening
         self.oc = (self.N_X * self.N_Y * self.n_theta * self.n_levels) #(1 - self.pe.base_levels**-2)**-1)
         if self.pe.MP_do_mask: self.oc *= np.pi / 4
-        self.MP_mask = (self.im.X**2 + self.im.Y**2) < .9
+        self.MP_mask = (self.im.x**2 + self.im.y**2) < .9
         for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
             if not(os.path.isdir(path)): os.mkdir(path)
 
@@ -862,7 +862,7 @@ class SparseEdges:
                         try:
                             os.remove(figname + '_lock')
                         except Exception, e:
-                            log.info('Failed to remove lock file %s_lock', ', error : %s ', figname , e)
+                            log.info('Failed to remove lock file %s_lock , error : %s ', figname , e)
                     except Exception, e:
                         log.info('Failed to make edge image  %s, error : %s ', figname , e)
 
