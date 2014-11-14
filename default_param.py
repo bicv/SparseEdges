@@ -1,21 +1,18 @@
 {
-# COMPUTATIONAL PARAMETERS
-# 'ncpus' : 'autodetect', # for a SMP machine
-#'ncpus' : 16, # Cluster
-'ncpus' : 1, # on the cluster we can run many batches - no need for pp
 'seed' : None, # seed used in the number generator for collecting images etc...
 # Image
 # 'N_image' : None, #use all images in the folder
-# 'N_image' : 100, #use 100 images in the folder
-'N_image' : 10, #use 4 images in the folder
+'N_image' : 100, #use 100 images in the folder
+# 'N_image' : 10, #use 4 images in the folder
 'N_X' : 256, # size of images
 'N_Y' : 256, # size of images
 # 'N_X' : 64, # size of images
 # 'N_Y' : 64, # size of images
-'noise':0.25, # level of noise when we use some
-'do_mask'  : True, # used in Matching Pursuit self.pe.do_mask
-'seed': None, # a seed for the Random Number Generator (RNG) for picking images in databases, set to None xor set to a given number to freeze the RNG
+'noise' : 0.25, # level of noise when we use some
+'do_mask' : True, # used in Matching Pursuit self.pe.do_mask
+'seed' : None, # a seed for the Random Number Generator (RNG) for picking images in databases, set to None xor set to a given number to freeze the RNG
 # whitening parameters:
+'do_whitening'  : True, # = self.pe.do_whitening
 'white_name_database' : 'serre07_distractors',
 'white_n_learning' : 400,
 'white_N' : .07,
@@ -36,21 +33,7 @@
 'eta_SO' : 0., # including a dipole
 # 'N' : 32, # number of edges extracted
 'N' : 2**11,
-'do_whitening'  : True, # = self.pe.do_whitening
 'MP_do_mask'  : True, # used in Matching Pursuit self.pe.do_mask
-'figpath' : 'figures/',
-'edgefigpath' : 'figures/edges/',
-'matpath' : 'mat/',
-'edgematpath' : 'mat/edges/',
-'datapath' : '../AssoField/database/',
-'ext' : '.pdf',
-'scale' : .2,
-'scale_circle' : 0.08, # relativesize of segments and pivot
-'scale_chevrons' : 2.5,
-'line_width': 1.,
-'line_width_chevrons': .75,
-'edge_scale_chevrons': 180.,
-'figsize_edges' : 6,
 # parameters for computing the histograms
 'd_width' : 45., # Geisler 1.23 deg (full image = 45deg)
 'd_min' : .25, # Geisler 1.23 deg (full image = 45deg)
@@ -69,4 +52,18 @@
 'multiscale': True,
 'kappa_phase': 0.,
 'weight_by_distance': True,
+# PATHS
+'figpath' : 'figures/',
+'edgefigpath' : 'figures/edges/',
+'matpath' : 'mat/',
+'edgematpath' : 'mat/edges/',
+'datapath' : '../AssoField/database/',
+'ext' : '.pdf',
+'scale' : .2,
+'scale_circle' : 0.08, # relativesize of segments and pivot
+'scale_chevrons' : 2.5,
+'line_width': 1.,
+'line_width_chevrons': .75,
+'edge_scale_chevrons': 180.,
+'figsize_edges' : 6,
 }

@@ -1,6 +1,9 @@
 """
 
 $ python experiment_fig-sparselets.py ../../CNRS/BICV-book/BICV_INT/BICV-sparse/
+
+rm -fr **/SparseLets* **/**/SparseLets*
+
 """
 import __init__
 from NeuroTools.parameters import ParameterSet
