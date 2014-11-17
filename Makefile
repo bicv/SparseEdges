@@ -28,8 +28,11 @@ todo:
 	grep -R * (^|#)[ ]*(TODO|FIXME|XXX|HINT|TIP)( |:)([^#]*)
 
 update:
-	cd ../SLIP; git pull; pip install -U . ; cd ../SparseEdges/
-	cd ../LogGabor; git pull; pip install -U . ; cd ../SparseEdges/
+	cd ../SLIP; git pull; pip install -U --user . ; cd ../SparseEdges/
+	cd ../LogGabor; git pull; pip install -U --user . ; cd ../SparseEdges/
+
+console:
+	open -a /Applications/Utilities/Console.app/ log-sparseedges-debug.log
 
 # macros for tests
 index.html: $(NAME).ipynb

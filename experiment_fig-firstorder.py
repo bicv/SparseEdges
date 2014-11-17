@@ -1,3 +1,11 @@
+
+"""
+
+$ python experiment_fig-firstorder.py
+
+rm -fr **/prior_vanilla* **/**/prior_vanilla*
+
+"""
 import __init__
 import numpy as np
 from NeuroTools.parameters import ParameterSet

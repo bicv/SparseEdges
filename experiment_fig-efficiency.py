@@ -1,6 +1,9 @@
 """
 
 $ python experiment_fig-efficiency.py ../../CNRS/BICV-book/BICV_INT/BICV-sparse/
+
+rm -fr **/efficiency_* **/**/efficiency_* 
+
 """
 
 import __init__
