@@ -34,6 +34,8 @@ for name_database in ['serre07_distractors', 'laboratory']:
 
         mp.theta = np.interp(z, np.hstack((0, np.cumsum(v_hist))), (v_theta_edges-v_theta_bin/2))
 
+        mp.theta = (mp.theta) % (np.pi)
+        
         imageslist, edgeslist, RMSE =  mp.process(exp='prior_vanilla_firstorder', name_database=name_database)
         imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla_firstorder_noise', name_database=name_database, noise=pe.noise)
     except:

@@ -824,7 +824,7 @@ class SparseEdges:
             txtname = os.path.join(self.pe.figpath, exp + '_dependence_' + name_database + note + '.txt')
             if not(os.path.isfile(txtname)) and not(os.path.isfile(txtname + '_lock')):
                 file(txtname + '_lock', 'w').close() # touching
-                log.info(' >> Doing check_independence')
+                log.info(' >> Doing check_independence on %s ', txtname)
                 out = self.check_independence(self.cohistedges(edgeslist, name_database, symmetry=False, display=None), name_database, exp)
                 f = file(txtname, 'w')
                 f.write(out)
@@ -911,36 +911,38 @@ class SparseEdges:
 #                plt.close('all')
 #
                 figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note + self.pe.ext)
-                if not(os.path.isfile(figname)):
+                if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
+                    file(figname + '_lock', 'w').close()
                     fig, a = self.histedges_theta(edgeslist, display=True)
                     plt.savefig(figname)
                     plt.close('all')
-
-#            figname = os.path.join(self.pe.figpath, exp + '_proba-cohist_scale_' + name_database + note + self.pe.ext)
-#            if not(os.path.isfile(figname)):
-#                fig, a = self.cohistedges(edgeslist, display='cohist_scale')
-#                plt.savefig(figname)
-#                plt.close('all')
-#
+                    os.remove(figname + '_lock')
+                    
                 figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note + self.pe.ext)
-                if not(os.path.isfile(figname)):
+                if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
+                    file(figname + '_lock', 'w').close()
                     fig, a = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
                     plt.savefig(figname)
                     plt.close('all')
+                    os.remove(figname + '_lock')
 
                 figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_cocir_' + name_database + note + self.pe.ext)
-                if not(os.path.isfile(figname)):
+                if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
+                    file(figname + '_lock', 'w').close()
                     fig, a = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
                     plt.savefig(figname)
                     plt.close('all')
+                    os.remove(figname + '_lock')
 
                 figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note + self.pe.ext)
-                if not(os.path.isfile(figname)):
+                if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
+                    file(figname + '_lock', 'w').close()
                     fig, a = self.cohistedges(edgeslist, display='chevrons')
                     plt.savefig(figname)
                     plt.close('all')
+                    os.remove(figname + '_lock')
             except Exception, e:
-                log.error('Failed to remove lock file %s_RMSE.npy_lock, error : %s ', matname, e)
+                log.error('Failed to create figures, error : %s ', e)
 
             return imagelist, edgeslist, RMSE
         else:
