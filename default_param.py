@@ -2,8 +2,8 @@
 'seed' : None, # seed used in the number generator for collecting images etc...
 # Image
 # 'N_image' : None, #use all images in the folder
-# 'N_image' : 100, #use 100 images in the folder
-'N_image' : 10, #use 4 images in the folder
+'N_image' : 100, #use 100 images in the folder
+# 'N_image' : 10, #use 4 images in the folder
 'N_X' : 256, # size of images
 'N_Y' : 256, # size of images
 # 'N_X' : 64, # size of images
@@ -32,8 +32,8 @@
 'MP_alpha' : .8, # ratio of inhibition in alpha-Matching Pursuit
 'eta_SO' : 0., # including a dipole
 # 'N' : 32, # number of edges extracted
-# 'N' : 2**11,
-'N' : 2**8,
+'N' : 2**11,
+# 'N' : 2**8,
 'MP_do_mask'  : True, # used in Matching Pursuit self.pe.do_mask
 # parameters for computing the histograms
 'd_width' : 45., # Geisler 1.23 deg (full image = 45deg)
