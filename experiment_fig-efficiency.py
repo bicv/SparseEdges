@@ -18,6 +18,7 @@ FORMATS = ['pdf', 'eps']
 
 threshold = None # classical plots
 threshold = .5 # plot sparseness obtained when reaching this threshold
+
 def init_pe(pe, N_image=10, N=512):
     pe.seed = 123456
     pe.N_image = N_image

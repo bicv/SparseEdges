@@ -364,10 +364,10 @@ class SparseEdges:
             theta = theta[mask]
             value = value[mask]
 
-        print theta.min(), theta.max(),
+#         print theta.min(), theta.max(),
         weights = np.absolute(value)/(np.absolute(value)).sum()
         theta_bin = self.edges_theta # np.hstack((self.theta, self.theta[0]+np.pi))  + np.pi/self.pe.N_Dtheta/2
-        print theta_bin.min(), theta_bin.max()
+#         print theta_bin.min(), theta_bin.max()
         v_hist, v_theta_edges_ = np.histogram(theta, bins=theta_bin, density=True, weights=weights)
         v_hist /= v_hist.sum()
         if display:
@@ -1102,6 +1102,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
                 RMSE /= RMSE[:, 0][:, np.newaxis]
                 N = RMSE.shape[1] #number of edges
+                if RMSE.min()>threshold: print 'the threshold is never crossed for', experiment, name_database 
                 l0_results = np.argmax(RMSE<threshold, axis=1)*1.
                 if (scale):
                     l0_results *= np.log2(mp.oc)/mp.N_X/mp.N_Y
@@ -1118,10 +1119,13 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
         if not(scale):#False and a==ax:
             ax.set_ylabel(r'$\ell_0$ pseudo-norm')
         else:
-            ax.set_ylabel(r'relative $\ell_0$ pseudo-norm (bits / pixel)')#relative $\ell_0$-norm')
+            ax.set_ylabel(r'relative $\ell_0$ pseudo-norm')# (bits / pixel)')#relative $\ell_0$-norm')
 
         ax.set_xticks(np.arange(ind)+.5*width)
         ax.set_xticklabels(labels)
+
+#         plt.tight_layout()
+        fig.set_tight_layout(True)
 
         return fig, ax, ax
 
