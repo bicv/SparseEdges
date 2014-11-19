@@ -21,6 +21,8 @@ print image.mean(), image.std()
 im = Image(pe)
 image = im.normalize(image, center=True)
 print image.mean(), image.std()
+v_max = 1.*image.max()
+v_min = -v_max
 
 lg = LogGabor(im)
 mp = SparseEdges(lg)
