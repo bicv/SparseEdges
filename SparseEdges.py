@@ -235,7 +235,7 @@ class SparseEdges:
             circles = PatchCollection(patch_circles, match_original=True)
             a.add_collection(circles)
 
-        if False:#not(color=='auto'):# chevrons maps etc...
+        if not(color=='auto'):# chevrons maps etc...
             plt.setp(a, xticks=[])
             plt.setp(a, yticks=[])
 
@@ -1046,7 +1046,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
         CCycle = np.array(color)[np.newaxis, :] * grad[:, np.newaxis]
         ax.set_color_cycle(CCycle)
         inset.set_color_cycle(CCycle)
-        l0_max = 0.
+        l0_max, eev = 0., -len(experiments)/2 
         for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
             try:
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
@@ -1057,12 +1057,15 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                     l0_axis = np.arange(N)
                 else:
                     l0_axis = np.linspace(0, N*np.log2(mp.oc)/mp.N_X/mp.N_Y, N)
+                errorevery_zoom = 1.4**(1.*eev/len(experiments))
+                print int(RMSE.shape[1]/8*errorevery_zoom), errorevery_zoom
                 ax.errorbar(l0_axis, RMSE.mean(axis=0),
-                            yerr=RMSE.std(axis=0), errorevery=RMSE.shape[1]/8)
+                            yerr=RMSE.std(axis=0), errorevery=int(RMSE.shape[1]/8*errorevery_zoom))
                 inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
-                           yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=RMSE.shape[1]/8)
+                           yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=int(RMSE.shape[1]/8*errorevery_zoom))
                 ax.plot(l0_axis[::RMSE.shape[1]/8], RMSE.mean(axis=0)[::RMSE.shape[1]/8], linestyle='None', marker='o', ms=3)
                 inset.plot(l0_axis[::RMSE.shape[1]/8], edgeslist[4, :, :].mean(axis=1)[::RMSE.shape[1]/8], linestyle='None',  marker='o', ms=3)
+                eev += 1
             except Exception, e:
                 print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
 

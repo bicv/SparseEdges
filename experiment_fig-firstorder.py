@@ -20,7 +20,7 @@ mp = SparseEdges(lg)
 
 pe.seed = 42 # this ensures that all image lists are the same for the different experiments
 
-for name_database in ['serre07_distractors', 'laboratory']:
+for name_database in ['serre07_distractors']:#, 'laboratory']:
     # control experiment
     imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla', name_database=name_database)
     imageslist, edgeslist_noise, RMSE = mp.process(exp='prior_vanilla_noise', name_database=name_database, noise=pe.noise)
