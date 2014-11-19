@@ -1135,7 +1135,8 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
         if not(scale):#False and a==ax:
             ax.set_ylabel(r'$\ell_0$ pseudo-norm')
         else:
-            ax.set_ylabel(r'relative $\ell_0$ pseudo-norm')# (bits / pixel)')#relative $\ell_0$-norm')
+#             ax.set_ylabel(r'relative $\ell_0$ pseudo-norm')# (bits / pixel)')#relative $\ell_0$-norm')
+            ax.set_ylabel(r'rel. $\ell_0$ norm')# (bits / pixel)')#relative $\ell_0$-norm')
 
         ax.set_xticks(np.arange(ind)+.5*width)
         ax.set_xticklabels(labels)
