@@ -855,7 +855,7 @@ class SparseEdges:
                         log.info(' redoing figure %s ', figname)
                         image, filename_, croparea_ = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
                         if noise >0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
-#                        if self.do_whitening: image = self.im.whitening(image)
+                        if self.do_whitening: image = self.im.whitening(image)
                         fig, a = self.show_edges(edgeslist[:, :, i_image], image=image*1.)
                         plt.savefig(figname)
                         plt.close('all')
@@ -1111,6 +1111,22 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 ind += 1
             except Exception, e:
                 print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+
+
+#  subplots_adjust(left=None, bottom=None, right=None, top=None,
+#                  wspace=None, hspace=None)
+#
+#The parameter meanings (and suggested defaults) are::
+#
+#  left  = 0.125  # the left side of the subplots of the figure
+#  right = 0.9    # the right side of the subplots of the figure
+#  bottom = 0.1   # the bottom of the subplots of the figure
+#  top = 0.9      # the top of the subplots of the figure
+#  wspace = 0.2   # the amount of width reserved for blank space between subplots
+#  hspace = 0.2   # the amount of height reserved for white space between subplots
+        fig.subplots_adjust(wspace=0.1, hspace=0.1,
+                            left=0.2, right=0.9,
+                            top=0.9,    bottom=0.175)
 
         width = .8
         ax.bar(np.arange(ind), l0, yerr=l0_std)
