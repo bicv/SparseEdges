@@ -23,4 +23,4 @@ try:
 except:
     edges, C_res = mp.run_mp(image, verbose=False)
     np.save(matname, edges)   
-fig, a = mp.show_edges(edges, image=image)
+fig, a = mp.show_edges(edges, image=im.whitening(image))

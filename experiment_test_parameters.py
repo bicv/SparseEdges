@@ -58,8 +58,8 @@ v_alpha = np.linspace(0.3, 1., 9)
 for MP_alpha in v_alpha:
     pe = ParameterSet('default_param.py')
     pe.MP_alpha = MP_alpha
-    mp = init_pe(pe)
-    exp = 'efficiency_MP_alpha_' + str(MP_alpha).replace('.', '_')
+    mp = init_pe(pe, N=512)
+    exp = 'testing_MP_alpha_' + str(MP_alpha).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
     mps.append(mp)

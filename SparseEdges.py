@@ -162,7 +162,7 @@ class SparseEdges:
 
     def show_edges(self, edges, fig=None, a=None, image=None, norm=True,
                    color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1., 
-                   pedestal=.2, mappable=False):
+                   pedestal=0., mappable=False):
         """
         Shows the quiver plot of a set of edges, optionally associated to an image.
 

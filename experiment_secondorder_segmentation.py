@@ -6,10 +6,12 @@ from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 pe = ParameterSet('default_param.py')
 pe.N = 210
+pe.N = 64
 #pe.B_sf = 1.5
 #pe.do_whitening = False
 #pe.base_levels = 4
 pe.n_theta = 48
+pe.do_whitening = True
 
 # defining input image as Lena
 from pylab import imread
@@ -24,7 +26,18 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 print mp.n_levels, mp.sf_0
 
-matname = 'mat/example4.npy'
+mp.pe.eta_SO = 0.
+print ' without second-order '
+matname = 'mat/Geisler01Fig7A.npy'
+try:
+    edges = np.load(matname)
+except:
+    edges, C_res = mp.run_mp(image, verbose=True)
+    np.save(matname, edges)    
+
+print ' with second-order '
+mp.pe.eta_SO = .75
+matname = 'mat/Geisler01Fig7A_secondorder.npy'
 try:
     edges = np.load(matname)
 except:
