@@ -26,20 +26,27 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 print mp.n_levels, mp.sf_0
 
-mp.pe.eta_SO = 0.
 print ' without second-order '
 matname = 'mat/Geisler01Fig7A.npy'
 try:
     edges = np.load(matname)
 except:
+    mp.pe.eta_SO = 0.
     edges, C_res = mp.run_mp(image, verbose=True)
     np.save(matname, edges)    
 
 print ' with second-order '
-mp.pe.eta_SO = .75
 matname = 'mat/Geisler01Fig7A_secondorder.npy'
 try:
     edges = np.load(matname)
 except:
+    mp.pe.eta_SO = .75
     edges, C_res = mp.run_mp(image, verbose=True)
     np.save(matname, edges)    
+
+    
+for mp.pe.eta_SO in np.linspace(.5, 2.5, 9):
+    edges, C_res = mp.run_mp(image, verbose=True)
+    fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
+    fig.savefig(mp.pe.figpath + 'Geisler01Fig7_A.' + str(mp.pe.eta_SO) + '.pdf')
+    
