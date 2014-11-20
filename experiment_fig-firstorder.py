@@ -14,11 +14,10 @@ from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 
 pe = ParameterSet('default_param.py')
+pe.seed = 42 # this ensures that all image lists are the same for the different experiments
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
-
-pe.seed = 42 # this ensures that all image lists are the same for the different experiments
 
 for name_database in ['serre07_distractors']:#, 'laboratory']:
     # control experiment
@@ -32,7 +31,7 @@ for name_database in ['serre07_distractors']:#, 'laboratory']:
         z = np.linspace(1./pe.n_theta, 1., pe.n_theta)
         P = np.cumsum(v_hist)
         theta_prior = np.interp(z, P, v_theta_middles)
-        mp.theta = (theta_prior) % (np.pi)
+        mp.theta = (theta_prior) #% (np.pi)
         
         imageslist, edgeslist, RMSE =  mp.process(exp='prior_vanilla_firstorder', name_database=name_database)
         imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla_firstorder_noise', name_database=name_database, noise=pe.noise)

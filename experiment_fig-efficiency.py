@@ -75,7 +75,6 @@ for B_sf in v_B_sf:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_sf for B_sf in v_B_sf]
-#fig = plt.figure(figsize=(fig_width, fig_width/1.618))
 try:
     fig, A, ax = plot(mps=mps,
                       experiments=experiments, databases=databases, labels=labels, 
@@ -99,7 +98,6 @@ for B_theta in v_B_theta:
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_theta for B_theta in v_B_theta]
 try:
-    #fig = plt.figure(figsize=(fig_width, fig_width/1.618))
     fig, B, ax = plot(mps=mps, 
                       experiments=experiments, databases=databases, labels=labels, 
                       fig=fig, ax=B, threshold=threshold, scale=True, color=[0., 1., 0.])    
