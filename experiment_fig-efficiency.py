@@ -76,14 +76,14 @@ for B_sf in v_B_sf:
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_sf for B_sf in v_B_sf]
 #fig = plt.figure(figsize=(fig_width, fig_width/1.618))
-fig, A, ax = plot(mps=mps,
-                  experiments=experiments, databases=databases, labels=labels, 
-                  fig=fig, ax=A, color=[0., 1., 0.], threshold=threshold, scale=True)    
-A.set_xlabel(r'frequency bandwith $B_{sf}$')
-A.set_yticks([0., 0.02, 0.04, 0.06])
-
-#if dofig: 
-#    for ext in FORMATS: fig.savefig(figpath + 'efficiency_A.' + ext)
+try:
+    fig, A, ax = plot(mps=mps,
+                      experiments=experiments, databases=databases, labels=labels, 
+                      fig=fig, ax=A, color=[0., 1., 0.], threshold=threshold, scale=True)    
+    A.set_xlabel(r'frequency bandwith $B_{sf}$')
+    A.set_yticks([0., 0.02, 0.04, 0.06])
+except Exception, e:
+    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
     
 mps, experiments = [], []
 v_B_theta = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_theta
@@ -98,16 +98,17 @@ for B_theta in v_B_theta:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_theta for B_theta in v_B_theta]
-#fig = plt.figure(figsize=(fig_width, fig_width/1.618))
-fig, B, ax = plot(mps=mps, 
-                  experiments=experiments, databases=databases, labels=labels, 
-                  fig=fig, ax=B, threshold=threshold, scale=True, color=[0., 1., 0.])    
-B.set_xlabel(r'orientation bandwith $B_{\theta}$ (radians)')
-B.set_ylabel('')
-B.set_yticks([0., 0.02, 0.04, 0.06])
-B.set_yticklabels(['', '', '', ''])
-#if dofig: 
-#    for ext in FORMATS: fig.savefig(figpath + 'efficiency_B.' + ext)
+try:
+    #fig = plt.figure(figsize=(fig_width, fig_width/1.618))
+    fig, B, ax = plot(mps=mps, 
+                      experiments=experiments, databases=databases, labels=labels, 
+                      fig=fig, ax=B, threshold=threshold, scale=True, color=[0., 1., 0.])    
+    B.set_xlabel(r'orientation bandwith $B_{\theta}$ (radians)')
+    B.set_ylabel('')
+    B.set_yticks([0., 0.02, 0.04, 0.06])
+    B.set_yticklabels(['', '', '', ''])
+except Exception, e:
+    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
     
 mps, experiments = [], []
 v_n_theta = [6, 12, 24, 48]
@@ -122,15 +123,14 @@ for n_theta in v_n_theta:
 
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(n_theta) for n_theta in v_n_theta]
-#fig = plt.figure(figsize=(fig_width, fig_width/1.618))
-fig, C, ax = plot(mps=mps, 
-                  experiments=experiments, databases=databases, labels=labels, 
-                  fig=fig, ax=C, threshold=threshold, scale=True, color=[0., 1., 0.])    
-C.set_xlabel(r'number of orientations $N_{\theta}$')
-C.set_yticks([0., 0.02, 0.04, 0.06])
-
-#if dofig: 
-#    for ext in FORMATS: fig.savefig(figpath + 'efficiency_C.' + ext)
+try:
+    fig, C, ax = plot(mps=mps, 
+                      experiments=experiments, databases=databases, labels=labels, 
+                      fig=fig, ax=C, threshold=threshold, scale=True, color=[0., 1., 0.])    
+    C.set_xlabel(r'number of orientations $N_{\theta}$')
+    C.set_yticks([0., 0.02, 0.04, 0.06])
+except Exception, e:
+    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
     
 mps, experiments = [], []
 v_base_levels = [np.sqrt(2), np.sqrt(5)/2.+.5, np.sqrt(3), 2. , np.sqrt(5)]
@@ -149,14 +149,16 @@ labels = ['%0.2f' % (base_levels) for base_levels in v_base_levels]
 labels[0] = r'$\sqrt{2}$'
 labels[1] = r'$\phi$'
 labels[3] = '2'
-#fig = plt.figure(figsize=(fig_width, fig_width/1.618))
-fig, D, ax = plot(mps=mps, 
-                  experiments=experiments, databases=databases, labels=labels, 
-                  fig=fig, ax=D, threshold=threshold, scale=True, color=[0., 1., 0.])    
-D.set_xlabel(r'scale ratio')
-D.set_ylabel('')
-D.set_yticks([0., 0.02, 0.04, 0.06])
-D.set_yticklabels(['', '', '', ''])
+try:
+    fig, D, ax = plot(mps=mps, 
+                      experiments=experiments, databases=databases, labels=labels, 
+                      fig=fig, ax=D, threshold=threshold, scale=True, color=[0., 1., 0.])    
+    D.set_xlabel(r'scale ratio')
+    D.set_ylabel('')
+    D.set_yticks([0., 0.02, 0.04, 0.06])
+    D.set_yticklabels(['', '', '', ''])
+except Exception, e:
+    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
 
 if dofig:
     for ext in FORMATS: fig.savefig(figpath + 'efficiency.' + ext)
