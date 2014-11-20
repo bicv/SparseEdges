@@ -83,7 +83,7 @@ try:
     A.set_xlabel(r'frequency bandwith $B_{sf}$')
     A.set_yticks([0., 0.02, 0.04, 0.06])
 except Exception, e:
-    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+    print('Failed to plot  with error : %s ' % e )
     
 mps, experiments = [], []
 v_B_theta = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_theta
@@ -108,7 +108,7 @@ try:
     B.set_yticks([0., 0.02, 0.04, 0.06])
     B.set_yticklabels(['', '', '', ''])
 except Exception, e:
-    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+    print('Failed to plot  with error : %s ' % e )
     
 mps, experiments = [], []
 v_n_theta = [6, 12, 24, 48]
@@ -130,7 +130,7 @@ try:
     C.set_xlabel(r'number of orientations $N_{\theta}$')
     C.set_yticks([0., 0.02, 0.04, 0.06])
 except Exception, e:
-    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+    print('Failed to plot  with error : %s ' % e )
     
 mps, experiments = [], []
 v_base_levels = [np.sqrt(2), np.sqrt(5)/2.+.5, np.sqrt(3), 2. , np.sqrt(5)]
@@ -158,7 +158,7 @@ try:
     D.set_yticks([0., 0.02, 0.04, 0.06])
     D.set_yticklabels(['', '', '', ''])
 except Exception, e:
-    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+    print('Failed to plot  with error : %s ' % e )
 
 if dofig:
     for ext in FORMATS: fig.savefig(figpath + 'efficiency.' + ext)
