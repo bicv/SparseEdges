@@ -1058,13 +1058,15 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 else:
                     l0_axis = np.linspace(0, N*np.log2(mp.oc)/mp.N_X/mp.N_Y, N)
                 errorevery_zoom = 1.4**(1.*eev/len(experiments))
-                print int(RMSE.shape[1]/8*errorevery_zoom), errorevery_zoom
+                errorevery = np.max((int(RMSE.shape[1]/8*errorevery_zoom), 1))
                 ax.errorbar(l0_axis, RMSE.mean(axis=0),
-                            yerr=RMSE.std(axis=0), errorevery=int(RMSE.shape[1]/8*errorevery_zoom))
+                            yerr=RMSE.std(axis=0), errorevery=errorevery)
                 inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
-                           yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=int(RMSE.shape[1]/8*errorevery_zoom))
-                ax.plot(l0_axis[::RMSE.shape[1]/8], RMSE.mean(axis=0)[::RMSE.shape[1]/8], linestyle='None', marker='o', ms=3)
-                inset.plot(l0_axis[::RMSE.shape[1]/8], edgeslist[4, :, :].mean(axis=1)[::RMSE.shape[1]/8], linestyle='None',  marker='o', ms=3)
+                           yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=errorevery)
+                ax.plot(l0_axis[::errorevery], RMSE.mean(axis=0)[::errorevery], 
+                        linestyle='None', marker='o', ms=3)
+                inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery], 
+                        linestyle='None',  marker='o', ms=3)
                 eev += 1
             except Exception, e:
                 print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
@@ -1145,7 +1147,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
         ax.set_xticklabels(labels)
 
 #         plt.tight_layout()
-        fig.set_tight_layout(True)
+#         fig.set_tight_layout(True)
 
         return fig, ax, ax
 

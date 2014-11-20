@@ -30,8 +30,10 @@ for name_database in ['serre07_distractors']:#, 'laboratory']:
         v_hist, v_theta_edges = mp.histedges_theta(edgeslist, display=False)
         v_theta_middles, v_theta_bin  = (v_theta_edges[1:]+v_theta_edges[:-1])/2, v_theta_edges[1]-v_theta_edges[0]
         z = np.linspace(1./pe.n_theta, 1., pe.n_theta)
-        mp.theta = np.interp(z, np.hstack((0, np.cumsum(v_hist))), (v_theta_edges-v_theta_bin/2))
-        mp.theta = (mp.theta) % (np.pi)
+        P = np.hstack((0, np.cumsum(v_hist)))
+        theta_prior = np.interp(z, P, v_theta_edges)
+#        mp.theta = np.interp(z, np.hstack((0, np.cumsum(v_hist))), (v_theta_edges-v_theta_bin/2))
+        mp.theta = (theta_prior) % (np.pi)
         
         imageslist, edgeslist, RMSE =  mp.process(exp='prior_vanilla_firstorder', name_database=name_database)
         imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla_firstorder_noise', name_database=name_database, noise=pe.noise)
