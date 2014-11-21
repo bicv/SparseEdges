@@ -16,12 +16,12 @@ import sys
 pe = ParameterSet('default_param.py')
 
 threshold = None # classical plots
-threshold = .25 # plot sparseness obtained when reaching this threshold
+threshold = .42 # plot sparseness obtained when reaching this threshold
 
-def init_pe(pe, N_image=10, N=512):
+def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
     pe.seed = 123456
     pe.N_image = N_image
-    #pe.N_X = N_X
+    pe.N_X = N_X
     pe.N = N
     im = Image(pe)
     lg = LogGabor(im)
@@ -67,7 +67,7 @@ try:
                       experiments=experiments, databases=databases, labels=labels, 
                       fig=fig, ax=A, color=[0., 1., 0.], threshold=threshold, scale=True)    
     A.set_xlabel(r'frequency bandwith $B_{sf}$')
-    A.set_yticks([0., 0.02, 0.04, 0.06])
+    #A.set_yticks([0., 0.02, 0.04, 0.06])
 except Exception, e:
     print('Failed to plot  with error : %s ' % e )
     
@@ -90,8 +90,8 @@ try:
                       fig=fig, ax=B, threshold=threshold, scale=True, color=[0., 1., 0.])    
     B.set_xlabel(r'orientation bandwith $B_{\theta}$ (radians)')
     B.set_ylabel('')
-    B.set_yticks([0., 0.02, 0.04, 0.06])
-    B.set_yticklabels(['', '', '', ''])
+    #B.set_yticks([0., 0.02, 0.04, 0.06])
+    #B.set_yticklabels(['', '', '', ''])
 except Exception, e:
     print('Failed to plot  with error : %s ' % e )
     
@@ -113,7 +113,7 @@ try:
                       experiments=experiments, databases=databases, labels=labels, 
                       fig=fig, ax=C, threshold=threshold, scale=True, color=[0., 1., 0.])    
     C.set_xlabel(r'number of orientations $N_{\theta}$')
-    C.set_yticks([0., 0.02, 0.04, 0.06])
+    #C.set_yticks([0., 0.02, 0.04, 0.06])
 except Exception, e:
     print('Failed to plot  with error : %s ' % e )
     
@@ -140,13 +140,16 @@ try:
                       fig=fig, ax=D, threshold=threshold, scale=True, color=[0., 1., 0.])    
     D.set_xlabel(r'scale ratio')
     D.set_ylabel('')
-    D.set_yticks([0., 0.02, 0.04, 0.06])
-    D.set_yticklabels(['', '', '', ''])
+    #D.set_yticks([0., 0.02, 0.04, 0.06])
+    #D.set_yticklabels(['', '', '', ''])
 except Exception, e:
     print('Failed to plot  with error : %s ' % e )
 
 for ax, label in zip([A, B, C, D], ['A', 'B', 'C', 'D']):
     ax.text(-.1, .95, label, transform=ax.transAxes, fontsize=12) #'('+label+')'
+    ax.set_yticks([0., 0.0003, 0.0006, 0.0009])
+    ax.set_yticklabels(["0", '.3', '.6', '.9'])
+    if label in ['B', 'D']: ax.set_yticklabels(['', '', '', ''])
 
 
 #The parameter meanings (and suggested defaults) are::

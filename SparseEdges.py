@@ -1102,13 +1102,27 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
     else:
         if ax==None: ax = fig.add_axes([0.15, 0.25, .75, .75], axisbg='w')
         ind, l0, l0_std = 0, [], []
+        from lmfit.models import ExpressionModel
+        mod = ExpressionModel('1 - (1- eps_inf) * ( 1 - rho**x)')
+
         for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
             try:
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
                 RMSE /= RMSE[:, 0][:, np.newaxis]
                 N = RMSE.shape[1] #number of edges
-                if RMSE.min()>threshold: print 'the threshold is never crossed for', experiment, name_database 
-                l0_results = np.argmax(RMSE<threshold, axis=1)*1.
+                if RMSE.min()>threshold: print 'the threshold is never crossed for', experiment, name_database
+                try:
+                    l0_results = np.zeros(N)
+                    for i_image in range(RMSE.shape[0]):
+                        mod.def_vals = {'eps_inf':.1, 'rho':.99}
+                        out  = mod.fit(RMSE[i_image, :], x=np.arange(N))
+                        eps_inf = out.params.get('eps_inf').value
+                        rho =  out.params.get('rho').value
+                        #print rho, eps_inf, np.log((threshold-eps_inf)/(1-eps_inf))/np.log(rho)
+
+                        l0_results[i_image] = np.log((threshold-eps_inf)/(1-eps_inf))/np.log(rho)
+                except:
+                    l0_results = np.argmax(RMSE<threshold, axis=1)*1.
                 if (scale):
                     l0_results *= np.log2(mp.oc)/mp.N_X/mp.N_Y
                 l0.append(l0_results.mean())
@@ -1134,7 +1148,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                             top=0.9,    bottom=0.175)
 
         width = .8
-        ax.bar(np.arange(ind), l0, yerr=l0_std)
+        ax.bar(np.arange(ind), l0)#, yerr=l0_std)
         ax.set_xlim([-width/4, ind+.0*width])
 
         if not(scale):#False and a==ax:
