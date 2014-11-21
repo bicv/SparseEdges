@@ -92,7 +92,7 @@ class SparseEdges:
                 if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
         return C
 
-    def dipole(self, edge, w=20., B_phi=.2, B_theta=.1, scale=1.):
+    def dipole(self, edge, w=50., B_phi=.2, B_theta=1.1, scale=1.):
 
         D = np.ones((self.N_X, self.N_Y, self.n_theta, self.n_levels))
         x, y, theta, sf_0, C, phase = edge
