@@ -16,7 +16,7 @@ import sys
 pe = ParameterSet('default_param.py')
 
 threshold = None # classical plots
-threshold = .5 # plot sparseness obtained when reaching this threshold
+threshold = .25 # plot sparseness obtained when reaching this threshold
 
 def init_pe(pe, N_image=10, N=512):
     pe.seed = 123456
@@ -42,24 +42,11 @@ matplotlib.use('Agg')
 matplotlib.rcParams.update({'text.usetex': False})
 
 import matplotlib.pyplot as plt
-fig_width_pt = 318.670 # Get this from LaTeX using \showthe\columnwidth
+fig_width_pt = 318.67085 # Get this from LaTeX using \showthe\columnwidth
 inches_per_pt = 1.0/72.27               # Convert pt to inches
 fig_width = fig_width_pt*inches_per_pt  # width in inches
 
-fig, [[A, B], [C, D]] = plt.subplots(2, 2, figsize=(fig_width, fig_width/1.618), subplot_kw={'axisbg':'w'})
-
-#The parameter meanings (and suggested defaults) are::
-#
-#  left  = 0.125  # the left side of the subplots of the figure
-#  right = 0.9    # the right side of the subplots of the figure
-#  bottom = 0.1   # the bottom of the subplots of the figure
-#  top = 0.9      # the top of the subplots of the figure
-#  wspace = 0.2   # the amount of width reserved for blank space between subplots
-#  hspace = 0.2   # the amount of height reserved for white space between subplots
-fig.subplots_adjust(wspace=0.1, hspace=0.1,
-                            left=0.2, right=0.95,
-                            top=0.9,    bottom=0.125)
-
+fig, [[A, B], [C, D]] = plt.subplots(2, 2, figsize=(fig_width, fig_width), subplot_kw={'axisbg':'w'})
 
 
 mps, experiments = [], []
@@ -158,5 +145,21 @@ try:
 except Exception, e:
     print('Failed to plot  with error : %s ' % e )
 
+for ax, label in zip([A, B, C, D], ['A', 'B', 'C', 'D']):
+    ax.text(-.1, .95, label, transform=ax.transAxes, fontsize=12) #'('+label+')'
+
+
+#The parameter meanings (and suggested defaults) are::
+#
+#  left  = 0.125  # the left side of the subplots of the figure
+#  right = 0.9    # the right side of the subplots of the figure
+#  bottom = 0.1   # the bottom of the subplots of the figure
+#  top = 0.9      # the top of the subplots of the figure
+#  wspace = 0.2   # the amount of width reserved for blank space between subplots
+#  hspace = 0.2   # the amount of height reserved for white space between subplots
+fig.subplots_adjust(wspace=0.12, hspace=0.3,
+                            left=0.125, right=0.98,
+                            top=0.98,    bottom=0.12)
+    
 if dofig:
     for ext in FORMATS: fig.savefig(figpath + 'efficiency.' + ext)
