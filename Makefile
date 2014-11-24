@@ -27,9 +27,13 @@ pypi_docs: index.html
 todo:
 	grep -R * (^|#)[ ]*(TODO|FIXME|XXX|HINT|TIP)( |:)([^#]*)
 
-update:
+update_user:
 	cd ../SLIP; git pull; pip install -U --user . ; cd ../SparseEdges/
 	cd ../LogGabor; git pull; pip install -U --user . ; cd ../SparseEdges/
+
+update:
+	cd ../SLIP; git pull; pip install -U . ; cd ../SparseEdges/
+	cd ../LogGabor; git pull; pip install -U . ; cd ../SparseEdges/
 
 console:
 	open -a /Applications/Utilities/Console.app/ log-sparseedges-debug.log

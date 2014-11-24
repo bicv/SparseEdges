@@ -161,7 +161,7 @@ class SparseEdges:
         pass
 
     def show_edges(self, edges, fig=None, a=None, image=None, norm=True,
-                   color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1., 
+                   color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1.,
                    pedestal=0., mappable=False):
         """
         Shows the quiver plot of a set of edges, optionally associated to an image.
@@ -917,7 +917,7 @@ class SparseEdges:
                     plt.savefig(figname)
                     plt.close('all')
                     os.remove(figname + '_lock')
-                    
+
                 figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note + self.pe.ext)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     file(figname + '_lock', 'w').close()
@@ -1046,7 +1046,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
         CCycle = np.array(color)[np.newaxis, :] * grad[:, np.newaxis]
         ax.set_color_cycle(CCycle)
         inset.set_color_cycle(CCycle)
-        l0_max, eev = 0., -len(experiments)/2 
+        l0_max, eev = 0., -len(experiments)/2
         for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
             try:
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
@@ -1063,9 +1063,9 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                             yerr=RMSE.std(axis=0), errorevery=errorevery)
                 inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
                            yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=errorevery)
-                ax.plot(l0_axis[::errorevery], RMSE.mean(axis=0)[::errorevery], 
+                ax.plot(l0_axis[::errorevery], RMSE.mean(axis=0)[::errorevery],
                         linestyle='None', marker='o', ms=3)
-                inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery], 
+                inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery],
                         linestyle='None',  marker='o', ms=3)
                 eev += 1
             except Exception, e:
