@@ -223,7 +223,7 @@ class SparseEdges:
                 elif color == 'blue': # figure 1DE
                     fc = (0.05, 0.05, 0.5, np.abs(weight)**gamma)
                 elif color == 'brown': # figure 1DE
-                fc = (0.5, 0.05, 0.05, np.abs(weight)**gamma)
+                    fc = (0.5, 0.05, 0.05, np.abs(weight)**gamma)
                 else:
                     fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
                 colors.append(fc)
