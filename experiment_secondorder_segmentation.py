@@ -46,9 +46,15 @@ except:
     edges, C_res = mp.run_mp(image, verbose=True)
     np.save(matname, edges)    
 
-    
-for mp.pe.eta_SO in np.linspace(.5, 2.5, 9):
-    edges, C_res = mp.run_mp(image, verbose=True)
-    fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
-    fig.savefig(mp.pe.figpath + 'Geisler01Fig7_A.' + str(mp.pe.eta_SO) + '.pdf')
-    
+if True:    
+    for mp.pe.eta_SO in np.linspace(.5, 2.5, 9):
+        matname = 'mat/Geisler01Fig7A_secondorder_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
+        try:
+            edges = np.load(matname)
+        except:
+            edges, C_res = mp.run_mp(image, verbose=True)
+            np.save(matname, edges)    
+        
+        fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
+        fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf')
+                    
