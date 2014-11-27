@@ -66,19 +66,19 @@ class SparseEdges:
 #         RMSE = np.ones(self.N)
         if self.do_whitening: image_ = self.im.whitening(image_)
         C = self.init(image_)
-        D = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
+        logD = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
         for i_edge in range(self.N):
 #             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
-            ind_edge_star = self.argmax(C + self.pe.eta_SO * D)
+            ind_edge_star = self.argmax(C + self.pe.eta_SO * logD)
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta[ind_edge_star[2]],
                                          self.sf_0[ind_edge_star[3]],
                                          self.pe.MP_alpha * np.absolute(C[ind_edge_star]), np.angle(C[ind_edge_star])])
-            if self.pe.eta_SO>0.: D+= self.dipole(edges[:, i_edge])
             # recording
             if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             # PURSUIT
+            if self.pe.eta_SO>0.: logD+= np.absolute(C[ind_edge_star]) * self.dipole(edges[:, i_edge])
             C = self.backprop(C, ind_edge_star)
         return edges, C
 
@@ -92,7 +92,7 @@ class SparseEdges:
                 if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
         return C
 
-    def dipole(self, edge, w=50., B_phi=.2, B_theta=1.1, scale=1.):
+    def dipole(self, edge, w=50., B_phi=.2, B_theta=1.1, scale=.1, epsilon=.1):
 
         D = np.ones((self.N_X, self.N_Y, self.n_theta, self.n_levels))
         x, y, theta, sf_0, C, phase = edge
@@ -106,9 +106,9 @@ class SparseEdges:
                 theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
                 D[:, :, i_theta, i_sf_0] = np.exp((np.cos(2*phi)-1)/B_phi**2) * np.exp((np.cos(2*D_theta)-1)/B_theta**2)
                 if self.pe.MP_do_mask: D[:, :, i_theta, i_sf_0] *= self.MP_mask
-            D[:, :, :, i_sf_0] *= C * neighborhood[..., np.newaxis]*np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / scale)
+            D[:, :, :, i_sf_0] *= neighborhood[..., np.newaxis]*np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / scale)
 
-        return D
+        return np.log((1.-epsilon)*D+epsilon)
 
     def argmax(self, C):
         """
@@ -223,7 +223,7 @@ class SparseEdges:
                 elif color == 'blue': # figure 1DE
                     fc = (0.05, 0.05, 0.5, np.abs(weight)**gamma)
                 elif color == 'brown': # figure 1DE
-                    fc = (0.5, 0.05, 0.05, np.abs(weight)**gamma)
+                fc = (0.5, 0.05, 0.05, np.abs(weight)**gamma)
                 else:
                     fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
                 colors.append(fc)
