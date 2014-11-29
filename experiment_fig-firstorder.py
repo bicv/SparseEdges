@@ -15,7 +15,7 @@ from SparseEdges import SparseEdges
 
 pe = ParameterSet('default_param.py')
 pe.seed = 42 # this ensures that all image lists are the same for the different experiments
-pe.N_image = 10
+pe.N_image = 48
 pe.N = 512
 im = Image(pe)
 lg = LogGabor(im)
