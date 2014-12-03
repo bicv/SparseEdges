@@ -36,7 +36,7 @@ for name_database in ['serre07_distractors']:#, 'laboratory']:
         theta_prior = np.interp(z, P, np.hstack((v_theta_edges[0]-v_theta_bin/2, v_theta_edges[:-1], v_theta_edges[-1]-v_theta_bin/2))) #% np.pi
         mp.theta = (theta_prior[1:-1]) % (np.pi)
 
-        imageslist, edgeslist, RMSE =  mp.process(exp='prior_vanilla_firstorder', name_database=name_database)
-        imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla_firstorder_noise', name_database=name_database, noise=pe.noise)
+        imageslist, edgeslist, RMSE =  mp.process(exp='prior_firstorder', name_database=name_database)
+        imageslist, edgeslist, RMSE = mp.process(exp='prior_firstorder_noise', name_database=name_database, noise=pe.noise)
     except:
         print('run again once first batches are finished ')
