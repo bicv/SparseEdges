@@ -18,8 +18,8 @@ import sys, traceback
 import logging
 logging.basicConfig(filename='log-sparseedges-debug.log', format='%(asctime)s@[' + TAG + '] %(message)s', datefmt='%Y%m%d-%H:%M:%S')
 log = logging.getLogger("SparseEdges")
-#log.setLevel(level=logging.WARN)
-log.setLevel(level=logging.INFO)
+log.setLevel(level=logging.WARN)
+# log.setLevel(level=logging.INFO)
 # log.setLevel(logging.DEBUG) #set verbosity to show all messages of severity >= DEBUG
 import matplotlib
 matplotlib.use("Agg")
@@ -1026,7 +1026,7 @@ class SparseEdges:
         out += '-'*60 + '\n'
         return out
 
-def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 0.], threshold=None, scale=False):
+def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 0.], threshold=None, scale=False, ref=None):
     import matplotlib.pyplot as plt
     import numpy as np
     import matplotlib
@@ -1040,7 +1040,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
         fig_width = fig_width_pt*inches_per_pt  # width in inches
 
         fig = plt.figure(figsize=(fig_width, fig_width/1.618))
-    if (threshold==None):
+    if (threshold==None) and (ref==None):
         # main axis
         if ax==None: ax = fig.add_subplot(111, axisbg='w')
         # axes.edgecolor      : black   # axes edge color
@@ -1105,12 +1105,11 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
 
         inset.legend(loc='upper right', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
         return fig, ax, inset
-    else:
+    elif (threshold==None):
         if ax==None: ax = fig.add_axes([0.15, 0.25, .75, .75], axisbg='w')
         ind, l0, l0_std = 0, [], []
         from lmfit.models import ExpressionModel
         mod = ExpressionModel('1 - (1- eps_inf) * ( 1 - rho**x)')
-
         for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
             try:
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
@@ -1171,6 +1170,84 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
 
         return fig, ax, ax
 
+    elif (ref==None):
+        relSE, relSE_std = [], []
+        imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
+        RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis]
+        l0_ref = np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
+
+        for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
+            try:
+                imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                RMSE /= RMSE[:, 0][:, np.newaxis]
+                N = RMSE.shape[1] #number of edges
+                l0 = np.log2(mp.oc)/mp.N_X/mp.N_Y
+                relSE.append((RMSE/RMSE_ref).mean())
+                relSE_std.append((RMSE/RMSE_ref).std(axis=0).mean())
+            except Exception, e:
+                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+        fig.subplots_adjust(wspace=0.1, hspace=0.1,
+                            left=0.2, right=0.9,
+                            top=0.9,    bottom=0.175)
+
+        ind = len(relSE)
+        width = .8
+        ax.bar(np.arange(ind), relSE, yerr=relSE_std)
+        ax.set_xlim([-width/4, ind+.0*width])
+
+        if not(scale):#False and a==ax:
+            ax.set_ylabel(r'SE')
+        else:
+#             ax.set_ylabel(r'relative $\ell_0$ pseudo-norm')# (bits / pixel)')#relative $\ell_0$-norm')
+            ax.set_ylabel(r'rel. SE')# (bits / pixel)')#relative $\ell_0$-norm')
+
+        ax.set_xticks(np.arange(ind)+.5*width)
+        ax.set_xticklabels(labels)
+
+#         plt.tight_layout()
+#         fig.set_tight_layout(True)
+
+        return fig, ax, ax
+
+    else: # fourth type: we have a reference ans a threshold
+        relL0, relL0_std = [], []
+        imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
+        RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis]
+        L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1.
+        if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
+
+        for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
+            try:
+                imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                RMSE /= RMSE[:, 0][:, np.newaxis]
+                N = RMSE.shape[1] #number of edges
+                L0 =  np.argmax(RMSE<threshold, axis=1)*1.
+                if scale: L0 *= np.log2(mp.oc)/mp.N_X/mp.N_Y
+                relL0.append((L0/L0_ref).mean())
+                relL0_std.append((L0/L0_ref).std())
+            except Exception, e:
+                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+        fig.subplots_adjust(wspace=0.1, hspace=0.1,
+                            left=0.2, right=0.9,
+                            top=0.9,    bottom=0.175)
+
+        ind = len(relL0)
+        width = .8
+        rects = ax.bar(np.arange(ind), relL0, yerr=relL0_std, alpha=.8, error_kw={'ecolor':'k'})
+        rects[ref].set_color('w')
+        rects[ref].set_edgecolor('k')
+        ax.set_xlim([-width/4, ind+.0*width])
+
+        ax.set_ylabel(r'relative coding cost wrt default')# (bits / pixel)')#relative $\ell_0$-norm')
+
+        ax.set_xticks(np.arange(ind)+.5*width)
+        ax.set_xticklabels(labels)
+
+        ax.grid(b=False, which="both")
+#         plt.tight_layout()
+#         fig.set_tight_layout(True)
+
+        return fig, ax, ax
 
 def _test():
     import doctest

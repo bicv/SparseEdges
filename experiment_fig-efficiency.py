@@ -16,7 +16,7 @@ import sys
 pe = ParameterSet('default_param.py')
 
 threshold = None # classical plots
-threshold = .42 # plot sparseness obtained when reaching this threshold
+threshold = .15 # plot sparseness obtained when reaching this threshold
 
 def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
     pe.seed = 123456
@@ -64,7 +64,7 @@ databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_sf for B_sf in v_B_sf]
 try:
     fig, A, ax = plot(mps=mps,
-                      experiments=experiments, databases=databases, labels=labels, 
+                      experiments=experiments, databases=databases, labels=labels, ref=2,
                       fig=fig, ax=A, color=[0., 1., 0.], threshold=threshold, scale=True)    
     A.set_xlabel(r'frequency bandwith $B_{sf}$')
     #A.set_yticks([0., 0.02, 0.04, 0.06])
@@ -86,7 +86,7 @@ databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_theta for B_theta in v_B_theta]
 try:
     fig, B, ax = plot(mps=mps, 
-                      experiments=experiments, databases=databases, labels=labels, 
+                      experiments=experiments, databases=databases, labels=labels, ref=2, 
                       fig=fig, ax=B, threshold=threshold, scale=True, color=[0., 1., 0.])    
     B.set_xlabel(r'orientation bandwith $B_{\theta}$ (radians)')
     B.set_ylabel('')
@@ -110,7 +110,7 @@ databases = ['serre07_distractors'] * len(experiments)
 labels = [str(n_theta) for n_theta in v_n_theta]
 try:
     fig, C, ax = plot(mps=mps, 
-                      experiments=experiments, databases=databases, labels=labels, 
+                      experiments=experiments, databases=databases, labels=labels, ref=2, 
                       fig=fig, ax=C, threshold=threshold, scale=True, color=[0., 1., 0.])    
     C.set_xlabel(r'number of orientations $N_{\theta}$')
     #C.set_yticks([0., 0.02, 0.04, 0.06])
@@ -136,20 +136,21 @@ labels[1] = r'$\phi$'
 labels[3] = '2'
 try:
     fig, D, ax = plot(mps=mps, 
-                      experiments=experiments, databases=databases, labels=labels, 
+                      experiments=experiments, databases=databases, labels=labels, ref=3, 
                       fig=fig, ax=D, threshold=threshold, scale=True, color=[0., 1., 0.])    
     D.set_xlabel(r'scale ratio')
     D.set_ylabel('')
-    #D.set_yticks([0., 0.02, 0.04, 0.06])
-    #D.set_yticklabels(['', '', '', ''])
+    D.set_yticks([0., 1., 1.3])
+    D.set_yticklabels(['0', '1', ''])
 except Exception, e:
     print('Failed to plot  with error : %s ' % e )
 
 for ax, label in zip([A, B, C, D], ['A', 'B', 'C', 'D']):
     ax.text(-.1, .95, label, transform=ax.transAxes, fontsize=12) #'('+label+')'
-    ax.set_yticks([0., 0.0003, 0.0006, 0.0009])
-    ax.set_yticklabels(["0", '.3', '.6', '.9'])
-    if label in ['B', 'D']: ax.set_yticklabels(['', '', '', ''])
+    ax.set_ylim([0., 1.6])
+    ax.set_yticks([0., 1., 1.4])
+    ax.set_yticklabels(["0", '1', ''])
+    if label in ['B', 'D']: ax.set_yticklabels(['', '', ''])
 
 
 #The parameter meanings (and suggested defaults) are::
@@ -166,3 +167,4 @@ fig.subplots_adjust(wspace=0.12, hspace=0.3,
     
 if dofig:
     for ext in FORMATS: fig.savefig(figpath + 'efficiency.' + ext)
+fig.show()
