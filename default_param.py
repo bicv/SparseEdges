@@ -53,6 +53,12 @@
 'multiscale': True,
 'kappa_phase': 0.,
 'weight_by_distance': True,
+# Dipole
+'w':.25,
+'B_psi':.01,
+'B_theta':1.,
+'scale':1.5,
+'epsilon':1.e-6,
 # PATHS
 'figpath' : 'figures/',
 'edgefigpath' : 'figures/edges/',
