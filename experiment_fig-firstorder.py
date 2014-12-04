@@ -3,7 +3,9 @@
 
 $ python experiment_fig-firstorder.py
 
+rm -fr **/prior_* **/**/prior_*
 rm -fr **/prior_vanilla* **/**/prior_vanilla*
+rm -fr **/prior_firstorder* **/**/prior_firstorder*
 
 """
 import __init__
@@ -15,8 +17,8 @@ from SparseEdges import SparseEdges
 
 pe = ParameterSet('default_param.py')
 pe.seed = 42 # this ensures that all image lists are the same for the different experiments
-#pe.N_image = 48
-#pe.N = 
+pe.N_image = 9
+pe.N = 512
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)

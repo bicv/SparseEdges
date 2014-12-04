@@ -60,7 +60,7 @@ try:
     if not(figpath==None): 
         for ext in FORMATS: fig.savefig(figpath + 'Geisler01Fig7_A.' + ext)
 except:
-    print matname
+    print 'Failed with ', matname
     
 print ' with second-order '
 matname = 'mat/Geisler01Fig7A_secondorder.npy'
@@ -78,23 +78,81 @@ try:
     if not(figpath==None): 
         for ext in FORMATS: fig.savefig(figpath + 'Geisler01Fig7_B.' + ext)
 except:
-    print matname
+    print 'Failed with ', matname
 
+im = Image(pe)
+lg = LogGabor(im)
+mp = SparseEdges(lg)
+for mp.pe.eta_SO in np.linspace(.0, .5, 9):
+    matname = 'mat/Geisler01Fig7A_secondorder_eta_SO_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
+    if not(os.path.isfile(matname)):
+        if not(os.path.isfile(matname + '_lock')):
+            file(matname + '_lock', 'w').close()
+            edges, C_res = mp.run_mp(image, verbose=True)
+            np.save(matname, edges)
+            os.remove(matname + '_lock')
+    try:
+        edges = np.load(matname)
+        edges[4, :] *= -1 # turn red in blue...
+        fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
+        fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
+    except:
+        print 'Failed with ', matname
 
-if True:    
-    for mp.pe.eta_SO in np.linspace(.05, 1., 9):
-        matname = 'mat/Geisler01Fig7A_secondorder_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
-        if not(os.path.isfile(matname)):
-            if not(os.path.isfile(matname + '_lock')):
-                file(matname + '_lock', 'w').close()
-                edges, C_res = mp.run_mp(image, verbose=True)
-                np.save(matname, edges)
-                os.remove(matname + '_lock')
-        try:
-            edges = np.load(matname)
-            edges[4, :] *= -1 # turn red in blue...
-            fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
-            fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
-        except:
-            print matname
-                    
+        
+im = Image(pe)
+lg = LogGabor(im)
+mp = SparseEdges(lg)
+for mp.pe.dip_w in np.linspace(.01, .5, 9):
+    matname = 'mat/Geisler01Fig7A_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
+    if not(os.path.isfile(matname)):
+        if not(os.path.isfile(matname + '_lock')):
+            file(matname + '_lock', 'w').close()
+            edges, C_res = mp.run_mp(image, verbose=True)
+            np.save(matname, edges)
+            os.remove(matname + '_lock')
+    try:
+        edges = np.load(matname)
+        edges[4, :] *= -1 # turn red in blue...
+        fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
+        fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
+    except:
+        print 'Failed with ', matname
+
+im = Image(pe)
+lg = LogGabor(im)
+mp = SparseEdges(lg)
+for mp.pe.dip_B_psi in np.linspace(.01, 1.5, 9):
+    matname = 'mat/Geisler01Fig7A_secondorder_dip_B_psi_' + str(mp.pe.dip_B_psi).replace('.', '_') + '.npy'
+    if not(os.path.isfile(matname)):
+        if not(os.path.isfile(matname + '_lock')):
+            file(matname + '_lock', 'w').close()
+            edges, C_res = mp.run_mp(image, verbose=True)
+            np.save(matname, edges)
+            os.remove(matname + '_lock')
+    try:
+        edges = np.load(matname)
+        edges[4, :] *= -1 # turn red in blue...
+        fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
+        fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
+    except:
+        print 'Failed with ', matname
+
+im = Image(pe)
+lg = LogGabor(im)
+mp = SparseEdges(lg)
+for mp.pe.dip_B_theta in np.linspace(.01, 1.5, 9):
+    matname = 'mat/Geisler01Fig7A_secondorder_dip_B_theta_' + str(mp.pe.dip_B_theta).replace('.', '_') + '.npy'
+    if not(os.path.isfile(matname)):
+        if not(os.path.isfile(matname + '_lock')):
+            file(matname + '_lock', 'w').close()
+            edges, C_res = mp.run_mp(image, verbose=True)
+            np.save(matname, edges)
+            os.remove(matname + '_lock')
+    try:
+        edges = np.load(matname)
+        edges[4, :] *= -1 # turn red in blue...
+        fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
+        fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
+    except:
+        print 'Failed with ', matname

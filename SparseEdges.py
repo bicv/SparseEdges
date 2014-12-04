@@ -20,7 +20,7 @@ logging.basicConfig(filename='log-sparseedges-debug.log', format='%(asctime)s@['
 log = logging.getLogger("SparseEdges")
 log.setLevel(level=logging.WARN)
 # log.setLevel(level=logging.INFO)
-# log.setLevel(logging.DEBUG) #set verbosity to show all messages of severity >= DEBUG
+# log.setLevel(level=logging.DEBUG) #set verbosity to show all messages of severity >= DEBUG
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -98,7 +98,7 @@ class SparseEdges:
         theta_edge = np.pi/2 - theta_edge
 
         D = np.ones((self.N_X, self.N_Y, self.n_theta, self.n_levels))
-        distance = np.sqrt(((1.*self.im.X-x)**2+(1.*self.im.Y-y)**2)/(self.N_X**2+self.N_Y**2))/self.pe.w
+        distance = np.sqrt(((1.*self.im.X-x)**2+(1.*self.im.Y-y)**2)/(self.N_X**2+self.N_Y**2))/self.pe.dip_w
         neighborhood = np.exp(-distance**2)
         for i_sf_0, sf_0_ in enumerate(self.sf_0):
             for i_theta, theta_layer in enumerate(self.theta):
@@ -106,11 +106,11 @@ class SparseEdges:
                 theta_layer = ((theta_layer + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
                 theta = theta_layer - theta_edge # angle between edge's orientation and the layer's one
                 psi = np.arctan2(self.im.Y-y, self.im.X-x) - theta_edge -np.pi/2 - theta/2 #- np.pi/4
-                d = distance + self.pe.epsilon
-                D[:, :, i_theta, i_sf_0] = np.exp((np.cos(2*psi)-1.)/(self.pe.B_psi**2 * d))
-                D[:, :, i_theta, i_sf_0] *= np.exp((np.cos(2*theta)-1.)/(self.pe.B_theta**2 * d))
+                d = distance + self.pe.dip_epsilon
+                D[:, :, i_theta, i_sf_0] = np.exp((np.cos(2*psi)-1.)/(self.pe.dip_B_psi**2 * d))
+                D[:, :, i_theta, i_sf_0] *= np.exp((np.cos(2*theta)-1.)/(self.pe.dip_B_theta**2 * d))
 #                 if self.pe.MP_do_mask: D[:, :, i_theta, i_sf_0] *= self.MP_mask
-            D[:, :, :, i_sf_0] *= neighborhood[:, :, np.newaxis] * np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / self.pe.scale)
+            D[:, :, :, i_sf_0] *= neighborhood[:, :, np.newaxis] * np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / self.pe.dip_scale)
         D -= D.mean()
         D /= np.abs(D).max()
 
