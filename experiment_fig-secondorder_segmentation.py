@@ -10,12 +10,9 @@ from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 pe = ParameterSet('default_param.py')
 pe.N = 210
-pe.N = 64
-#pe.B_sf = 1.5
-#pe.do_whitening = False
-#pe.base_levels = 4
-pe.n_theta = 48
-pe.do_whitening = True
+pe.N = 105
+pe.do_whitening = False
+#pe.do_whitening = True
 
 
 #figpath = '../../CNRS/BICV-book/BICV_INT/BICV-sparse/'
@@ -26,7 +23,7 @@ inches_per_pt = 1.0/72.27               # Convert pt to inches
 fig_width = fig_width_pt*inches_per_pt  # width in inches
 pe.figsize_edges = 12
 pe.figsize_edges = .382 * fig_width
-pe.scale = 1.
+pe.scale = 1.7
 pe.line_width = 1.5
 
 
@@ -61,7 +58,9 @@ try:
         for ext in FORMATS: fig.savefig(figpath + 'Geisler01Fig7_A.' + ext)
 except:
     print 'Failed with ', matname
+
     
+
 print ' with second-order '
 matname = 'mat/Geisler01Fig7A_secondorder.npy'
 if not(os.path.isfile(matname)):
@@ -122,7 +121,7 @@ for mp.pe.dip_w in np.linspace(.01, .5, 9):
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
-for mp.pe.dip_B_psi in np.linspace(.01, 1.5, 9):
+for mp.pe.dip_B_psi in np.linspace(.01, 2.5, 25):
     matname = 'mat/Geisler01Fig7A_secondorder_dip_B_psi_' + str(mp.pe.dip_B_psi).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
@@ -141,7 +140,7 @@ for mp.pe.dip_B_psi in np.linspace(.01, 1.5, 9):
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
-for mp.pe.dip_B_theta in np.linspace(.01, 1.5, 9):
+for mp.pe.dip_B_theta in np.linspace(.01, 1.5, 25):
     matname = 'mat/Geisler01Fig7A_secondorder_dip_B_theta_' + str(mp.pe.dip_B_theta).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
