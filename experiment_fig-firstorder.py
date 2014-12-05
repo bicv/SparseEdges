@@ -17,13 +17,13 @@ from SparseEdges import SparseEdges
 
 pe = ParameterSet('default_param.py')
 pe.seed = 42 # this ensures that all image lists are the same for the different experiments
-pe.N_image = 9
+pe.N_image = 18
 pe.N = 512
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
 
-for name_database in ['serre07_distractors']:#, 'laboratory']:
+for name_database in ['serre07_distractors_urban']:#'serre07_distractors']:#, 'laboratory']:
     # control experiment
     imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla', name_database=name_database)
     imageslist, edgeslist_noise, RMSE = mp.process(exp='prior_vanilla_noise', name_database=name_database, noise=pe.noise)
