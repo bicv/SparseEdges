@@ -58,4 +58,4 @@ except:
 
 image_rec = mp.reconstruct(edges)
 from pylab import imsave
-image = imread('database/Geisler01Fig7A.png')
+image = imsave(fname='database/Geisler01Fig7A_rec.png', arr=image_rec, vmin=image_rec/min(), vmax=image_rec.max())
