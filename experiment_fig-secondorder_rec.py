@@ -9,7 +9,7 @@ from SparseEdges import SparseEdges
 pe = ParameterSet('default_param.py')
 pe.N = 210
 pe.do_whitening = False
-#pe.do_whitening = True
+pe.do_whitening = True
 
 
 #figpath = '../../CNRS/BICV-book/BICV_INT/BICV-sparse/'
@@ -57,5 +57,5 @@ except:
     print 'Failed with ', matname
 
 image_rec = mp.reconstruct(edges)
-from pylab import imsave
-image = imsave(fname='database/Geisler01Fig7A_rec.png', arr=image_rec, vmin=image_rec.min(), vmax=image_rec.max())
+from pylab import imsave, gray
+image = imsave(fname='database/Geisler01Fig7A_rec.png', arr=image_rec, vmin=image_rec.min(), vmax=image_rec.max(), cmap=gray())
