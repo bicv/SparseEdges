@@ -102,6 +102,7 @@ for mp.pe.eta_SO in np.linspace(.0, .5, 9):
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
+mp.pe.eta_SO = 0.75
 for mp.pe.dip_w in np.linspace(.01, .5, 9):
     matname = 'mat/Geisler01Fig7A_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
@@ -121,6 +122,7 @@ for mp.pe.dip_w in np.linspace(.01, .5, 9):
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
+mp.pe.eta_SO = 0.75
 for mp.pe.dip_B_psi in np.linspace(.01, 2.5, 25):
     matname = 'mat/Geisler01Fig7A_secondorder_dip_B_psi_' + str(mp.pe.dip_B_psi).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
@@ -140,6 +142,7 @@ for mp.pe.dip_B_psi in np.linspace(.01, 2.5, 25):
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
+mp.pe.eta_SO = 0.75
 for mp.pe.dip_B_theta in np.linspace(.01, 1.5, 25):
     matname = 'mat/Geisler01Fig7A_secondorder_dip_B_theta_' + str(mp.pe.dip_B_theta).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
