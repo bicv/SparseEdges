@@ -29,7 +29,7 @@ pe.line_width = 1.5
 
 # defining input image 
 from pylab import imread
-image = imread('database/Geisler01Fig7A.png').mean(axis=-1)
+image = imread('database/Geisler01Fig7A_rec.png').mean(axis=-1)
 print image.mean(), image.std()
 
 im = Image(pe)
