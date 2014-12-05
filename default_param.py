@@ -29,11 +29,12 @@
 'B_sf' : .4, # 1.5 in Geisler
 'B_theta' : 3.14159/18.,
 # Matching Pursuit
-'MP_alpha' : .7, # ratio of inhibition in alpha-Matching Pursuit
-'eta_SO' : 0., # including a dipole
 # 'N' : 32, # number of edges extracted
 'N' : 2**11,
 # 'N' : 2**8,
+'MP_alpha' : .7, # ratio of inhibition in alpha-Matching Pursuit
+'MP_rho' : None, # geometric scaling parameter
+'eta_SO' : 0., # including a dipole
 'MP_do_mask'  : True, # used in Matching Pursuit self.pe.do_mask
 # parameters for computing the histograms
 'd_width' : 45., # Geisler 1.23 deg (full image = 45deg)

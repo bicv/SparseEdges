@@ -18,9 +18,9 @@ import sys, traceback
 import logging
 logging.basicConfig(filename='log-sparseedges-debug.log', format='%(asctime)s@[' + TAG + '] %(message)s', datefmt='%Y%m%d-%H:%M:%S')
 log = logging.getLogger("SparseEdges")
-log.setLevel(level=logging.WARN)
+# log.setLevel(level=logging.WARN)
 # log.setLevel(level=logging.INFO)
-# log.setLevel(level=logging.DEBUG) #set verbosity to show all messages of severity >= DEBUG
+log.setLevel(level=logging.DEBUG) #set verbosity to show all messages of severity >= DEBUG
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -71,12 +71,19 @@ class SparseEdges:
 #             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
             ind_edge_star = self.argmax(C + self.pe.eta_SO * logD)
+            if not self.pe.MP_rho is None:
+                if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
+                coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) *C_Max
+                # recording
+                if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
+            else:
+                coeff = self.pe.MP_alpha * np.absolute(C[ind_edge_star])
+                # recording
+                if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta[ind_edge_star[2]],
                                          self.sf_0[ind_edge_star[3]],
-                                         self.pe.MP_alpha * np.absolute(C[ind_edge_star]), np.angle(C[ind_edge_star])])
-            # recording
-            if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
+                                         coeff, np.angle(C[ind_edge_star])])
             # PURSUIT
             if self.pe.eta_SO>0.: logD+= np.absolute(C[ind_edge_star]) * self.dipole(edges[:, i_edge])
             C = self.backprop(C, ind_edge_star)
@@ -1040,10 +1047,10 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
         fig_width = fig_width_pt*inches_per_pt  # width in inches
 
         fig = plt.figure(figsize=(fig_width, fig_width/1.618))
+    # main axis
+    if ax==None: ax = fig.add_subplot(111, axisbg='w')
+    # axes.edgecolor      : black   # axes edge color
     if (threshold==None) and (ref==None):
-        # main axis
-        if ax==None: ax = fig.add_subplot(111, axisbg='w')
-        # axes.edgecolor      : black   # axes edge color
         # this is another inset axes over the main axes
         inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
         #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
