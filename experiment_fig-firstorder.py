@@ -26,7 +26,7 @@ mp = SparseEdges(lg)
 for name_database in ['serre07_distractors_urban', 'serre07_distractors', 'laboratory']:
     # control experiment
     imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla', name_database=name_database)
-    imageslist, edgeslist_noise, RMSE = mp.process(exp='prior_vanilla_noise', name_database=name_database, noise=pe.noise)
+    imageslist, edgeslist_noise, RMSE = mp.process(exp='prior_vanilla_noise_' + str(pe.noise).replace('.', '_'), name_database=name_database, noise=pe.noise)
 
     try:
         # first-order prior
@@ -39,6 +39,6 @@ for name_database in ['serre07_distractors_urban', 'serre07_distractors', 'labor
         mp.theta = (theta_prior[1:-1]) % (np.pi)
 
         imageslist, edgeslist, RMSE =  mp.process(exp='prior_firstorder', name_database=name_database)
-        imageslist, edgeslist, RMSE = mp.process(exp='prior_firstorder_noise', name_database=name_database, noise=pe.noise)
+        imageslist, edgeslist, RMSE = mp.process(exp='prior_firstorder_noise_' + str(pe.noise).replace('.', '_'), name_database=name_database, noise=pe.noise)
     except:
         print('run again once first batches are finished ')

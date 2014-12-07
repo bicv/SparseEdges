@@ -1216,7 +1216,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
 
         return fig, ax, ax
 
-    else: # fourth type: we have a reference ans a threshold
+    else: # fourth type: we have a reference and a threshold
         relL0, relL0_std = [], []
         imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
         RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis]
