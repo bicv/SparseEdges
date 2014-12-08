@@ -9,6 +9,7 @@ from SLIP import Image
 from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 pe = ParameterSet('default_param.py')
+pe.MP_alpha = 1.
 pe.N = 210
 pe.N = 105
 pe.do_whitening = False
@@ -59,8 +60,6 @@ try:
 except:
     print 'Failed with ', matname
 
-    
-
 print ' with second-order '
 matname = 'mat/Geisler01Fig7A_secondorder.npy'
 if not(os.path.isfile(matname)):
@@ -79,10 +78,23 @@ try:
 except:
     print 'Failed with ', matname
 
+def init_pe():
+    pe = ParameterSet('default_param.py')
+    pe.N = 210
+    pe.N = 105
+    pe.do_whitening = False
+    pe.MP_alpha = 1.
+    pe.figsize_edges = 12
+    pe.figsize_edges = .382 * fig_width
+    pe.scale = 1.3
+    pe.line_width = 1.5
+    return pe
+
+pe = init_pe()
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
-for mp.pe.eta_SO in np.linspace(.0, .5, 9):
+for mp.pe.eta_SO in np.linspace(.0, .5, 25):
     matname = 'mat/Geisler01Fig7A_secondorder_eta_SO_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
@@ -98,12 +110,12 @@ for mp.pe.eta_SO in np.linspace(.0, .5, 9):
     except:
         print 'Failed with ', matname
 
-        
+pe = init_pe()        
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
 mp.pe.eta_SO = 0.75
-for mp.pe.dip_w in np.linspace(.01, .5, 9):
+for mp.pe.dip_w in np.logspace(-1., 1., 25, base=10)*pe.dip_w:
     matname = 'mat/Geisler01Fig7A_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
@@ -119,11 +131,12 @@ for mp.pe.dip_w in np.linspace(.01, .5, 9):
     except:
         print 'Failed with ', matname
 
+pe = init_pe()
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
 mp.pe.eta_SO = 0.75
-for mp.pe.dip_B_psi in np.linspace(.01, 2.5, 25):
+for mp.pe.dip_B_psi in np.logspace(-1., 1., 25, base=10)*pe.dip_B_psi:
     matname = 'mat/Geisler01Fig7A_secondorder_dip_B_psi_' + str(mp.pe.dip_B_psi).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
@@ -139,11 +152,12 @@ for mp.pe.dip_B_psi in np.linspace(.01, 2.5, 25):
     except:
         print 'Failed with ', matname
 
+pe = init_pe()
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
 mp.pe.eta_SO = 0.75
-for mp.pe.dip_B_theta in np.linspace(.01, 1.5, 25):
+for mp.pe.dip_B_theta in np.logspace(-1., 1., 25, base=10)*pe.dip_B_theta:
     matname = 'mat/Geisler01Fig7A_secondorder_dip_B_theta_' + str(mp.pe.dip_B_theta).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):

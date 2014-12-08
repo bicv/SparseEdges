@@ -55,9 +55,9 @@
 'kappa_phase': 0.,
 'weight_by_distance': True,
 # Dipole
-'dip_w':.03,
+'dip_w':.2,
 'dip_B_psi':.3,
-'dip_B_theta':1.4,
+'dip_B_theta':1.7,
 'dip_scale':1.5,
 'dip_epsilon':1.e-6,
 # PATHS
