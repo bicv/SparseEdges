@@ -15,19 +15,18 @@ from SLIP import Image
 from LogGabor import LogGabor
 from SparseEdges import SparseEdges
 
-pe = ParameterSet('default_param.py')
-pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
-pe.N_image = 72
-pe.N = 1024
-im = Image(pe)
-lg = LogGabor(im)
-mp = SparseEdges(lg)
-
 for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'laboratory']:
+    pe = ParameterSet('default_param.py')
+    pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
+    pe.N_image = 72
+    pe.N = 1024
+    im = Image(pe)
+    lg = LogGabor(im)
+    mp = SparseEdges(lg)
+
     # control experiment
-    mp.theta = np.linspace(-np.pi/2, np.pi/2, mp.n_theta+1)[1:]
+    #mp.theta = np.linspace(-np.pi/2, np.pi/2, mp.n_theta+1)[1:]
     imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla', name_database=name_database)
-    imageslist_noise, edgeslist_noise, RMSE_noise = mp.process(exp='prior_vanilla_noise_' + str(pe.noise).replace('.', '_'), name_database=name_database, noise=pe.noise)
 
     try:
         six, N, N_image = edgeslist.shape
@@ -47,3 +46,5 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
         imageslist_noise, edgeslist_noise, RMSE_noise = mp.process(exp='prior_firstorder_noise_' + str(pe.noise).replace('.', '_'), name_database=name_database, noise=pe.noise)
     except:
         print('run again once first batches are finished ')
+
+    imageslist_noise, edgeslist_noise, RMSE_noise = mp.process(exp='prior_vanilla_noise_' + str(pe.noise).replace('.', '_'), name_database=name_database, noise=pe.noise)

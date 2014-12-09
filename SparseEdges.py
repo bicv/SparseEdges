@@ -386,8 +386,9 @@ class SparseEdges:
         if display:
             if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
             if a==None: a = plt.axes(polar=True, axisbg='w')
-            a.bar(theta_bin[1:], v_hist, width=theta_bin[:-1] - theta_bin[1:], color='b')# edgecolor="none")
-            a.bar(theta_bin[1:]+np.pi, v_hist, width=theta_bin[:-1] - theta_bin[1:], color='g')
+#             see http://blog.invibe.net/posts/14-12-09-polar-bar-plots.html
+            a.bar(theta_bin[1:], np.sqrt(v_hist), width=theta_bin[:-1] - theta_bin[1:], color='#66c0b7')# edgecolor="none")
+            a.bar(theta_bin[1:]+np.pi, np.sqrt(v_hist), width=theta_bin[:-1] - theta_bin[1:], color='#32ab9f')
             plt.setp(a, yticks=[])
             return fig, a
         else:
