@@ -814,7 +814,7 @@ class SparseEdges:
         #while os.path.isfile(matname + '_images_lock'):
         imagelist = self.im.get_imagelist(exp, name_database=name_database)
         locked = (imagelist=='locked')
-#         print self.theta*180/np.pi
+        print 'DEBUG: theta used in this experiment: ', self.theta*180/np.pi
         # 2- Doing the edge extraction for each image in this list
         if not(locked):
             try:
