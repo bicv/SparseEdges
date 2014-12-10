@@ -266,27 +266,28 @@ class SparseEdges:
 
         """
 
-        global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
-        for filename, croparea in imagelist:
+        for _ in range(3): # repeat this loop three times to make sure to scan everything
+            global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
+            for filename, croparea in imagelist:
 #                 signal = do_edge(self, image, exp, name_database, filename, croparea)
 #                         def do_edge(self, image, exp, name_database, filename, croparea):
-            path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
-            if not(os.path.isdir(path)): os.mkdir(path)
-            matname = os.path.join(path, filename + str(croparea) + '.npy')
-            if not(os.path.isfile(matname)):
-                if not(os.path.isfile(matname + '_lock')):
-                    file(matname + '_lock', 'w').close()
-                    image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
-                    if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
-                    edges, C = self.run_mp(image)
-                    np.save(matname, edges)
-                    try:
-                        os.remove(matname + '_lock')
-                    except Exception, e:
-                        log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
-                else:
-                    log.info('The edge extraction at step %s is locked', matname)
-                    global_lock = True
+                path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+                if not(os.path.isdir(path)): os.mkdir(path)
+                matname = os.path.join(path, filename + str(croparea) + '.npy')
+                if not(os.path.isfile(matname)):
+                    if not(os.path.isfile(matname + '_lock')):
+                        file(matname + '_lock', 'w').close()
+                        image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
+                        if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
+                        edges, C = self.run_mp(image)
+                        np.save(matname, edges)
+                        try:
+                            os.remove(matname + '_lock')
+                        except Exception, e:
+                            log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
+                    else:
+                        log.info('The edge extraction at step %s is locked', matname)
+                        global_lock = True
         if global_lock is True:
             log.error(' some locked edge extractions ')
             return 'locked'
@@ -305,34 +306,35 @@ class SparseEdges:
                 return 'locked'
 
     def full_RMSE(self, exp, name_database, imagelist):#, noise):
-        global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
-        for filename, croparea in imagelist:
-            matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
-            if not(os.path.isfile(matname)):
-                if not(os.path.isfile(matname + '_lock')):
-                    file(matname + '_lock', 'w').close()
-                    image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
-                    #if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
-                    edges = np.load(os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy'))
-                    # computing RMSE
-                    RMSE = np.ones(self.N)
-                    image_ = image.copy()
-                    image_rec = np.zeros_like(image_)
-                    if self.do_whitening: image_ = self.im.whitening(image_)
-                    for i_N in range(self.N):
-                        image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis])
-                        if self.pe.do_mask:
-                            RMSE[i_N] =  ((image_*self.im.mask-image_rec*self.im.mask)**2).sum()
-                        else:
-                            RMSE[i_N] =  ((image_-image_rec)**2).sum()
-                    np.save(matname, RMSE)
-                    try:
-                        os.remove(matname + '_lock')
-                    except Exception, e:
-                        log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
-                else:
-                    log.info('The edge extraction at step %s is locked', matname)
-                    global_lock = True
+        for _ in range(3): # repeat this loop three times to make sure to scan everything
+            global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
+            for filename, croparea in imagelist:
+                matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
+                if not(os.path.isfile(matname)):
+                    if not(os.path.isfile(matname + '_lock')):
+                        file(matname + '_lock', 'w').close()
+                        image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
+                        #if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
+                        edges = np.load(os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy'))
+                        # computing RMSE
+                        RMSE = np.ones(self.N)
+                        image_ = image.copy()
+                        image_rec = np.zeros_like(image_)
+                        if self.do_whitening: image_ = self.im.whitening(image_)
+                        for i_N in range(self.N):
+                            image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis])
+                            if self.pe.do_mask:
+                                RMSE[i_N] =  ((image_*self.im.mask-image_rec*self.im.mask)**2).sum()
+                            else:
+                                RMSE[i_N] =  ((image_-image_rec)**2).sum()
+                        np.save(matname, RMSE)
+                        try:
+                            os.remove(matname + '_lock')
+                        except Exception, e:
+                            log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
+                    else:
+                        log.info('The edge extraction at step %s is locked', matname)
+                        global_lock = True
         if global_lock is True:
             log.error(' some locked RMSE extractions ')
             return 'locked'
