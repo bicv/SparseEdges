@@ -24,6 +24,7 @@ log.setLevel(level=logging.DEBUG) #set verbosity to show all messages of severit
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import hashlib
 
 class SparseEdges:
     def __init__(self, lg):
@@ -259,6 +260,24 @@ class SparseEdges:
             return fig, a, line_segments
         else:
             return fig, a
+    
+    def texture(self, filename, croparea, randn=False):
+        np.random.seed(seed=int("0x" +  hashlib.sha224(filename+str(croparea)).hexdigest(), 0)%4294967295)
+        
+        if randn:
+            return np.random.randn(self.N_X, self.N_Y)
+        else
+            pe.N = 256
+            edgeslist = np.zeros((6, pe.N))
+            edgeslist[0, :] = pe.N_X * np.random.rand(pe.N)
+            edgeslist[1, :] = pe.N_X * np.random.rand(pe.N)
+            edgeslist[2, :] = (np.pi* np.random.rand(pe.N) ) % np.pi
+            edgeslist[3, :] =  self.sf_0[np.random.randint(self.sf_0.size, size=(pe.N))] # best would be to have more high frequency components
+            edgeslist[4, :] = np.random.randn(pe.N) 
+            edgeslist[5, :] = 2*np.pi*np.random.rand(pe.N)
+            image_rec = self.reconstruct(edgeslist)
+            image_rec /= image_rec.std()
+            return image_rec
 
     def full_run(self, exp, name_database, imagelist, noise):
         """
@@ -278,7 +297,7 @@ class SparseEdges:
                     if not(os.path.isfile(matname + '_lock')):
                         file(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
-                        if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
+                        if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         edges, C = self.run_mp(image)
                         np.save(matname, edges)
                         try:
@@ -305,7 +324,7 @@ class SparseEdges:
                 log.error(' some locked edge extractions %s, error ', e)
                 return 'locked'
 
-    def full_RMSE(self, exp, name_database, imagelist):#, noise):
+    def full_RMSE(self, exp, name_database, imagelist):
         for _ in range(3): # repeat this loop three times to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
             for filename, croparea in imagelist:
@@ -314,7 +333,6 @@ class SparseEdges:
                     if not(os.path.isfile(matname + '_lock')):
                         file(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
-                        #if noise > 0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
                         edges = np.load(os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy'))
                         # computing RMSE
                         RMSE = np.ones(self.N)
@@ -871,7 +889,7 @@ class SparseEdges:
                         file(figname + '_lock', 'w').close()
                         log.info(' redoing figure %s ', figname)
                         image, filename_, croparea_ = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
-                        if noise >0.: image += noise*image[:].std()*np.random.randn(image.shape[0], image.shape[1])
+                        if noise >0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         if self.do_whitening: image = self.im.whitening(image)
                         fig, a = self.show_edges(edgeslist[:, :, i_image], image=image*1.)
                         plt.savefig(figname)
@@ -906,7 +924,7 @@ class SparseEdges:
             except Exception, e:
                 log.info(' >> There is no RMSE: %s ', e)
                 try:
-                    RMSE = self.full_RMSE(exp, name_database, imagelist)#, noise=noise)
+                    RMSE = self.full_RMSE(exp, name_database, imagelist)
                     if RMSE == 'locked':
                         log.info('>> RMSE extraction %s is locked', matname)
                         locked = True
