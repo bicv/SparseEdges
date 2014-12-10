@@ -14,7 +14,7 @@
 # whitening parameters:
 'do_whitening'  : True, # = self.pe.do_whitening
 'white_name_database' : 'serre07_distractors',
-'white_n_learning' : 400,
+'white_n_learning' : 0,
 'white_N' : .07,
 'white_N_0' : .0, # olshausen = 0.
 'white_f_0' : .4, # olshausen = 0.2
