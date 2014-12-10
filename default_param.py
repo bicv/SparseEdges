@@ -21,7 +21,6 @@
 'white_alpha' : 1.4,
 'white_steepness' : 4.,
 'white_recompute' : False,
-'white_learn' : False,
 # Log-Gabor
 #'base_levels' : 2.,
 'base_levels' : 1.618,

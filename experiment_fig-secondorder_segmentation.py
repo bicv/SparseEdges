@@ -27,6 +27,8 @@ pe.figsize_edges = .382 * fig_width
 pe.scale = 1.3
 pe.line_width = 1.5
 
+eta_SO = 0.5
+
 figname = 'circle_in_noise' # Geisler01Fig7A_rec
 # defining input image 
 from pylab import imread
@@ -74,7 +76,7 @@ try:
     edges[4, :] *= -1 # turn red in blue...
     fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
     if not(figpath==None): 
-        for ext in FORMATS: fig.savefig(figpath + '/' + figname + 'Geisler01Fig7_secondorder_B.' + ext)
+        for ext in FORMATS: fig.savefig(figpath + '/' + figname + '_secondorder_B.' + ext)
 except:
     print 'Failed with ', matname
 
@@ -94,7 +96,7 @@ pe = init_pe()
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
-for mp.pe.eta_SO in np.linspace(.0, .5, 25):
+for mp.pe.eta_SO in np.logspace(-1., 1., 25, base=10)*eta_SO:
     matname = 'mat/' + figname + '_secondorder_eta_SO_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
@@ -114,7 +116,7 @@ pe = init_pe()
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
-mp.pe.eta_SO = 0.75
+mp.pe.eta_SO = eta_SO
 for mp.pe.dip_w in np.logspace(-1., 1., 25, base=10)*pe.dip_w:
     matname = 'mat/' + figname + '_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
@@ -131,11 +133,33 @@ for mp.pe.dip_w in np.logspace(-1., 1., 25, base=10)*pe.dip_w:
     except:
         print 'Failed with ', matname
 
+pe = init_pe()        
+im = Image(pe)
+lg = LogGabor(im)
+mp = SparseEdges(lg)
+mp.pe.eta_SO = eta_SO
+for mp.pe.dip_epsilon in np.logspace(-1., 1., 25, base=10)*pe.dip_epsilon:
+    matname = 'mat/' + figname + '_secondorder_dip_epsilon_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
+    if not(os.path.isfile(matname)):
+        if not(os.path.isfile(matname + '_lock')):
+            file(matname + '_lock', 'w').close()
+            edges, C_res = mp.run_mp(image, verbose=True)
+            np.save(matname, edges)
+            os.remove(matname + '_lock')
+    try:
+        edges = np.load(matname)
+        edges[4, :] *= -1 # turn red in blue...
+        fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
+        fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
+    except:
+        print 'Failed with ', matname
+
+        
 pe = init_pe()
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
-mp.pe.eta_SO = 0.75
+mp.pe.eta_SO = eta_SO
 for mp.pe.dip_B_psi in np.logspace(-1., 1., 25, base=10)*pe.dip_B_psi:
     matname = 'mat/' + figname + '_secondorder_dip_B_psi_' + str(mp.pe.dip_B_psi).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
@@ -156,7 +180,7 @@ pe = init_pe()
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
-mp.pe.eta_SO = 0.75
+mp.pe.eta_SO = eta_SO
 for mp.pe.dip_B_theta in np.logspace(-1., 1., 25, base=10)*pe.dip_B_theta:
     matname = 'mat/' + figname + '_secondorder_dip_B_theta_' + str(mp.pe.dip_B_theta).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
