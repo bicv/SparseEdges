@@ -46,7 +46,7 @@ mp = SparseEdges(lg)
 print mp.n_levels, mp.sf_0
 
 print ' without second-order '
-matname = 'mat/' + figname + '.npy'
+matname = 'mat/' + figname + '_secondorder_A.npy'
 if not(os.path.isfile(matname)):
     if not(os.path.isfile(matname + '_lock')):
         file(matname + '_lock', 'w').close()
@@ -58,12 +58,13 @@ try:
     edges = np.load(matname)
     fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
     if not(figpath==None): 
-        for ext in FORMATS: fig.savefig(figpath + '/' + figname + '_secondorder_A.' + ext)
+        for ext in FORMATS: 
+                fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.' + ext))
 except:
     print 'Failed with ', matname
 
 print ' with second-order '
-matname = 'mat/' + figname + '_secondorder.npy'
+matname = 'mat/' + figname + '_secondorder_B.npy'
 if not(os.path.isfile(matname)):
     if not(os.path.isfile(matname + '_lock')):
         file(matname + '_lock', 'w').close()
@@ -76,7 +77,8 @@ try:
     edges[4, :] *= -1 # turn red in blue...
     fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
     if not(figpath==None): 
-        for ext in FORMATS: fig.savefig(figpath + '/' + figname + '_secondorder_B.' + ext)
+        for ext in FORMATS: 
+                fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.' + ext))
 except:
     print 'Failed with ', matname
 
