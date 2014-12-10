@@ -55,11 +55,11 @@
 'kappa_phase': 0.,
 'weight_by_distance': True,
 # Dipole
-'dip_w':.2,
-'dip_B_psi':.9,
-'dip_B_theta':4.7,
+'dip_w':.05,
+'dip_B_psi':.2,
+'dip_B_theta':1.7,
 'dip_scale':1.5,
-'dip_epsilon':1.e-3,
+'dip_epsilon':1.e-1,
 # PATHS
 'figpath' : 'figures/',
 'edgefigpath' : 'figures/edges/',

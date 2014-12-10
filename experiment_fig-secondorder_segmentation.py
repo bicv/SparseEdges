@@ -1,5 +1,5 @@
 
-# rm **/Geisler01Fig7A*
+# rm **/Geisler01Fig7A_secondorder*
 
 import os
 import __init__
@@ -27,10 +27,10 @@ pe.figsize_edges = .382 * fig_width
 pe.scale = 1.3
 pe.line_width = 1.5
 
-
+figname = 'circle_in_noise' # Geisler01Fig7A_rec
 # defining input image 
 from pylab import imread
-image = imread('database/Geisler01Fig7A_rec.png').mean(axis=-1)
+image = imread('database/' + figname + '.png').mean(axis=-1)
 print image.mean(), image.std()
 
 im = Image(pe)
@@ -44,7 +44,7 @@ mp = SparseEdges(lg)
 print mp.n_levels, mp.sf_0
 
 print ' without second-order '
-matname = 'mat/Geisler01Fig7A.npy'
+matname = 'mat/' + figname + '.npy'
 if not(os.path.isfile(matname)):
     if not(os.path.isfile(matname + '_lock')):
         file(matname + '_lock', 'w').close()
@@ -56,12 +56,12 @@ try:
     edges = np.load(matname)
     fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
     if not(figpath==None): 
-        for ext in FORMATS: fig.savefig(figpath + 'Geisler01Fig7_secondorder_A.' + ext)
+        for ext in FORMATS: fig.savefig(figpath + '/' + figname + '_secondorder_A.' + ext)
 except:
     print 'Failed with ', matname
 
 print ' with second-order '
-matname = 'mat/Geisler01Fig7A_secondorder.npy'
+matname = 'mat/' + figname + '_secondorder.npy'
 if not(os.path.isfile(matname)):
     if not(os.path.isfile(matname + '_lock')):
         file(matname + '_lock', 'w').close()
@@ -74,7 +74,7 @@ try:
     edges[4, :] *= -1 # turn red in blue...
     fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
     if not(figpath==None): 
-        for ext in FORMATS: fig.savefig(figpath + 'Geisler01Fig7_secondorder_B.' + ext)
+        for ext in FORMATS: fig.savefig(figpath + '/' + figname + 'Geisler01Fig7_secondorder_B.' + ext)
 except:
     print 'Failed with ', matname
 
@@ -95,7 +95,7 @@ im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
 for mp.pe.eta_SO in np.linspace(.0, .5, 25):
-    matname = 'mat/Geisler01Fig7A_secondorder_eta_SO_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
+    matname = 'mat/' + figname + '_secondorder_eta_SO_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
             file(matname + '_lock', 'w').close()
@@ -116,7 +116,7 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 mp.pe.eta_SO = 0.75
 for mp.pe.dip_w in np.logspace(-1., 1., 25, base=10)*pe.dip_w:
-    matname = 'mat/Geisler01Fig7A_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
+    matname = 'mat/' + figname + '_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
             file(matname + '_lock', 'w').close()
@@ -137,7 +137,7 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 mp.pe.eta_SO = 0.75
 for mp.pe.dip_B_psi in np.logspace(-1., 1., 25, base=10)*pe.dip_B_psi:
-    matname = 'mat/Geisler01Fig7A_secondorder_dip_B_psi_' + str(mp.pe.dip_B_psi).replace('.', '_') + '.npy'
+    matname = 'mat/' + figname + '_secondorder_dip_B_psi_' + str(mp.pe.dip_B_psi).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
             file(matname + '_lock', 'w').close()
@@ -158,7 +158,7 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 mp.pe.eta_SO = 0.75
 for mp.pe.dip_B_theta in np.logspace(-1., 1., 25, base=10)*pe.dip_B_theta:
-    matname = 'mat/Geisler01Fig7A_secondorder_dip_B_theta_' + str(mp.pe.dip_B_theta).replace('.', '_') + '.npy'
+    matname = 'mat/' + figname + '_secondorder_dip_B_theta_' + str(mp.pe.dip_B_theta).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
             file(matname + '_lock', 'w').close()

@@ -109,7 +109,7 @@ class SparseEdges:
         neighborhood = np.exp(-distance**2)
         for i_sf_0, sf_0_ in enumerate(self.sf_0):
             for i_theta, theta_layer in enumerate(self.theta):
-                theta_layer = np.pi/2 - theta_layer
+                theta_layer = np.pi/2 - theta_layer # HACK - to correct in +LogGabor
                 theta_layer = ((theta_layer + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
                 theta = theta_layer - theta_edge # angle between edge's orientation and the layer's one
                 psi = np.arctan2(self.im.Y-y, self.im.X-x) - theta_edge -np.pi/2 - theta/2 #- np.pi/4
@@ -118,6 +118,7 @@ class SparseEdges:
                 D[:, :, i_theta, i_sf_0] *= np.exp((np.cos(2*theta)-1.)/(self.pe.dip_B_theta**2 * d))
 #                 if self.pe.MP_do_mask: D[:, :, i_theta, i_sf_0] *= self.MP_mask
             D[:, :, :, i_sf_0] *= neighborhood[:, :, np.newaxis] * np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / self.pe.dip_scale)
+        #print np.exp(-np.abs( np.log2(self.sf_0 / sf_0)) / self.pe.dip_scale)
         D -= D.mean()
         D /= np.abs(D).max()
 
@@ -815,7 +816,7 @@ class SparseEdges:
         #while os.path.isfile(matname + '_images_lock'):
         imagelist = self.im.get_imagelist(exp, name_database=name_database)
         locked = (imagelist=='locked')
-        print 'DEBUG: theta used in this experiment: ', self.theta*180/np.pi
+#         print 'DEBUG: theta used in this experiment: ', self.theta*180/np.pi
         # 2- Doing the edge extraction for each image in this list
         if not(locked):
             try:
@@ -1241,6 +1242,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
 
         ind = len(relL0)
         width = .8
+        print "relL0=", relL0
         rects = ax.bar(np.arange(ind), relL0, yerr=relL0_std, alpha=.8, error_kw={'ecolor':'k'})
         rects[ref].set_color('w')
         rects[ref].set_edgecolor('k')
