@@ -1,5 +1,6 @@
 
 # rm **/Geisler01Fig7A_secondorder*
+# rm **/circle_in_noise_secondorder*
 
 import os
 import __init__
@@ -12,6 +13,7 @@ pe = ParameterSet('default_param.py')
 pe.MP_alpha = 1.
 pe.N = 210
 pe.N = 105
+pe.N = 36
 pe.do_whitening = False
 #pe.do_whitening = True
 
