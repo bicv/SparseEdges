@@ -30,7 +30,7 @@ def init_pe():
     return pe
 pe = init_pe()
 
-eta_SO = 0.5
+eta_SO = 0.25
 
 figname = 'circle_in_noise' # Geisler01Fig7A_rec
 # defining input image 
@@ -87,7 +87,7 @@ except:
 
     
 N_explore = 25
-base = 10.
+base = 4.
 
 pe = init_pe()
 im = Image(pe)
