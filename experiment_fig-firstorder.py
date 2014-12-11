@@ -27,9 +27,6 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
     # control experiment
     #mp.theta = np.linspace(-np.pi/2, np.pi/2, mp.n_theta+1)[1:]
     imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla', name_database=name_database)
-    mp.MP_rho = .994304364466
-    imageslist, edgeslist, RMSE = mp.process(exp='prior_quant', name_database=name_database)
-    mp.MP_rho = None
     try:
         six, N, N_image = edgeslist.shape
         # first-order prior
@@ -42,14 +39,17 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
         P = np.cumsum(np.hstack((0, v_hist[-1]/2, v_hist[:-1], v_hist[-1]/2)))
         
         theta_prior = np.interp(z, P, np.hstack((v_theta_edges[0]-v_theta_bin/2, v_theta_edges[:-1], v_theta_edges[-1]-v_theta_bin/2)))
+        
         mp.theta = (theta_prior[1:])
-
         imageslist, edgeslist, RMSE =  mp.process(exp='prior_firstorder', name_database=name_database)
-        mp.MP_rho = .994304364466
-        imageslist, edgeslist, RMSE = mp.process(exp='prior_quant_firstorder', name_database=name_database)
-        mp.MP_rho = None
+        #mp.MP_rho = .994304364466
+        #imageslist, edgeslist, RMSE = mp.process(exp='prior_quant_firstorder', name_database=name_database)
+        #mp.MP_rho = None
         imageslist_noise, edgeslist_noise, RMSE_noise = mp.process(exp='prior_firstorder_noise_' + str(pe.noise).replace('.', '_'), name_database=name_database, noise=pe.noise)
     except:
         print('run again once first batches are finished ')
 
+    #mp.MP_rho = .994304364466
+    #imageslist, edgeslist, RMSE = mp.process(exp='prior_quant', name_database=name_database)
+    #mp.MP_rho = None
     imageslist_noise, edgeslist_noise, RMSE_noise = mp.process(exp='prior_vanilla_noise_' + str(pe.noise).replace('.', '_'), name_database=name_database, noise=pe.noise)

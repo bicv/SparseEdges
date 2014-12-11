@@ -261,20 +261,22 @@ class SparseEdges:
         else:
             return fig, a
     
-    def texture(self, filename, croparea, randn=False):
-        np.random.seed(seed=int("0x" +  hashlib.sha224(filename+str(croparea)).hexdigest(), 0)%4294967295)
-        
+    def texture(self, N_edge = 256, filename='', croparea='', randn=False):
+        # a way to get always the same seed for each image
+        if not filename=='' or not croparea=='':
+            np.random.seed(seed=int("0x" +  hashlib.sha224(filename+str(croparea)).hexdigest(), 0)%4294967295)
+        # white noise or texture
         if randn:
             return np.random.randn(self.N_X, self.N_Y)
         else:
-            pe.N = 256
-            edgeslist = np.zeros((6, pe.N))
-            edgeslist[0, :] = pe.N_X * np.random.rand(pe.N)
-            edgeslist[1, :] = pe.N_X * np.random.rand(pe.N)
-            edgeslist[2, :] = (np.pi* np.random.rand(pe.N) ) % np.pi
-            edgeslist[3, :] =  self.sf_0[np.random.randint(self.sf_0.size, size=(pe.N))] # best would be to have more high frequency components
-            edgeslist[4, :] = np.random.randn(pe.N) 
-            edgeslist[5, :] = 2*np.pi*np.random.rand(pe.N)
+            
+            edgeslist = np.zeros((6, N_edge))
+            edgeslist[0, :] = self.N_X * np.random.rand(N_edge)
+            edgeslist[1, :] = self.N_X * np.random.rand(N_edge)
+            edgeslist[2, :] = (np.pi* np.random.rand(N_edge) ) % np.pi
+            edgeslist[3, :] =  self.sf_0[np.random.randint(self.sf_0.size, size=(N_edge))] # best would be to have more high frequency components
+            edgeslist[4, :] = np.random.randn(N_edge) 
+            edgeslist[5, :] = 2*np.pi*np.random.rand(N_edge)
             image_rec = self.reconstruct(edgeslist)
             image_rec /= image_rec.std()
             return image_rec
