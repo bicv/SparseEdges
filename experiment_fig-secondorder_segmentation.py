@@ -71,7 +71,7 @@ matname = 'mat/' + figname + '_secondorder_B.npy'
 if not(os.path.isfile(matname)):
     if not(os.path.isfile(matname + '_lock')):
         file(matname + '_lock', 'w').close()
-        mp.pe.eta_SO = 0.75
+        mp.pe.eta_SO = eta_SO
         edges, C_res = mp.run_mp(image, verbose=True)
         np.save(matname, edges)
         os.remove(matname + '_lock')
