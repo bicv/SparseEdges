@@ -30,13 +30,37 @@ def init_pe():
     return pe
 pe = init_pe()
 
-eta_SO = 0.25
+eta_SO = 0.3
 
-figname = 'circle_in_noise' # Geisler01Fig7A_rec
-# defining input image 
-from pylab import imread
-image = imread('database/' + figname + '.png').mean(axis=-1)
-print image.mean(), image.std()
+if False:
+
+    figname = 'circle_in_noise' # Geisler01Fig7A_rec
+    # defining input image 
+    from pylab import imread
+    image = imread('database/' + figname + '.png').mean(axis=-1)
+    print image.mean(), image.std()
+else:
+    N, N_circle, N_image = 1024, 36, 1
+    edgeslist = np.zeros((6, pe.N+N_circle, N_image))
+    # random edges:
+    edgeslist[0, :N, :] = pe.N_X * np.random.rand(N, N_image)
+    edgeslist[1, :N, :] = pe.N_X * np.random.rand(N, N_image)
+    edgeslist[2, :N, :] = (np.pi* np.random.rand(N, N_image) ) % np.pi
+    edgeslist[3, :N, :] = 0.5 * (1- mp.pe.base_levels**(-mp.n_levels*(np.random.rand(N, N_image))))
+    edgeslist[4, :N, :] = 1.2*np.random.rand(N, N_image) * np.sign(np.random.randn(N, N_image))
+    edgeslist[5, :N, :] = 2*np.pi*np.random.rand(N, N_image)
+    # cocircular edges:
+    for i_N, angle in enumerate(np.linspace(0, 2*np.pi, N_circle)): #2*np.pi*np.random.rand(N_circle)):
+        edgeslist[0, N + i_N, :] = pe.N_X/2. - pe.N_X/4.*np.sin(angle) + .0 * np.random.randn(N_image)
+        edgeslist[1, N + i_N, :] = pe.N_X/2. + pe.N_X/4.*np.cos(angle) + .0 * np.random.randn(N_image)
+        edgeslist[2, N + i_N, :] = (np.pi/2 + angle + .5*np.pi/180 * np.random.randn(N_image)) % np.pi
+        edgeslist[3, N + i_N, :] = mp.sf_0[2] #0.03
+        edgeslist[4, N + i_N, :] = .7 + .4*np.exp(np.cos(angle)/1.**2)
+
+    print edgeslist.shape
+    image = mp.reconstruct(edgeslist[:,:,0])
+    from pylab import imsave, gray
+    imsave(fname='database/circle_in_noise.png', arr=image, vmin=image_rec.min(), vmax=image_rec.max(), cmap=gray())
 
 im = Image(pe)
 image = im.normalize(image, center=True)
@@ -89,10 +113,7 @@ except:
 N_explore = 25
 base = 4.
 
-pe = init_pe()
-im = Image(pe)
-lg = LogGabor(im)
-mp = SparseEdges(lg)
+mp = SparseEdges(LogGabor(Image(init_pe())))
 for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
     matname = 'mat/' + figname + '_secondorder_eta_SO_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
@@ -109,10 +130,7 @@ for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
     except:
         print 'File ', matname, ' is locked'
 
-pe = init_pe()        
-im = Image(pe)
-lg = LogGabor(im)
-mp = SparseEdges(lg)
+mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
 for mp.pe.dip_w in np.logspace(-1., 1., N_explore, base=base)*pe.dip_w:
     matname = 'mat/' + figname + '_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
@@ -130,10 +148,7 @@ for mp.pe.dip_w in np.logspace(-1., 1., N_explore, base=base)*pe.dip_w:
     except:
         print 'File ', matname, ' is locked'
 
-pe = init_pe()        
-im = Image(pe)
-lg = LogGabor(im)
-mp = SparseEdges(lg)
+mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
 for mp.pe.dip_epsilon in np.logspace(-1., 1., N_explore, base=base)*pe.dip_epsilon:
     matname = 'mat/' + figname + '_secondorder_dip_epsilon_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
@@ -151,10 +166,7 @@ for mp.pe.dip_epsilon in np.logspace(-1., 1., N_explore, base=base)*pe.dip_epsil
     except:
         print 'File ', matname, ' is locked'
         
-pe = init_pe()
-im = Image(pe)
-lg = LogGabor(im)
-mp = SparseEdges(lg)
+mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
 for mp.pe.dip_B_psi in np.logspace(-1., 1., N_explore, base=base)*pe.dip_B_psi:
     matname = 'mat/' + figname + '_secondorder_dip_B_psi_' + str(mp.pe.dip_B_psi).replace('.', '_') + '.npy'
@@ -172,10 +184,7 @@ for mp.pe.dip_B_psi in np.logspace(-1., 1., N_explore, base=base)*pe.dip_B_psi:
     except:
         print 'File ', matname, ' is locked'
 
-pe = init_pe()
-im = Image(pe)
-lg = LogGabor(im)
-mp = SparseEdges(lg)
+mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
 for mp.pe.dip_B_theta in np.logspace(-1., 1., N_explore, base=base)*pe.dip_B_theta:
     matname = 'mat/' + figname + '_secondorder_dip_B_theta_' + str(mp.pe.dip_B_theta).replace('.', '_') + '.npy'
