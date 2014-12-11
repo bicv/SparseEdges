@@ -55,7 +55,7 @@ else:
         edgeslist[1, N + i_N, :] = pe.N_X/2. + pe.N_X/4.*np.cos(angle) + .0 * np.random.randn(N_image)
         edgeslist[2, N + i_N, :] = (np.pi/2 + angle + .5*np.pi/180 * np.random.randn(N_image)) % np.pi
         edgeslist[3, N + i_N, :] = mp.sf_0[2] #0.03
-        edgeslist[4, N + i_N, :] = .7 + .4*np.exp(np.cos(angle)/1.**2)
+        edgeslist[4, N + i_N, :] = .8 + .3*np.exp(np.cos(angle)/1.**2)
 
     print edgeslist.shape
     image = mp.reconstruct(edgeslist[:,:,0])
@@ -72,6 +72,7 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 print mp.n_levels, mp.sf_0
 
+##############################################################################################################
 print ' without second-order '
 matname = 'mat/' + figname + '_secondorder_A.npy'
 if not(os.path.isfile(matname)):
@@ -90,6 +91,7 @@ try:
 except:
     print 'File ', matname, ' is locked'
 
+##############################################################################################################
 print ' with second-order '
 matname = 'mat/' + figname + '_secondorder_B.npy'
 if not(os.path.isfile(matname)):
@@ -110,9 +112,10 @@ except:
     print 'File ', matname, ' is locked'
 
     
+##############################################################################################################
 N_explore = 25
 base = 4.
-
+##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
     matname = 'mat/' + figname + '_secondorder_eta_SO_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
@@ -130,6 +133,7 @@ for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
     except:
         print 'File ', matname, ' is locked'
 
+##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
 for mp.pe.dip_w in np.logspace(-1., 1., N_explore, base=base)*pe.dip_w:
@@ -148,10 +152,11 @@ for mp.pe.dip_w in np.logspace(-1., 1., N_explore, base=base)*pe.dip_w:
     except:
         print 'File ', matname, ' is locked'
 
+##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
 for mp.pe.dip_epsilon in np.logspace(-1., 1., N_explore, base=base)*pe.dip_epsilon:
-    matname = 'mat/' + figname + '_secondorder_dip_epsilon_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
+    matname = 'mat/' + figname + '_secondorder_dip_epsilon_' + str(mp.pe.dip_epsilon).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
             file(matname + '_lock', 'w').close()
@@ -166,6 +171,7 @@ for mp.pe.dip_epsilon in np.logspace(-1., 1., N_explore, base=base)*pe.dip_epsil
     except:
         print 'File ', matname, ' is locked'
         
+##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
 for mp.pe.dip_B_psi in np.logspace(-1., 1., N_explore, base=base)*pe.dip_B_psi:
@@ -184,6 +190,7 @@ for mp.pe.dip_B_psi in np.logspace(-1., 1., N_explore, base=base)*pe.dip_B_psi:
     except:
         print 'File ', matname, ' is locked'
 
+##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
 for mp.pe.dip_B_theta in np.logspace(-1., 1., N_explore, base=base)*pe.dip_B_theta:
@@ -201,3 +208,4 @@ for mp.pe.dip_B_theta in np.logspace(-1., 1., N_explore, base=base)*pe.dip_B_the
         fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
     except:
         print 'File ', matname, ' is locked'
+##############################################################################################################

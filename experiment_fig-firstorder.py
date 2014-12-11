@@ -5,6 +5,7 @@ $ python experiment_fig-firstorder.py
 
 rm -fr **/prior_* **/**/prior_*
 rm -fr **/prior_vanilla* **/**/prior_vanilla*
+rm -fr **/prior_vanilla_noise_* **/**/prior_vanilla_noise_*
 rm -fr **/prior_firstorder* **/**/prior_firstorder*
 
 """
@@ -27,6 +28,9 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
     # control experiment
     #mp.theta = np.linspace(-np.pi/2, np.pi/2, mp.n_theta+1)[1:]
     imageslist, edgeslist, RMSE = mp.process(exp='prior_vanilla', name_database=name_database)
+
+    imageslist_noise, edgeslist_noise, RMSE_noise = mp.process(exp='prior_vanilla_noise_' + str(pe.noise).replace('.', '_'), name_database=name_database, noise=pe.noise)
+
     try:
         six, N, N_image = edgeslist.shape
         # first-order prior
@@ -52,4 +56,3 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
     mp.MP_rho = .994304364466
     imageslist, edgeslist, RMSE = mp.process(exp='prior_quant', name_database=name_database)
     mp.MP_rho = None
-    imageslist_noise, edgeslist_noise, RMSE_noise = mp.process(exp='prior_vanilla_noise_' + str(pe.noise).replace('.', '_'), name_database=name_database, noise=pe.noise)

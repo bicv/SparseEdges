@@ -56,7 +56,7 @@
 # Dipole
 'dip_w':.1,
 'dip_B_psi':.4,
-'dip_B_theta':.2,
+'dip_B_theta':.8,
 'dip_scale':1.5,
 'dip_epsilon':5.e-1,
 # PATHS
