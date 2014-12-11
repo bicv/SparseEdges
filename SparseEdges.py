@@ -266,7 +266,7 @@ class SparseEdges:
         
         if randn:
             return np.random.randn(self.N_X, self.N_Y)
-        else
+        else:
             pe.N = 256
             edgeslist = np.zeros((6, pe.N))
             edgeslist[0, :] = pe.N_X * np.random.rand(pe.N)
