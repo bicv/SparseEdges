@@ -90,7 +90,7 @@ try:
                 fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.' + ext))
 except:
     print 'File ', matname, ' is locked'
-
+    plt.close('all')
 ##############################################################################################################
 print ' with second-order '
 matname = 'mat/' + figname + '_secondorder_B.npy'
@@ -110,8 +110,7 @@ try:
                 fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.' + ext))
 except:
     print 'File ', matname, ' is locked'
-
-    
+    plt.close('all')
 ##############################################################################################################
 N_explore = 25
 base = 4.
@@ -132,7 +131,7 @@ for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
         fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
     except:
         print 'File ', matname, ' is locked'
-
+    plt.close('all')
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
@@ -151,11 +150,11 @@ for mp.pe.dip_w in np.logspace(-1., 1., N_explore, base=base)*pe.dip_w:
         fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
     except:
         print 'File ', matname, ' is locked'
-
+    plt.close('all')
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
-for mp.pe.dip_epsilon in np.logspace(-1., 1., N_explore, base=base)*pe.dip_epsilon:
+for mp.pe.dip_epsilon in np.linspace(0, 1., N_explore):
     matname = 'mat/' + figname + '_secondorder_dip_epsilon_' + str(mp.pe.dip_epsilon).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
@@ -170,7 +169,7 @@ for mp.pe.dip_epsilon in np.logspace(-1., 1., N_explore, base=base)*pe.dip_epsil
         fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
     except:
         print 'File ', matname, ' is locked'
-        
+    plt.close('all')       
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
@@ -189,7 +188,7 @@ for mp.pe.dip_B_psi in np.logspace(-1., 1., N_explore, base=base)*pe.dip_B_psi:
         fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
     except:
         print 'File ', matname, ' is locked'
-
+    plt.close('all')
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
@@ -208,4 +207,5 @@ for mp.pe.dip_B_theta in np.logspace(-1., 1., N_explore, base=base)*pe.dip_B_the
         fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
     except:
         print 'File ', matname, ' is locked'
+    plt.close('all')
 ##############################################################################################################

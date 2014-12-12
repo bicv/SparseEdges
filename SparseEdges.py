@@ -102,7 +102,7 @@ class SparseEdges:
 
     def dipole(self, edge):
 
-        x, y, theta_edge, sf_0, C, phase = edge
+        y, x, theta_edge, sf_0, C, phase = edge # HACK
         theta_edge = np.pi/2 - theta_edge
 
         D = np.ones((self.N_X, self.N_Y, self.n_theta, self.n_levels))
@@ -123,7 +123,7 @@ class SparseEdges:
         D -= D.mean()
         D /= np.abs(D).max()
 
-        return np.log2(1.+D)
+        return np.log2(1.+D) * np.exp(1j*phase)
 
     def argmax(self, C):
         """
@@ -1300,3 +1300,37 @@ if __name__ == '__main__':
 #     image = imread('database/gris512.png')[:,:,0]
 #     lg = LogGabor(image.shape)
 
+
+def golden_pyramid(mp, z):
+    phi = (np.sqrt(5) +1.)/2. # golden number
+    opts= {'vmin':0., 'vmax':1., 'interpolation':'nearest', 'origin':'upper'}
+    fig_width = 13
+    fig = plt.figure(figsize=(fig_width, fig_width/phi))
+    xmin, ymin, size = 0, 0, 1.
+    for i_sf_0, sf_0_ in enumerate(mp.sf_0):
+        a = fig.add_axes((xmin/phi, ymin, size/phi, size), axisbg='w')
+        a.axis(c='b', lw=0)
+        plt.setp(a, xticks=[])
+        plt.setp(a, yticks=[])
+        im_RGB = np.zeros((mp.pe.N_X, mp.pe.N_Y, 3))
+        for i_theta, theta_ in enumerate(mp.theta):
+            im_abs = np.absolute(z[:, :, i_theta, i_sf_0])
+            RGB = np.array([.5*np.sin(2*theta_ + 2*i*np.pi/3)+.5 for i in range(3)])
+            im_RGB += im_abs[:,:, np.newaxis] * RGB[np.newaxis, np.newaxis, :]
+
+        im_RGB /= im_RGB.max()
+        a.imshow(im_RGB, **opts)
+        a.grid(False)
+        i_orientation = np.mod(i_sf_0, 4)
+        if i_orientation==0:
+            xmin += size
+            ymin += size/phi**2
+        elif i_orientation==1:
+            xmin += size/phi**2
+            ymin += -size/phi
+        elif i_orientation==2:
+            xmin += -size/phi
+        elif i_orientation==3:
+            ymin += size
+        size /= phi
+    return fig
