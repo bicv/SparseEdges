@@ -65,7 +65,7 @@ else:
     print edgeslist.shape
     image = mp.reconstruct(edgeslist[:,:,0])
     from pylab import imsave, gray
-    imsave(fname='database/circle_in_noise.png', arr=image, vmin=image_rec.min(), vmax=image_rec.max(), cmap=gray())
+    imsave(fname='database/circle_in_noise.png', arr=image, vmin=image.min(), vmax=image.max(), cmap=gray())
 
 image = im.normalize(image, center=True)
 print image.mean(), image.std()
