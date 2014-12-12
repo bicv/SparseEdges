@@ -46,7 +46,7 @@ else:
     edgeslist[0, :N, :] = pe.N_X * np.random.rand(N, N_image)
     edgeslist[1, :N, :] = pe.N_X * np.random.rand(N, N_image)
     edgeslist[2, :N, :] = (np.pi* np.random.rand(N, N_image) ) % np.pi
-    edgeslist[3, :N, :] = 0.5 * (1- mp.pe.base_levels**(-mp.n_levels*(np.random.rand(N, N_image))))
+    edgeslist[3, :N, :] = 0.5 * (1- pe.base_levels**(-pe.n_levels*(np.random.rand(N, N_image))))
     edgeslist[4, :N, :] = 1.2*np.random.rand(N, N_image) * np.sign(np.random.randn(N, N_image))
     edgeslist[5, :N, :] = 2*np.pi*np.random.rand(N, N_image)
     # cocircular edges:
