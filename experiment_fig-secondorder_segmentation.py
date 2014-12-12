@@ -32,7 +32,7 @@ def init_pe():
     return pe
 
 pe = init_pe()
-eta_SO = 0.15
+eta_SO = 0.25
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
