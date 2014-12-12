@@ -2,6 +2,7 @@
 import os
 import __init__
 import numpy as np
+import matplotlib.pyplot as plt
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
 from LogGabor import LogGabor
