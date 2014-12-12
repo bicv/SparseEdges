@@ -28,16 +28,10 @@ def init_pe():
     pe.scale = 1.3
     pe.line_width = 1.5
     return pe
+
 pe = init_pe()
-
 eta_SO = 0.3
-
 im = Image(pe)
-image = im.normalize(image, center=True)
-print image.mean(), image.std()
-v_max = 1.*image.max()
-v_min = -v_max
-
 lg = LogGabor(im)
 mp = SparseEdges(lg)
 
@@ -73,6 +67,11 @@ else:
     from pylab import imsave, gray
     imsave(fname='database/circle_in_noise.png', arr=image, vmin=image_rec.min(), vmax=image_rec.max(), cmap=gray())
 
+image = im.normalize(image, center=True)
+print image.mean(), image.std()
+v_max = 1.*image.max()
+v_min = -v_max
+    
 ##############################################################################################################
 print ' without second-order '
 matname = 'mat/' + figname + '_secondorder_A.npy'
