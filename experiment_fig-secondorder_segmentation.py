@@ -41,7 +41,7 @@ if False:
     print image.mean(), image.std()
 else:
     N, N_circle, N_image = 1024, 36, 1
-    edgeslist = np.zeros((6, pe.N+N_circle, N_image))
+    edgeslist = np.zeros((6, N+N_circle, N_image))
     # random edges:
     edgeslist[0, :N, :] = pe.N_X * np.random.rand(N, N_image)
     edgeslist[1, :N, :] = pe.N_X * np.random.rand(N, N_image)

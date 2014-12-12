@@ -114,7 +114,7 @@ class SparseEdges:
                 theta_layer = ((theta_layer + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
                 theta = theta_layer - theta_edge # angle between edge's orientation and the layer's one
                 psi = np.arctan2(self.im.Y-y, self.im.X-x) - theta_edge -np.pi/2 - theta/2 #- np.pi/4
-                d = distance + self.pe.dip_epsilon
+                d = (1-self.pe.dip_epsilon)*distance + self.pe.dip_epsilon
                 D[:, :, i_theta, i_sf_0] = np.exp((np.cos(2*psi)-1.)/(self.pe.dip_B_psi**2 * d))
                 D[:, :, i_theta, i_sf_0] *= np.exp((np.cos(2*theta)-1.)/(self.pe.dip_B_theta**2 * d))
 #                 if self.pe.MP_do_mask: D[:, :, i_theta, i_sf_0] *= self.MP_mask
