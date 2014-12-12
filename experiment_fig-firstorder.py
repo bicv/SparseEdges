@@ -19,8 +19,8 @@ from SparseEdges import SparseEdges
 for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'laboratory']:
     pe = ParameterSet('default_param.py')
     pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
-    pe.N_image = 72
-    pe.N = 1024
+    pe.N_image = 25
+    pe.N = 256
     im = Image(pe)
     lg = LogGabor(im)
     mp = SparseEdges(lg)
@@ -43,8 +43,16 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
         P = np.cumsum(np.hstack((0, v_hist[-1]/2, v_hist[:-1], v_hist[-1]/2)))
         
         theta_prior = np.interp(z, P, np.hstack((v_theta_edges[0]-v_theta_bin/2, v_theta_edges[:-1], v_theta_edges[-1]-v_theta_bin/2)))
-        
+
+        pe = ParameterSet('default_param.py')
+        pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
+        pe.N_image = 72
+        pe.N = 1024
+        im = Image(pe)
+        lg = LogGabor(im)
+        mp = SparseEdges(lg)        
         mp.theta = (theta_prior[1:])
+        
         imageslist, edgeslist, RMSE =  mp.process(exp='prior_firstorder', name_database=name_database)
         mp.MP_rho = .994304364466
         imageslist, edgeslist, RMSE = mp.process(exp='prior_quant_firstorder', name_database=name_database)
