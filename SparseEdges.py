@@ -67,7 +67,7 @@ class SparseEdges:
 #         RMSE = np.ones(self.N)
         if self.do_whitening: image_ = self.im.whitening(image_)
         C = self.init(image_)
-        logD = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels))#, dtype=np.complex)
+        logD = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
         for i_edge in range(self.N):
 #             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
@@ -86,7 +86,7 @@ class SparseEdges:
                                          self.sf_0[ind_edge_star[3]],
                                          coeff, np.angle(C[ind_edge_star])])
             # PURSUIT
-            if self.pe.eta_SO>0.: logD+= np.absolute(C[ind_edge_star]) * self.dipole(edges[:, i_edge])
+            if self.pe.eta_SO>0.: logD+= C[ind_edge_star] * self.dipole(edges[:, i_edge])
             C = self.backprop(C, ind_edge_star)
         return edges, C
 
@@ -123,7 +123,7 @@ class SparseEdges:
         D -= D.mean()
         D /= np.abs(D).max()
 
-        return np.log2(1.+D) * np.exp(1j*phase)
+        return np.log2(1.+D)
 
     def argmax(self, C):
         """
