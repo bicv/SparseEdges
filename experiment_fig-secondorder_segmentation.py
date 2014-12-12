@@ -22,7 +22,7 @@ fig_width = fig_width_pt*inches_per_pt  # width in inches
 
 def init_pe():
     pe = ParameterSet('default_param.py')
-    pe.N = 36
+    pe.N = 72
     pe.do_whitening = True
     pe.MP_alpha = 1.
     pe.figsize_edges = 12
