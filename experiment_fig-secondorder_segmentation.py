@@ -36,10 +36,10 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 
 ##############################################################################################################
+figname = 'circle_in_noise' # Geisler01Fig7A_rec
 
 if False:
 
-    figname = 'circle_in_noise' # Geisler01Fig7A_rec
     # defining input image 
     from pylab import imread
     image = imread('database/' + figname + '.png').mean(axis=-1)
