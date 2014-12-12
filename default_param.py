@@ -9,7 +9,7 @@
 'N_Y' : 256, # size of images
 # 'N_X' : 64, # size of images
 # 'N_Y' : 64, # size of images
-'noise' : 0.2, # level of noise when we use some
+'noise' : 0.33, # level of noise when we use some
 'do_mask' : True, # used in SLIP
 # whitening parameters:
 'do_whitening'  : True, # = self.pe.do_whitening
