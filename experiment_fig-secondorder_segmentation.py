@@ -112,30 +112,11 @@ except:
     plt.close('all')
 ##############################################################################################################
 N_explore = 25
-base = 4.
+base = 2.
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
     matname = 'mat/' + figname + '_secondorder_eta_SO_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
-    if not(os.path.isfile(matname)):
-        if not(os.path.isfile(matname + '_lock')):
-            file(matname + '_lock', 'w').close()
-            edges, C_res = mp.run_mp(image, verbose=True)
-            np.save(matname, edges)
-            os.remove(matname + '_lock')
-    try:
-        edges = np.load(matname)
-        edges[4, :] *= -1 # turn red in blue...
-        fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
-        fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
-    except:
-        print 'File ', matname, ' is locked'
-    plt.close('all')
-##############################################################################################################
-mp = SparseEdges(LogGabor(Image(init_pe())))
-mp.pe.eta_SO = eta_SO
-for mp.pe.dip_w in np.logspace(-1., 1., N_explore, base=base)*pe.dip_w:
-    matname = 'mat/' + figname + '_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
     if not(os.path.isfile(matname)):
         if not(os.path.isfile(matname + '_lock')):
             file(matname + '_lock', 'w').close()
@@ -169,6 +150,27 @@ for mp.pe.dip_epsilon in np.linspace(0, 1., N_explore):
     except:
         print 'File ', matname, ' is locked'
     plt.close('all')       
+##############################################################################################################
+base = 10.
+##############################################################################################################
+mp = SparseEdges(LogGabor(Image(init_pe())))
+mp.pe.eta_SO = eta_SO
+for mp.pe.dip_w in np.logspace(-1., 1., N_explore, base=base)*pe.dip_w:
+    matname = 'mat/' + figname + '_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
+    if not(os.path.isfile(matname)):
+        if not(os.path.isfile(matname + '_lock')):
+            file(matname + '_lock', 'w').close()
+            edges, C_res = mp.run_mp(image, verbose=True)
+            np.save(matname, edges)
+            os.remove(matname + '_lock')
+    try:
+        edges = np.load(matname)
+        edges[4, :] *= -1 # turn red in blue...
+        fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
+        fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
+    except:
+        print 'File ', matname, ' is locked'
+    plt.close('all')
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
