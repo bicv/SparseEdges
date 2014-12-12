@@ -32,6 +32,17 @@ pe = init_pe()
 
 eta_SO = 0.3
 
+im = Image(pe)
+image = im.normalize(image, center=True)
+print image.mean(), image.std()
+v_max = 1.*image.max()
+v_min = -v_max
+
+lg = LogGabor(im)
+mp = SparseEdges(lg)
+
+##############################################################################################################
+
 if False:
 
     figname = 'circle_in_noise' # Geisler01Fig7A_rec
@@ -46,7 +57,7 @@ else:
     edgeslist[0, :N, :] = pe.N_X * np.random.rand(N, N_image)
     edgeslist[1, :N, :] = pe.N_X * np.random.rand(N, N_image)
     edgeslist[2, :N, :] = (np.pi* np.random.rand(N, N_image) ) % np.pi
-    edgeslist[3, :N, :] = 0.5 * (1- pe.base_levels**(-pe.n_levels*(np.random.rand(N, N_image))))
+    edgeslist[3, :N, :] = 0.5 * (1- pe.base_levels**(-mp.n_levels*(np.random.rand(N, N_image))))
     edgeslist[4, :N, :] = 1.2*np.random.rand(N, N_image) * np.sign(np.random.randn(N, N_image))
     edgeslist[5, :N, :] = 2*np.pi*np.random.rand(N, N_image)
     # cocircular edges:
@@ -61,16 +72,6 @@ else:
     image = mp.reconstruct(edgeslist[:,:,0])
     from pylab import imsave, gray
     imsave(fname='database/circle_in_noise.png', arr=image, vmin=image_rec.min(), vmax=image_rec.max(), cmap=gray())
-
-im = Image(pe)
-image = im.normalize(image, center=True)
-print image.mean(), image.std()
-v_max = 1.*image.max()
-v_min = -v_max
-
-lg = LogGabor(im)
-mp = SparseEdges(lg)
-print mp.n_levels, mp.sf_0
 
 ##############################################################################################################
 print ' without second-order '
