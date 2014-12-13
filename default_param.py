@@ -58,7 +58,7 @@
 'dip_B_psi':1.,
 'dip_B_theta':1.,
 'dip_scale':1.5,
-'dip_epsilon':5.e-1,
+'dip_epsilon':5.e-2,
 # PATHS
 'figpath' : 'figures/',
 'edgefigpath' : 'figures/edges/',

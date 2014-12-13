@@ -152,7 +152,7 @@ for mp.pe.dip_epsilon in np.linspace(0, 1., N_explore):
         print 'File ', matname, ' is locked'
     plt.close('all')       
 ##############################################################################################################
-base = 10.
+base = 3.
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
