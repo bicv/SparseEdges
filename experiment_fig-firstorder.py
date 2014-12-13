@@ -19,8 +19,8 @@ from SparseEdges import SparseEdges
 for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'laboratory']:
     pe = ParameterSet('default_param.py')
     pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
-    pe.N_image = 25
-    pe.N = 256
+    pe.N_image = 100
+    pe.N = 1024
     im = Image(pe)
     lg = LogGabor(im)
     mp = SparseEdges(lg)
