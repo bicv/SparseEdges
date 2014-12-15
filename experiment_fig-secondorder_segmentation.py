@@ -32,7 +32,7 @@ def init_pe():
     return pe
 
 pe = init_pe()
-eta_SO = 0.03
+eta_SO = 0.15
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
@@ -113,7 +113,7 @@ except:
     plt.close('all')
 ##############################################################################################################
 N_explore = 25
-base = 10.
+base = 2.
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
