@@ -22,7 +22,7 @@ fig_width = fig_width_pt*inches_per_pt  # width in inches
 
 def init_pe():
     pe = ParameterSet('default_param.py')
-    pe.N = 72
+    pe.N = 60
     pe.do_whitening = True
     pe.MP_alpha = 1.
     pe.figsize_edges = 12
@@ -32,7 +32,7 @@ def init_pe():
     return pe
 
 pe = init_pe()
-eta_SO = 0.15
+eta_SO = 0.25
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)

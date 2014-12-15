@@ -55,10 +55,10 @@
 'weight_by_distance': True,
 # Dipole
 'dip_w':.04,
-'dip_B_psi':1.,
-'dip_B_theta':1.,
+'dip_B_psi':1.3,
+'dip_B_theta':1.3,
 'dip_scale':1.5,
-'dip_epsilon':5.e-1,
+'dip_epsilon':.5,
 # PATHS
 'figpath' : 'figures/',
 'edgefigpath' : 'figures/edges/',
