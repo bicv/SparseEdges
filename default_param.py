@@ -9,7 +9,7 @@
 'N_Y' : 256, # size of images
 # 'N_X' : 64, # size of images
 # 'N_Y' : 64, # size of images
-'noise' : 0.5, # level of noise when we use some
+'noise' : 0.33, # level of noise when we use some
 'do_mask' : True, # used in SLIP
 # whitening parameters:
 'do_whitening'  : True, # = self.pe.do_whitening
@@ -54,8 +54,8 @@
 'kappa_phase': 0.,
 'weight_by_distance': True,
 # Dipole
-'dip_w':.04,
-'dip_B_psi':1.3,
+'dip_w':.08,
+'dip_B_psi':.5,
 'dip_B_theta':1.3,
 'dip_scale':1.5,
 'dip_epsilon':.5,

@@ -32,7 +32,7 @@ def init_pe():
     return pe
 
 pe = init_pe()
-eta_SO = 0.25
+eta_SO = 0.03
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
@@ -113,7 +113,7 @@ except:
     plt.close('all')
 ##############################################################################################################
 N_explore = 25
-base = 2.
+base = 10.
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
@@ -152,7 +152,7 @@ for mp.pe.dip_epsilon in np.linspace(0, 1., N_explore):
         print 'File ', matname, ' is locked'
     plt.close('all')       
 ##############################################################################################################
-base = 3.
+base = 10.
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO

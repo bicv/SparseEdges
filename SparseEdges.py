@@ -71,12 +71,12 @@ class SparseEdges:
         for i_edge in range(self.N):
 #             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
-            ind_edge_star = self.argmax(C + self.pe.eta_SO * logD)
+            ind_edge_star = self.argmax(C * np.exp( self.pe.eta_SO * logD))
             if not self.pe.MP_rho is None:
                 if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
                 coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) *C_Max
                 # recording
-                if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
+                if verbose: print 'Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             else:
                 coeff = self.pe.MP_alpha * np.absolute(C[ind_edge_star])
                 # recording
@@ -86,7 +86,7 @@ class SparseEdges:
                                          self.sf_0[ind_edge_star[3]],
                                          coeff, np.angle(C[ind_edge_star])])
             # PURSUIT
-            if self.pe.eta_SO>0.: logD+= C[ind_edge_star] * self.dipole(edges[:, i_edge])
+            if self.pe.eta_SO>0.: logD+= np.absolute(C[ind_edge_star]) * self.dipole(edges[:, i_edge])
             C = self.backprop(C, ind_edge_star)
         return edges, C
 
@@ -1243,21 +1243,22 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
     else: # fourth type: we have a reference and a threshold
         relL0, relL0_std = [], []
         imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
-        RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis]
+        RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
         L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1.
         if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
 
         for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
             try:
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                RMSE /= RMSE[:, 0][:, np.newaxis]
+                print len(imagelist)
+                RMSE /= RMSE[:, 0][:, np.newaxis] # normalize RMSE
                 N = RMSE.shape[1] #number of edges
                 L0 =  np.argmax(RMSE<threshold, axis=1)*1.
                 if scale: L0 *= np.log2(mp.oc)/mp.N_X/mp.N_Y
                 relL0.append((L0/L0_ref).mean())
                 relL0_std.append((L0/L0_ref).std())
             except Exception, e:
-                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+                print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
         fig.subplots_adjust(wspace=0.1, hspace=0.1,
                             left=0.2, right=0.9,
                             top=0.9,    bottom=0.175)
@@ -1280,25 +1281,6 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
 #         fig.set_tight_layout(True)
 
         return fig, ax, ax
-
-def _test():
-    import doctest
-    doctest.testmod()
-#####################################
-#
-if __name__ == '__main__':
-    _test()
-
-    #### Main
-    """
-    Some examples of use for the class
-
-    """
-    print 'main'
-#     from plt import imread
-#     # whitening
-#     image = imread('database/gris512.png')[:,:,0]
-#     lg = LogGabor(image.shape)
 
 
 def golden_pyramid(mp, z):
@@ -1334,3 +1316,24 @@ def golden_pyramid(mp, z):
             ymin += size
         size /= phi
     return fig
+
+
+def _test():
+    import doctest
+    doctest.testmod()
+#####################################
+#
+if __name__ == '__main__':
+    _test()
+
+    #### Main
+    """
+    Some examples of use for the class
+
+    """
+    print 'main'
+#     from plt import imread
+#     # whitening
+#     image = imread('database/gris512.png')[:,:,0]
+#     lg = LogGabor(image.shape)
+
