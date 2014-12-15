@@ -46,7 +46,7 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
 
         pe = ParameterSet('default_param.py')
         pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
-        pe.N_image = 72
+        pe.N_image = 100
         pe.N = 1024
         im = Image(pe)
         lg = LogGabor(im)
