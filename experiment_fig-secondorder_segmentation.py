@@ -53,7 +53,7 @@ else:
     edgeslist[1, :N, :] = pe.N_X * np.random.rand(N, N_image)
     edgeslist[2, :N, :] = (np.pi* np.random.rand(N, N_image) ) % np.pi
     edgeslist[3, :N, :] = 0.5 * (1- pe.base_levels**(-mp.n_levels*(np.random.rand(N, N_image))))
-    edgeslist[4, :N, :] = 1.2*np.random.rand(N, N_image) * np.sign(np.random.randn(N, N_image))
+    edgeslist[4, :N, :] = 1.24*np.random.rand(N, N_image) * np.sign(np.random.randn(N, N_image))
     edgeslist[5, :N, :] = 2*np.pi*np.random.rand(N, N_image)
     # cocircular edges:
     for i_N, angle in enumerate(np.linspace(0, 2*np.pi, N_circle)): #2*np.pi*np.random.rand(N_circle)):
@@ -61,7 +61,7 @@ else:
         edgeslist[1, N + i_N, :] = pe.N_X/2. + pe.N_X/4.*np.cos(angle) + .0 * np.random.randn(N_image)
         edgeslist[2, N + i_N, :] = (np.pi/2 + angle + .5*np.pi/180 * np.random.randn(N_image)) % np.pi
         edgeslist[3, N + i_N, :] = mp.sf_0[2] #0.03
-        edgeslist[4, N + i_N, :] = .9 + .2*np.exp(np.cos(angle)/1.**2)
+        edgeslist[4, N + i_N, :] = 1.15 + .1*np.exp(np.cos(angle)/1.**2)
 
     print edgeslist.shape
     image = mp.reconstruct(edgeslist[:,:,0])
@@ -112,8 +112,8 @@ except:
     print 'File ', matname, ' is locked'
     plt.close('all')
 ##############################################################################################################
-N_explore = 25
-base = 2.
+N_explore = 15
+base = 1.5
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
@@ -133,26 +133,27 @@ for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
         print 'File ', matname, ' is locked'
     plt.close('all')
 ##############################################################################################################
-mp = SparseEdges(LogGabor(Image(init_pe())))
-mp.pe.eta_SO = eta_SO
-for mp.pe.dip_epsilon in np.linspace(0, 1., N_explore):
-    matname = 'mat/' + figname + '_secondorder_dip_epsilon_' + str(mp.pe.dip_epsilon).replace('.', '_') + '.npy'
-    if not(os.path.isfile(matname)):
-        if not(os.path.isfile(matname + '_lock')):
-            file(matname + '_lock', 'w').close()
-            edges, C_res = mp.run_mp(image, verbose=True)
-            np.save(matname, edges)
-            os.remove(matname + '_lock')
-    try:
-        edges = np.load(matname)
-        edges[4, :] *= -1 # turn red in blue...
-        fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
-        fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
-    except:
-        print 'File ', matname, ' is locked'
-    plt.close('all')       
+if False:
+    mp = SparseEdges(LogGabor(Image(init_pe())))
+    mp.pe.eta_SO = eta_SO
+    for mp.pe.dip_epsilon in np.linspace(0, 1., N_explore):
+        matname = 'mat/' + figname + '_secondorder_dip_epsilon_' + str(mp.pe.dip_epsilon).replace('.', '_') + '.npy'
+        if not(os.path.isfile(matname)):
+            if not(os.path.isfile(matname + '_lock')):
+                file(matname + '_lock', 'w').close()
+                edges, C_res = mp.run_mp(image, verbose=True)
+                np.save(matname, edges)
+                os.remove(matname + '_lock')
+        try:
+            edges = np.load(matname)
+            edges[4, :] *= -1 # turn red in blue...
+            fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
+            fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
+        except:
+            print 'File ', matname, ' is locked'
+        plt.close('all')       
 ##############################################################################################################
-base = 10.
+base = 2.
 ##############################################################################################################
 mp = SparseEdges(LogGabor(Image(init_pe())))
 mp.pe.eta_SO = eta_SO
