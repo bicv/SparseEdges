@@ -53,7 +53,7 @@ else:
     edgeslist[1, :N, :] = pe.N_X * np.random.rand(N, N_image)
     edgeslist[2, :N, :] = (np.pi* np.random.rand(N, N_image) ) % np.pi
     edgeslist[3, :N, :] = 0.5 * (1- pe.base_levels**(-mp.n_levels*(np.random.rand(N, N_image))))
-    edgeslist[4, :N, :] = 1.2*np.random.rand(N, N_image) * np.sign(np.random.randn(N, N_image))
+    edgeslist[4, :N, :] = 1.25*np.random.rand(N, N_image) * np.sign(np.random.randn(N, N_image))
     edgeslist[5, :N, :] = 2*np.pi*np.random.rand(N, N_image)
     # cocircular edges:
     for i_N, angle in enumerate(np.linspace(0, 2*np.pi, N_circle)): #2*np.pi*np.random.rand(N_circle)):
@@ -61,7 +61,7 @@ else:
         edgeslist[1, N + i_N, :] = pe.N_X/2. + pe.N_X/4.*np.cos(angle) + .0 * np.random.randn(N_image)
         edgeslist[2, N + i_N, :] = (np.pi/2 + angle + .5*np.pi/180 * np.random.randn(N_image)) % np.pi
         edgeslist[3, N + i_N, :] = mp.sf_0[2] #0.03
-        edgeslist[4, N + i_N, :] = 1.15 + .1*np.exp(np.cos(angle)/1.**2)
+        edgeslist[4, N + i_N, :] = 1.1 + .15*np.exp(np.cos(angle)/1.**2)
 
     print edgeslist.shape
     image = mp.reconstruct(edgeslist[:,:,0])
