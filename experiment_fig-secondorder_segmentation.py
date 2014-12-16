@@ -61,12 +61,13 @@ else:
         edgeslist[1, N + i_N, :] = pe.N_X/2. + pe.N_X/4.*np.cos(angle) + .0 * np.random.randn(N_image)
         edgeslist[2, N + i_N, :] = (np.pi/2 + angle + .5*np.pi/180 * np.random.randn(N_image)) % np.pi
         edgeslist[3, N + i_N, :] = mp.sf_0[2] #0.03
-        edgeslist[4, N + i_N, :] = 1.15 + .1*np.exp(np.cos(angle)/1.**2)
+        edgeslist[4, N + i_N, :] = 1.1 + .15*np.exp(np.cos(angle)/1.**2)
 
     print edgeslist.shape
     image = mp.reconstruct(edgeslist[:,:,0])
     from pylab import imsave, gray
     imsave(fname='database/circle_in_noise.png', arr=image, vmin=image.min(), vmax=image.max(), cmap=gray())
+    imsave(fname='database/circle_in_noise.jpg', arr=image, vmin=image.min(), vmax=image.max(), cmap=gray())
 
 image = im.normalize(image, center=True)
 print image.mean(), image.std()
