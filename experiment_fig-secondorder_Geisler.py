@@ -38,7 +38,7 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 
 ##############################################################################################################
-figname = 'circle_in_noise' # Geisler01Fig7A_rec
+figname = 'Geisler01Fig7A_rec'
 if os.path.isfile('database/' + figname + '.png'):
     # defining input image 
     from pylab import imread
@@ -75,15 +75,14 @@ v_min = -v_max
 ##############################################################################################################
 print ' without edges '
 matname = 'mat/' + figname + '_secondorder_A.npy'
-if True:
-#try:
+try:
     fig, a = mp.show_edges(edges=np.zeros((6,0)), image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
     if not(figpath==None): 
         for ext in FORMATS: 
                 fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.' + ext), dpi=450)
     fig.show()
-#except:
-#    print 'File ', matname, ' is locked'
+except:
+    print 'File ', matname, ' is locked'
 ##############################################################################################################
 print ' without second-order '
 matname = 'mat/' + figname + '_secondorder_B.npy'
@@ -124,7 +123,7 @@ try:
 except:
     print 'File ', matname, ' is locked'
 ##############################################################################################################
-if False:
+if True:
     N_explore = 25
     base = 1.5
     ##############################################################################################################
