@@ -184,7 +184,7 @@ class SparseEdges:
         """
         import matplotlib.cm as cm
         if fig==None:
-            print('hello')
+            #  Figure :                      height         ----------           width
             fig = plt.figure(figsize=(self.pe.figsize_edges, self.pe.figsize_edges*self.N_Y/self.N_X))
         if a==None:
             border = 0.0
