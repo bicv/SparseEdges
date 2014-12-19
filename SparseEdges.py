@@ -176,7 +176,7 @@ class SparseEdges:
         pass
 
     def show_edges(self, edges, fig=None, a=None, image=None, norm=True,
-                   color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1.,
+                   color='auto', v_min=-1., v_max=1., show_phase=True, gamma=.5,
                    pedestal=0., mappable=False):
         """
         Shows the quiver plot of a set of edges, optionally associated to an image.
@@ -184,7 +184,8 @@ class SparseEdges:
         """
         import matplotlib.cm as cm
         if fig==None:
-            fig = plt.figure(figsize=(self.pe.figsize_edges, self.pe.figsize_edges))
+            #  Figure :                      height         ----------           width
+            fig = plt.figure(figsize=(self.pe.figsize_edges, self.pe.figsize_edges*self.N_Y/self.N_X))
         if a==None:
             border = 0.0
             a = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
@@ -255,6 +256,7 @@ class SparseEdges:
             plt.setp(a, yticks=[])
 
         a.axis([0, self.N_Y, self.N_X, 0])
+        a.grid(b=False, which="both")
         plt.draw()
         if mappable:
             return fig, a, line_segments
@@ -1302,7 +1304,8 @@ def golden_pyramid(mp, z):
 
         im_RGB /= im_RGB.max()
         a.imshow(im_RGB, **opts)
-        a.grid(False)
+        #a.grid(False)
+        a.grid(b=False, which="both")
         i_orientation = np.mod(i_sf_0, 4)
         if i_orientation==0:
             xmin += size

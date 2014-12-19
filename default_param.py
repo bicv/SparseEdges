@@ -47,7 +47,7 @@
 'figsize_hist' : 3.41, # width of a column in inches
 'figsize_cohist' : 3.41, #
 # doing the computation on a circular mask
-'edge_mask' : True, #
+'edge_mask' : True, # should we use a circular mask to exclude some edges when computing statistics (first- and second-order). True in Geisler et al, 2001.
 'do_rank': False,
 'scale_invariant': True,
 'multiscale': True,

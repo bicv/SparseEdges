@@ -11,7 +11,7 @@ setup(
     name = NAME,
     version = version,
     packages = [NAME],
-    package_dir = {NAME: ''},
+    package_dir = {NAME: NAME},
 #         py_modules=["pp", "ppauto", "ppcommon", "pptransport", "ppworker"],
     author = "Laurent Perrinet INT - CNRS",
     author_email = "Laurent.Perrinet@univ-amu.fr",
