@@ -76,7 +76,7 @@ class SparseEdges:
                 if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
                 coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) *C_Max
                 # recording
-                if verbose: print 'Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
+                if verbose: print 'Edge', i_edge, '/', self.N, 'Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             else:
                 coeff = self.pe.MP_alpha * np.absolute(C[ind_edge_star])
                 # recording
@@ -251,7 +251,7 @@ class SparseEdges:
             circles = PatchCollection(patch_circles, match_original=True)
             a.add_collection(circles)
 
-        if not(color=='auto'):# chevrons maps etc...
+        if True: # HACK not(color=='auto'):# chevrons maps etc...
             plt.setp(a, xticks=[])
             plt.setp(a, yticks=[])
 
