@@ -185,7 +185,7 @@ class SparseEdges:
         import matplotlib.cm as cm
         if fig==None:
             #  Figure :                      height         ----------           width
-            fig = plt.figure(figsize=(self.pe.figsize_edges, self.pe.figsize_edges*self.N_Y/self.N_X))
+            fig = plt.figure(figsize=(self.pe.figsize_edges*self.N_Y/self.N_X, self.pe.figsize_edges))
         if a==None:
             border = 0.0
             a = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
@@ -232,6 +232,12 @@ class SparseEdges:
                         fc = cm.hsv(0, alpha=pedestal + (1. - pedestal)*weight**gamma)
                     else:
                         fc = cm.hsv((phase/np.pi/2) % 1., alpha=pedestal + (1. - pedestal)*weight**gamma)
+#                     https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
+                    RGB_weight = [0.299, 0.587, 0.114]
+                    luminance = np.sqrt(np.dot(fc[:, :3] ** 2, RGB_weight))
+                    print luminance
+                    fc[:, :3] /= luminance
+
                 elif color == 'black':
                     fc = (0, 0, 0, 1)# black
                 elif color == 'green': # figure 1DE
