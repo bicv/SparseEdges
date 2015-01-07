@@ -288,8 +288,8 @@ class SparseEdges:
         runs the edge extraction for a list of images
 
         """
-
-        for _ in range(3): # repeat this loop three times to make sure to scan everything
+        N_do = 2
+        for _ in range(N_do): # repeat this loop to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
             for filename, croparea in imagelist:
 #                 signal = do_edge(self, image, exp, name_database, filename, croparea)
@@ -305,6 +305,7 @@ class SparseEdges:
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         edges, C = self.run_mp(image)
                         np.save(matname, edges)
+                        log.info('Finished edge extraction of %s ', matname)
                         try:
                             os.remove(matname + '_lock')
                         except Exception, e:
@@ -330,7 +331,8 @@ class SparseEdges:
                 return 'locked'
 
     def full_RMSE(self, exp, name_database, imagelist):
-        for _ in range(3): # repeat this loop three times to make sure to scan everything
+        N_do = 2
+        for _ in range(N_do): # repeat this loop to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
             for filename, croparea in imagelist:
                 matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
