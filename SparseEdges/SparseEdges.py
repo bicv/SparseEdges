@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 import time
 import sys, traceback
 import logging
-logging.basicConfig(filename='log-sparseedges-debug.log', format='%(asctime)s@[' + TAG + '] %(message)s', datefmt='%Y%m%d-%H:%M:%S')
+logging.basicConfig(filename='debug.log', format='%(asctime)s@[' + TAG + '] %(message)s', datefmt='%Y%m%d-%H:%M:%S')
 log = logging.getLogger("SparseEdges")
 # log.setLevel(level=logging.WARN)
 # log.setLevel(level=logging.INFO)
@@ -299,6 +299,7 @@ class SparseEdges:
                 matname = os.path.join(path, filename + str(croparea) + '.npy')
                 if not(os.path.isfile(matname)):
                     if not(os.path.isfile(matname + '_lock')):
+                        log.info('Doing edge extraction of %s ', matname)
                         file(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
