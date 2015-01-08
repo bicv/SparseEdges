@@ -297,7 +297,7 @@ class SparseEdges:
         N_do = 2
         for _ in range(N_do): # repeat this loop to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
-            for filename, croparea in imagelist:
+            for filename, croparea in imagelist[np.random.permutation(np.arange(len(imagelist)))]:
 #                 signal = do_edge(self, image, exp, name_database, filename, croparea)
 #                         def do_edge(self, image, exp, name_database, filename, croparea):
                 path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
@@ -857,7 +857,7 @@ class SparseEdges:
                 edgeslist = np.load(matname + '_edges.npy')
             except Exception, e:
                 log.info(' >> There is no edgeslist: %s ', e)
-                log.info('>> Doing the edge extraction')
+#                 log.info('>> Doing the edge extraction')
                 time.sleep(.1*np.random.rand())
                 edgeslist = self.full_run(exp, name_database, imagelist, noise=noise)
                 if edgeslist == 'locked':
