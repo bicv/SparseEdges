@@ -277,7 +277,6 @@ class SparseEdges:
         if randn:
             return np.random.randn(self.N_X, self.N_Y)
         else:
-            
             edgeslist = np.zeros((6, N_edge))
             edgeslist[0, :] = self.N_X * np.random.rand(N_edge)
             edgeslist[1, :] = self.N_X * np.random.rand(N_edge)
@@ -296,9 +295,11 @@ class SparseEdges:
         """
         N_do = 2
         for _ in range(N_do): # repeat this loop to make sure to scan everything
-            global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
+            imagelist_ = imagelist.copy()
             import random
-            for filename, croparea in random.shuffle(imagelist):
+            random.shuffle(imagelist_)
+            global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
+            for filename, croparea in imagelist_:
 #                 signal = do_edge(self, image, exp, name_database, filename, croparea)
 #                         def do_edge(self, image, exp, name_database, filename, croparea):
                 path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
@@ -859,7 +860,7 @@ class SparseEdges:
             except Exception, e:
                 log.info(' >> There is no edgeslist: %s ', e)
 #                 log.info('>> Doing the edge extraction')
-                time.sleep(.1*np.random.rand())
+                time.sleep(1.*np.random.rand())
                 edgeslist = self.full_run(exp, name_database, imagelist, noise=noise)
                 if edgeslist == 'locked':
                     log.info('>> Edge extraction %s is locked', matname)
