@@ -297,7 +297,8 @@ class SparseEdges:
         N_do = 2
         for _ in range(N_do): # repeat this loop to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
-            for filename, croparea in np.random.permutation(imagelist):
+            import random
+            for filename, croparea in random.shuffle(imagelist):
 #                 signal = do_edge(self, image, exp, name_database, filename, croparea)
 #                         def do_edge(self, image, exp, name_database, filename, croparea):
                 path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
