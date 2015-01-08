@@ -304,6 +304,7 @@ class SparseEdges:
                 if not(os.path.isdir(path)): os.mkdir(path)
                 matname = os.path.join(path, filename + str(croparea) + '.npy')
                 if not(os.path.isfile(matname)):
+                    time.sleep(1.*np.random.rand())
                     if not(os.path.isfile(matname + '_lock')):
                         log.info('Doing edge extraction of %s ', matname)
                         file(matname + '_lock', 'w').close()
