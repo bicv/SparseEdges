@@ -2,3 +2,5 @@ include README.md
 exclude database
 exclude figures
 exclude mat
+exclude .AppleDouble
+exclude SparseEdges/.AppleDouble
