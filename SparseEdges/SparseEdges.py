@@ -894,35 +894,36 @@ class SparseEdges:
 
         if not(locked):
             N_image = edgeslist.shape[2]
-            for i_image in range(N_image):
-                filename, croparea = imagelist[i_image]
+            for index in np.random.permutation(np.arange(len(imagelist))):
+
+                filename, croparea = imagelist[index]
 
                 figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '.png')
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                    try:
+                    if True: #try:
                         file(figname + '_lock', 'w').close()
                         log.info(' redoing figure %s ', figname)
                         image, filename_, croparea_ = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
                         if noise >0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         if self.do_whitening: image = self.im.whitening(image)
-                        fig, a = self.show_edges(edgeslist[:, :, i_image], image=image*1.)
+                        fig, a = self.show_edges(edgeslist[:, :, index], image=image*1.)
                         plt.savefig(figname)
                         plt.close('all')
                         try:
                             os.remove(figname + '_lock')
                         except Exception, e:
                             log.info('Failed to remove lock file %s_lock , error : %s ', figname , e)
-                    except Exception, e:
-                        log.info('Failed to make edge image  %s, error : %s ', figname , e)
+#                     except Exception, e:
+#                         log.info('Failed to make edge image  %s, error : %s ', figname , e)
 
                 figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct.png')
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     try:
                         file(figname + '_lock', 'w').close()
                         log.info(' reconstructing figure %s ', figname)
-                        image_ = self.reconstruct(edgeslist[:, :, i_image])
+                        image_ = self.reconstruct(edgeslist[:, :, index])
 #                         if self.do_whitening: image_ = self.im.dewhitening(image_)
-                        fig, a = self.show_edges(edgeslist[:, :, i_image], image=image_*1.)
+                        fig, a = self.show_edges(edgeslist[:, :, index], image=image_*1.)
                         plt.savefig(figname)
                         plt.close('all')
                         try:
