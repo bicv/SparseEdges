@@ -12,7 +12,7 @@ setup(
     version = version,
     packages = [NAME],
     package_dir = {NAME: NAME},
-    exclude_package_data={'': ['mat', 'figures']},
+    exclude_package_data={NAME: ['database', 'mat', 'figures']},
   #         py_modules=["pp", "ppauto", "ppcommon", "pptransport", "ppworker"],
     author = "Laurent Perrinet INT - CNRS",
     author_email = "Laurent.Perrinet@univ-amu.fr",
