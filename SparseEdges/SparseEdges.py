@@ -919,7 +919,7 @@ class SparseEdges:
 
                 figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct.png')
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                    try:
+                    if True: #try:
                         file(figname + '_lock', 'w').close()
                         log.info('> reconstructing figure %s ', figname)
                         image_ = self.reconstruct(edgeslist[:, :, index])
@@ -931,8 +931,8 @@ class SparseEdges:
                             os.remove(figname + '_lock')
                         except Exception, e:
                             log.error('Failed to remove lock file %s_lock, error : %s ', figname, traceback.print_tb(sys.exc_info()[2]))
-                    except Exception, e:
-                        log.error('Failed to make reconstruct image  %s , error : %s  ', figname, traceback.print_tb(sys.exc_info()[2]))
+#                     except Exception, e:
+#                         log.error('Failed to make reconstruct image  %s , error : %s  ', figname, traceback.print_tb(sys.exc_info()[2]))
 
             # 5- Computing RMSE to check the edge extraction process
             try:
