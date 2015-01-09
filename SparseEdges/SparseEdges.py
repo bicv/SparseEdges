@@ -232,11 +232,11 @@ class SparseEdges:
                         fc = cm.hsv(0, alpha=pedestal + (1. - pedestal)*weight**gamma)
                     else:
                         fc = cm.hsv((phase/np.pi/2) % 1., alpha=pedestal + (1. - pedestal)*weight**gamma)
-#                     https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
-                    RGB_weight = [0.299, 0.587, 0.114]
-                    luminance = np.sqrt(np.dot(np.array(fc[:, :3]) ** 2, RGB_weight))
-                    print luminance
-                    fc[:, :3] /= luminance
+# TODO                     https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
+#                     RGB_weight = [0.299, 0.587, 0.114]
+#                     luminance = np.sqrt(np.dot(np.array(fc[:, :3]) ** 2, RGB_weight))
+#                     print luminance
+#                     fc[:, :3] /= luminance
 
                 elif color == 'black':
                     fc = (0, 0, 0, 1)# black
