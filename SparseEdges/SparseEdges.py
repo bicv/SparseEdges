@@ -896,7 +896,6 @@ class SparseEdges:
         if not(locked):
             N_image = edgeslist.shape[2]
             for index in np.random.permutation(np.arange(len(imagelist))):
-
                 filename, croparea = imagelist[index]
 
                 figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '.png')
