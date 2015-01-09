@@ -198,9 +198,9 @@ class SparseEdges:
             linewidth = self.pe.line_width
             scale = self.pe.scale
 
-        opts= {'extent': (0, self.N_Y, self.N_X, 0),
-                   'cmap': cm.gray,
-                   'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest', 'origin':'upper'}
+        opts= {'extent': None, #(0, self.N_Y, self.N_X, 0),
+               'cmap': cm.gray,
+               'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest', 'origin':'upper'}
 #         origin : [‘upper’ | ‘lower’], optional, default: None
 #         Place the [0,0] index of the array in the upper left or lower left corner of the axes. If None, default to rc image.origin.
 #         extent : scalars (left, right, bottom, top), optional, default: None
@@ -218,7 +218,7 @@ class SparseEdges:
             segments, colors, linewidths = list(), list(), list()
             patch_circles = []
 
-            X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :]
+            X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :] # HACK in orientation 
             weights = edges[4, :]
             weights = weights/(np.abs(weights)).max()
             phases = edges[5, :]
