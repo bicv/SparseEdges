@@ -4,3 +4,4 @@ matplotlib
 IPython
 NeuroTools
 LogGabor
+SLIP
