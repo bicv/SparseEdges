@@ -261,7 +261,7 @@ class SparseEdges:
             plt.setp(a, xticks=[])
             plt.setp(a, yticks=[])
 
-        a.axis([0, self.N_Y, 0, self.N_X])
+        a.axis([0, self.N_Y, self.N_X, 0])
         a.grid(b=False, which="both")
         plt.draw()
         if mappable:
