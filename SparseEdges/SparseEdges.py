@@ -903,7 +903,7 @@ class SparseEdges:
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     if True: #try:
                         file(figname + '_lock', 'w').close()
-                        log.info(' redoing figure %s ', figname)
+                        log.info('> redoing figure %s ', figname)
                         image, filename_, croparea_ = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
                         if noise >0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         if self.do_whitening: image = self.im.whitening(image)
@@ -921,7 +921,7 @@ class SparseEdges:
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     try:
                         file(figname + '_lock', 'w').close()
-                        log.info(' reconstructing figure %s ', figname)
+                        log.info('> reconstructing figure %s ', figname)
                         image_ = self.reconstruct(edgeslist[:, :, index])
 #                         if self.do_whitening: image_ = self.im.dewhitening(image_)
                         fig, a = self.show_edges(edgeslist[:, :, index], image=image_*1.)
