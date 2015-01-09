@@ -29,7 +29,7 @@ import hashlib
 class SparseEdges:
     def __init__(self, lg):
         """
-        initializes the LogGabor structure
+        initializes the SparseEdges class
 
         """
         self.pe = lg.pe
