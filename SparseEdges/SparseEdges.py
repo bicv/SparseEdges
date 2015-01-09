@@ -198,7 +198,7 @@ class SparseEdges:
             linewidth = self.pe.line_width
             scale = self.pe.scale
 
-        opts= {'extent': (0, self.N_Y, self.N_X, 0), #  None,
+        opts= {'extent': (0, self.N_Y, 0, self.N_X), # None, # 
                'cmap': cm.gray,
                'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest', 'origin':'upper'}
 #         origin : [‘upper’ | ‘lower’], optional, default: None
