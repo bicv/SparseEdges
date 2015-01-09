@@ -66,7 +66,7 @@
 'edgematpath' : 'mat/edges/',
 'datapath' : '../AssoField/database/',
 'ext' : '.pdf',
-'scale' : .2,
+'scale' : .8,
 'scale_circle' : 0.08, # relativesize of segments and pivot
 'scale_chevrons' : 2.5,
 'line_width': 1.,
