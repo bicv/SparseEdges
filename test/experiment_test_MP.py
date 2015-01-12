@@ -7,7 +7,7 @@ from SparseEdges import SparseEdges
 
 pe = ParameterSet('default_param.py')
 pe.N = 128 # number of edges
-pe.figsize_edges =12
+pe.figsize_edges = 9
 
 #! defining a reference test image (see test_Image)
 image = np.zeros((pe.N_X, pe.N_Y))

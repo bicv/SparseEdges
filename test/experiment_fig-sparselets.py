@@ -14,12 +14,16 @@ import sys
 
 pe = ParameterSet('default_param.py')
 
-def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
+def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N, path):
     pe.N_image = N_image
     pe.N_X = N_X
     pe.N_Y = N_X
     pe.N = N
     pe.seed = 42
+    pe.figpath = path + 'figures/'
+    pe.edgefigpath = path + 'figures/edges/'
+    pe.matpath = path + 'mat/'
+    pe.edgematpath = path + 'mat/edges/'
     im = Image(pe)
     lg = LogGabor(im)
     mp = SparseEdges(lg)
@@ -27,13 +31,14 @@ def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
 
 dofig = True
 try:
-    figpath = sys.argv[1]
+    path = sys.argv[1]
 except:
+    path = '.'
     dofig = False
     
 mps = []
 for size, size_str in zip([16, 32, 64, 128, 256], ['_016', '_032', '_064',  '_128', '']):
-    mp = init_pe(pe, N_X=size, N_image=pe.N_image*pe.N_X/size, N=pe.N*size**2/pe.N_X**2)
+    mp = init_pe(pe, N_X=size, N_image=pe.N_image*pe.N_X/size, N=pe.N*size**2/pe.N_X**2, path)
     mp.process('SparseLets' + size_str)
     mps.append(mp)
 

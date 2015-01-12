@@ -18,22 +18,28 @@ pe = ParameterSet('default_param.py')
 threshold = None # classical plots
 threshold = .15 # plot sparseness obtained when reaching this threshold
 
+dofig = True
+try:
+    path = sys.argv[1]
+except:
+    path = '.'
+    dofig = False
+    
 def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
     pe.seed = 123456
     pe.N_image = N_image
     pe.N_X = N_X
     pe.N = N
+    pe.figpath = path + 'figures/'
+    pe.edgefigpath = path + 'figures/edges/'
+    pe.matpath = path + 'mat/'
+    pe.edgematpath = path + 'mat/edges/'
     im = Image(pe)
     lg = LogGabor(im)
     mp = SparseEdges(lg)
     return mp
 
-dofig = True
-try:
-    figpath = sys.argv[1]
-except:
-    dofig = False
-
+    
 FORMATS = ['pdf', 'eps']
 #FORMATS = ['png']
 import matplotlib

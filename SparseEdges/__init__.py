@@ -1,4 +1,4 @@
-from SparseEdges import SparseEdges
+from SparseEdges import SparseEdges, plot
 
 def init_pylab():
     ############################  FIGURES   ########################################
