@@ -1,11 +1,11 @@
 """
 
-$ python experiment_fig-sparselets.py ../../CNRS/BICV-book/BICV_INT/BICV-sparse/
+$ python test/experiment_fig-sparselets.py ../../CNRS/BICV-book/BICV_sparse/src/
 
 $ rm -fr **/SparseLets* **/**/SparseLets* 
 
 """
-import __init__
+
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
 from LogGabor import LogGabor
@@ -14,7 +14,7 @@ import sys
 
 pe = ParameterSet('default_param.py')
 
-def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N, path):
+def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N, path=''):
     pe.N_image = N_image
     pe.N_X = N_X
     pe.N_Y = N_X
@@ -38,7 +38,7 @@ except:
     
 mps = []
 for size, size_str in zip([16, 32, 64, 128, 256], ['_016', '_032', '_064',  '_128', '']):
-    mp = init_pe(pe, N_X=size, N_image=pe.N_image*pe.N_X/size, N=pe.N*size**2/pe.N_X**2, path)
+    mp = init_pe(pe, N_X=size, N_image=pe.N_image*pe.N_X/size, N=pe.N*size**2/pe.N_X**2, path=path)
     mp.process('SparseLets' + size_str)
     mps.append(mp)
 
@@ -57,4 +57,4 @@ fig, a, ax = plot(fig=fig, mps=mps, experiments=experiments, databases=databases
                   labels=labels, scale=True)    
 if dofig: 
     FORMATS = ['pdf', 'eps']
-    for ext in FORMATS: fig.savefig(figpath + 'SparseLets_B.' + ext)
+    for ext in FORMATS: fig.savefig(mps[0].pe.figpath + 'SparseLets_B.' + ext)
