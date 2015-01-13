@@ -68,6 +68,9 @@ class SparseEdges:
         if self.do_whitening: image_ = self.im.whitening(image_)
         C = self.init(image_)
         logD = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
+        if verbose: 
+            import pyprind
+            my_prbar = pyprind.ProgPercent(self.N)   # 1) initialization with number of iterations
         for i_edge in range(self.N):
 #             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
@@ -76,11 +79,12 @@ class SparseEdges:
                 if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
                 coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) *C_Max
                 # recording
-                if verbose: print 'Edge', i_edge, '/', self.N, 'Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
+                if verbose: print 'Edge', i_edge, '/', self.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
             else:
                 coeff = self.pe.MP_alpha * np.absolute(C[ind_edge_star])
                 # recording
-                if verbose: print 'Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
+                if verbose: print 'Edge', i_edge, '/', self.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
+            if verbose: my_prbar.update()
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta[ind_edge_star[2]],
                                          self.sf_0[ind_edge_star[3]],

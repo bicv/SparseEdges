@@ -1,4 +1,4 @@
-import __init__
+
 import numpy as np
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
@@ -8,9 +8,10 @@ pe = ParameterSet('default_param.py')
 
 # defining input image as Lena
 from pylab import imread
-image = imread('database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
-image = imread('database/lena' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
+image = imread('database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)
+image = imread('database/lena' + str(pe.N_X) + '.png').mean(axis=-1)
 #print image.mean(), image.std()
+#print pe.N_X
 
 pe.N = 512
 
@@ -21,15 +22,17 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 
 matname = 'mat/example.npy'
-matname_RMSE = 'mat/example_RMSE.npy'
 try:
     edges = np.load(matname)
-    RMSE = np.load(matname_RMSE)
 except:
     edges, C_res = mp.run_mp(image, verbose=True)
     print edges.shape
     np.save(matname, edges)    
 
+matname_RMSE = 'mat/example_RMSE.npy'
+try:
+    RMSE = np.load(matname_RMSE)
+except:
     RMSE = np.ones(mp.N)
     image_ = image.copy()
     image_rec = np.zeros_like(image_)
