@@ -1,4 +1,4 @@
-import __init__
+
 import numpy as np
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
@@ -8,9 +8,10 @@ pe = ParameterSet('default_param.py')
 
 # defining input image as Lena
 from pylab import imread
-image = imread('database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
-image = imread('database/lena' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
+image = imread('database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)
+image = imread('database/lena' + str(pe.N_X) + '.png').mean(axis=-1)
 #print image.mean(), image.std()
+#print pe.N_X
 
 pe.N = 512
 
