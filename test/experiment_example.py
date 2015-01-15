@@ -21,15 +21,17 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 
 matname = 'mat/example.npy'
-matname_RMSE = 'mat/example_RMSE.npy'
 try:
     edges = np.load(matname)
-    RMSE = np.load(matname_RMSE)
 except:
     edges, C_res = mp.run_mp(image, verbose=True)
     print edges.shape
     np.save(matname, edges)    
 
+matname_RMSE = 'mat/example_RMSE.npy'
+try:
+    RMSE = np.load(matname_RMSE)
+except:
     RMSE = np.ones(mp.N)
     image_ = image.copy()
     image_rec = np.zeros_like(image_)
