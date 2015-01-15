@@ -180,7 +180,7 @@ class SparseEdges:
         pass
 
     def show_edges(self, edges, fig=None, a=None, image=None, norm=True,
-                   color='auto', v_min=-1., v_max=1., show_phase=True, gamma=.5,
+                   color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1.,
                    pedestal=0., mappable=False):
         """
         Shows the quiver plot of a set of edges, optionally associated to an image.
@@ -223,7 +223,7 @@ class SparseEdges:
             patch_circles = []
 
 #             X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :] # HACK in orientation 
-            X, Y, Theta, Sf_0 = edges[1, :]+.5, self.N_X - edges[0, :]+.5, edges[2, :], edges[3, :] # HACK in orientation 
+            X, Y, Theta, Sf_0 = edges[1, :]+.5, self.N_X - edges[0, :]-.5, edges[2, :], edges[3, :] # HACK in orientation 
             weights = edges[4, :]
             weights = weights/(np.abs(weights)).max()
             phases = edges[5, :]
@@ -273,7 +273,7 @@ class SparseEdges:
             return fig, a, line_segments
         else:
             return fig, a
-    
+
     def texture(self, N_edge = 256, filename='', croparea='', randn=False):
         # a way to get always the same seed for each image
         if not filename=='' or not croparea=='':

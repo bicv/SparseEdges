@@ -22,7 +22,7 @@ lg = LogGabor(im)
 mp = SparseEdges(lg)
 
 #! trying now using no whitening of the image
-pe.do_whitening=False
+pe.do_whitening = False
 im = Image(pe)
 lg = LogGabor(im)
 mp = SparseEdges(lg)
