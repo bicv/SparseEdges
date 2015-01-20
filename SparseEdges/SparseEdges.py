@@ -274,9 +274,9 @@ class SparseEdges:
         else:
             return fig, a
 
-    def texture(self, N_edge = 256, filename='', croparea='', randn=False):
+    def texture(self, N_edge = 256, filename='', croparea='', randn=True):
         # a way to get always the same seed for each image
-        if not filename=='' or not croparea=='':
+        if not (filename==''):# or not (croparea==''):
             np.random.seed(seed=int(int("0x" +  hashlib.sha224(filename+str(croparea)).hexdigest(), 0)*1. % 4294967295))
         # white noise or texture
         if randn:

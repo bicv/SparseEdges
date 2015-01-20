@@ -33,7 +33,7 @@ dofig = True
 try:
     path = sys.argv[1]
 except:
-    path = '.'
+    path = ''
     dofig = False
     
 mps = []

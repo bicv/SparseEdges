@@ -1,6 +1,6 @@
 """
 
-$ python experiment_fig-efficiency.py ../../CNRS/BICV-book/BICV_INT/BICV-sparse/
+$ python experiment_fig-efficiency.py ../../CNRS/BICV-book/BICV-sparse/src/
 
 rm -fr **/efficiency_* **/**/efficiency_* 
 
@@ -22,7 +22,7 @@ dofig = True
 try:
     path = sys.argv[1]
 except:
-    path = '.'
+    path = ''
     dofig = False
     
 def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
@@ -172,5 +172,5 @@ fig.subplots_adjust(wspace=0.12, hspace=0.3,
                             top=0.98,    bottom=0.12)
     
 if dofig:
-    for ext in FORMATS: fig.savefig(figpath + 'efficiency.' + ext)
+    for ext in FORMATS: fig.savefig(mp.pe.figpath + 'efficiency.' + ext)
 fig.show()
