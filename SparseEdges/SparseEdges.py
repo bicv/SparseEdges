@@ -880,11 +880,11 @@ class SparseEdges:
             if not(os.path.isfile(txtname)) and not(os.path.isfile(txtname + '_lock')):
                 file(txtname + '_lock', 'w').close() # touching
                 log.info(' >> Doing check_independence on %s ', txtname)
-                out = self.check_independence(self.cohistedges(edgeslist, name_database, symmetry=False, display=None), name_database, exp)
+                out = self.check_independence(self.cohistedges(edgeslist, symmetry=False, display=None), name_database, exp)
                 f = file(txtname, 'w')
                 f.write(out)
                 f.close()
-#                 out = self.check_independence(self.cohistedges(edgeslist, name_database, symmetry=True, display=None), name_database, exp)
+#                 out = self.check_independence(self.cohistedges(edgeslist, symmetry=True, display=None), name_database, exp)
 #                 f = file(os.path.join(self.pe.figpath, exp + '_dependence_sym_' + name_database + note + '.txt'), 'w')
 #                 f.write(out)
 #                 f.close()
@@ -1002,7 +1002,7 @@ class SparseEdges:
                     if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                         file(figname + '_lock', 'w').close()
                         edgeslist_prior = self.full_run(exp, 'serre07_distractors', imagelist, noise=noise)
-                        v_hist_prior = self.cohistedges(edgeslist, name_database, display=None)
+                        v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
                         fig, a = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior.mean(axis=-1))
                         plt.savefig(figname)
                         plt.close('all')
