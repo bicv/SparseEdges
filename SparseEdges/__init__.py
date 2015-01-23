@@ -21,9 +21,8 @@ def init_pylab():
                   'font.family': 'serif',
                   'font.serif': 'Times',
                   'font.sans-serif': 'Arial',
-                  'text.usetex': True,
+                  'text.usetex': False,
         #          'mathtext.fontset': 'stix', #http://matplotlib.sourceforge.net/users/mathtext.html
-                  'interpolation':'nearest',
                   'axes.labelsize': fontsize,
                   'text.fontsize': fontsize,
                   'legend.fontsize': fontsize,
