@@ -1001,7 +1001,8 @@ class SparseEdges:
                     figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_priordistractors_' + name_database + '_' + note + self.pe.ext)
                     if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                         file(figname + '_lock', 'w').close()
-                        edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist, noise=noise)
+                        imagelist_prior = self.im.get_imagelist(exp, name_database=name_database.replace('targets', 'distractors'))
+                        edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist_prior, noise=noise)
                         v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
                         fig, a = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior.mean(axis=-1))
                         plt.savefig(figname)
