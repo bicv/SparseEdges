@@ -699,6 +699,7 @@ class SparseEdges:
                 prior_angle = prior.sum(axis=0).sum(axis=-1) # -d-, phi, theta, -scale-
                 prior_angle /= prior_angle.sum()
                 v_hist_angle /= prior_angle
+                
             v_hist_angle /= v_hist_angle.mean()
 
             if dolog:
