@@ -958,7 +958,7 @@ class SparseEdges:
             except Exception, e:
                 log.error('Failed to display RMSE %s ', e)
             # 6- Plotting the histogram
-            if True: #try:
+            try:
 #            figname = os.path.join(self.pe.figpath, exp + '_proba-scale_' + name_database + note + self.pe.ext)
 #            if not(os.path.isfile(figname)):
 #                fig, a = self.histedges_scale(edgeslist, display=True)
@@ -1004,12 +1004,12 @@ class SparseEdges:
                         imagelist_prior = self.im.get_imagelist(exp, name_database=name_database.replace('targets', 'distractors'))
                         edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist_prior, noise=noise)
                         v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
-                        fig, a = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior.mean(axis=-1))
+                        fig, a = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior)
                         plt.savefig(figname)
                         plt.close('all')
                         os.remove(figname + '_lock')
-#             except Exception, e:
-#                 log.error('Failed to create figures, error : %s ', e)
+            except Exception, e:
+                log.error('Failed to create figures, error : %s ', e)
 
             return imagelist, edgeslist, RMSE
         else:
