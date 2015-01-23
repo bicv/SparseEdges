@@ -997,11 +997,11 @@ class SparseEdges:
                     plt.close('all')
                     os.remove(figname + '_lock')
 
-                if name_database == 'serre07_targets':
-                    figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_serre07_distractors_serre07_targets_' + note + self.pe.ext)
+                if 'targets' in name_database:
+                    figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_priordistractors_' + name_database + '_' + note + self.pe.ext)
                     if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                         file(figname + '_lock', 'w').close()
-                        edgeslist_prior = self.full_run(exp, 'serre07_distractors', imagelist, noise=noise)
+                        edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist, noise=noise)
                         v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
                         fig, a = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior.mean(axis=-1))
                         plt.savefig(figname)
