@@ -469,7 +469,7 @@ class SparseEdges:
     def cohistedges(self, edgeslist, v_hist=None, prior=None,
                     fig=None, a=None, symmetry=True,
                     display='chevrons', v_min=None, v_max=None, labels=True, mappable=False, radius=None,
-                    xticks=False, half=False, dolog=False, color='redblue', colorbar=True, cbar_label=True):
+                    xticks=False, half=False, dolog=True, color='redblue', colorbar=True, cbar_label=True):
         """
         second-order stats= center all edges around the current one by rotating and scaling
 
@@ -764,7 +764,7 @@ class SparseEdges:
 
             # see also http://stackoverflow.com/questions/7404116/defining-the-midpoint-of-a-colormap-in-matplotlib/7741317#7741317
             class MidpointNormalize(Normalize):
-                def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False, gamma=1.3):
+                def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False, gamma=1.):
                     self.midpoint = midpoint
                     self.gamma = gamma
                     Normalize.__init__(self, vmin, vmax, clip)
@@ -779,7 +779,7 @@ class SparseEdges:
                     return z
 
 #             p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=matplotlib.cm.RdBu_r, alpha=0.8)
-            p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=cm.coolwarm, alpha=0.8)
+            p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=cm.coolwarm, alpha=1.0)
             p.set_array(np.array(colors))
             if dolog:
                 p.set_clim([v_min, v_max])

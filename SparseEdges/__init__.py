@@ -1,4 +1,4 @@
-from SparseEdges import SparseEdges, plot
+from .SparseEdges import SparseEdges, plot
 
 def init_pylab():
     ############################  FIGURES   ########################################
@@ -23,7 +23,7 @@ def init_pylab():
                   'font.sans-serif': 'Arial',
                   'text.usetex': True,
         #          'mathtext.fontset': 'stix', #http://matplotlib.sourceforge.net/users/mathtext.html
-#                   'interpolation':'nearest',
+                  'interpolation':'nearest',
                   'axes.labelsize': fontsize,
                   'text.fontsize': fontsize,
                   'legend.fontsize': fontsize,
