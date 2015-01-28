@@ -997,7 +997,7 @@ class SparseEdges:
                     plt.close('all')
                     os.remove(figname + '_lock')
 
-                if 'targets' in name_database:
+                if 'targets' in name_database or 'laboratory' in name_database:
                     figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_priordistractors_' + name_database + '_' + note + self.pe.ext)
                     if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                         file(figname + '_lock', 'w').close()
