@@ -68,7 +68,7 @@ class SparseEdges:
         if self.do_whitening: image_ = self.im.whitening(image_)
         C = self.init(image_)
         logD = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
-        if verbose: 
+        if verbose:
             import pyprind
             my_prbar = pyprind.ProgPercent(self.N)   # 1) initialization with number of iterations
         for i_edge in range(self.N):
@@ -202,7 +202,7 @@ class SparseEdges:
             linewidth = self.pe.line_width
             scale = self.pe.scale
 
-        opts= {'extent': (0, self.N_Y, self.N_X, 0), # None, # 
+        opts= {'extent': (0, self.N_Y, self.N_X, 0), # None, #
                'cmap': cm.gray,
                'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest', 'origin':'upper'}
 #         origin : [‘upper’ | ‘lower’], optional, default: None
@@ -222,8 +222,8 @@ class SparseEdges:
             segments, colors, linewidths = list(), list(), list()
             patch_circles = []
 
-            X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :] # HACK in orientation 
-#             X, Y, Theta, Sf_0 = edges[1, :]+.5, self.N_X - edges[0, :]-.5, edges[2, :], edges[3, :] # HACK in orientation 
+            X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :] # HACK in orientation
+#             X, Y, Theta, Sf_0 = edges[1, :]+.5, self.N_X - edges[0, :]-.5, edges[2, :], edges[3, :] # HACK in orientation
             weights = edges[4, :]
             weights = weights/(np.abs(weights)).max()
             phases = edges[5, :]
@@ -287,7 +287,7 @@ class SparseEdges:
             edgeslist[1, :] = self.N_X * np.random.rand(N_edge)
             edgeslist[2, :] = (np.pi* np.random.rand(N_edge) ) % np.pi
             edgeslist[3, :] =  self.sf_0[np.random.randint(self.sf_0.size, size=(N_edge))] # best would be to have more high frequency components
-            edgeslist[4, :] = np.random.randn(N_edge) 
+            edgeslist[4, :] = np.random.randn(N_edge)
             edgeslist[5, :] = 2*np.pi*np.random.rand(N_edge)
             image_rec = self.reconstruct(edgeslist)
             image_rec /= image_rec.std()
@@ -480,7 +480,7 @@ class SparseEdges:
 
         if not(edgeslist==None):
             v_hist = None
-            five, N_edge, N_image = edgeslist.shape
+            six, N_edge, N_image = edgeslist.shape
             # TODO: vectorize over images?
             for i_image in range(N_image):
                 # retrieve individual positions, orientations, scales and coefficients
@@ -555,7 +555,7 @@ class SparseEdges:
                                                  weights=weights.ravel()
                                                 )
 #                 print v_hist_.sum(), v_hist_.min(), v_hist_.max(), d.ravel().shape
-                if v_hist_.sum()<.8: log.error(' less than 80 percent of co-occurences within ranges: %f ', v_hist_.sum())
+                if v_hist_.sum()<.01: log.debug(' less than 1 percent of co-occurences within ranges: %f ', v_hist_.sum())
                 if not(v_hist_.sum() == 0.):
                     # add to the full histogram
                     if v_hist is None:
@@ -699,7 +699,7 @@ class SparseEdges:
                 prior_angle = prior.sum(axis=0).sum(axis=-1) # -d-, phi, theta, -scale-
                 prior_angle /= prior_angle.sum()
                 v_hist_angle /= prior_angle
-                
+
             v_hist_angle /= v_hist_angle.mean()
 
             if dolog:
