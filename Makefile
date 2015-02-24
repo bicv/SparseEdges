@@ -30,10 +30,12 @@ todo:
 update_user:
 	cd ../SLIP; git pull; pip install -U --user . ; cd ../SparseEdges/
 	cd ../LogGabor; git pull; pip install -U --user . ; cd ../SparseEdges/
+	pip install -U --user .
 
 update:
 	cd ../SLIP; git pull; pip install -U . ; cd ../SparseEdges/
 	cd ../LogGabor; git pull; pip install -U . ; cd ../SparseEdges/
+	pip install -U .
 
 console:
 	open -a /Applications/Utilities/Console.app/ log-sparseedges-debug.log

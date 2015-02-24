@@ -1022,7 +1022,8 @@ class SparseEdges:
             v_hist /= v_hist.sum()
             v_hist_obs /= v_hist_obs.sum()
             # taking advantage of log(True) = 0 and canceling out null bins in v_hist_obs
-            return np.sum(v_hist.ravel()*(np.log(v_hist.ravel()+(v_hist == 0).ravel()) - np.log(v_hist_obs.ravel()+(v_hist_obs == 0).ravel())))
+            return np.sum(v_hist.ravel()*(np.log(v_hist.ravel()+(v_hist == 0).ravel())
+                                        - np.log(v_hist_obs.ravel()+(v_hist_obs == 0).ravel())))
         else:
             from scipy.stats import entropy
             return entropy(v_hist_obs, v_hist, base=2)
