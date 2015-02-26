@@ -1,4 +1,4 @@
-from .SparseEdges import SparseEdges, plot
+from .SparseEdges import SparseEdges, plot, golden_pyramid
 
 def init_pylab():
     ############################  FIGURES   ########################################
