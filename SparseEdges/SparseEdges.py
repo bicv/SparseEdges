@@ -79,11 +79,11 @@ class SparseEdges:
                 if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
                 coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) *C_Max
                 # recording
-                if verbose: print 'Edge', i_edge, '/', self.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
+                if verbose: print('Edge', i_edge, '/', self.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
             else:
                 coeff = self.pe.MP_alpha * np.absolute(C[ind_edge_star])
                 # recording
-                if verbose: print 'Edge', i_edge, '/', self.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star
+                if verbose: print('Edge', i_edge, '/', self.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
             if verbose: my_prbar.update()
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta[ind_edge_star[2]],
@@ -320,7 +320,7 @@ class SparseEdges:
                         log.info('Finished edge extraction of %s ', matname)
                         try:
                             os.remove(matname + '_lock')
-                        except Exception, e:
+                        except Exception as e:
                             log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
                     else:
                         log.info('The edge extraction at step %s is locked', matname)
@@ -338,7 +338,7 @@ class SparseEdges:
                     edgeslist[:, :, i_image] = np.load(matname)
                     i_image += 1
                 return edgeslist
-            except Exception, e:
+            except Exception as e:
                 log.error(' some locked edge extractions %s, error ', e)
                 return 'locked'
 
@@ -367,7 +367,7 @@ class SparseEdges:
                         np.save(matname, RMSE)
                         try:
                             os.remove(matname + '_lock')
-                        except Exception, e:
+                        except Exception as e:
                             log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
                     else:
                         log.info('The edge extraction at step %s is locked', matname)
@@ -384,7 +384,7 @@ class SparseEdges:
                     matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
                     RMSE[i_image, :] = np.load(matname_RMSE)
                 return RMSE
-            except Exception, e:
+            except Exception as e:
                 log.error(' some locked RMSE extractions %s, error ', e)
                 return 'locked'
 
@@ -643,7 +643,7 @@ class SparseEdges:
                 # reference angle
                 colin_edgelist[:, -1] = [self.N_X /2, self.N_Y /2, 0, edge_scale, colin_edgelist[4,:].max() *1.2, 0.]
                 return self.show_edges(colin_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
-            except Exception, e:
+            except Exception as e:
                 log.error(' failed to generate colin_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
                 return e, None # HACK to return something instead of None
 
@@ -670,7 +670,7 @@ class SparseEdges:
                         cocir_edgelist[0:2, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = self.N_X - cocir_edgelist[0,  ii_theta + i_theta], self.N_Y - cocir_edgelist[1, ii_theta + i_theta]
                 cocir_edgelist[:, -1] = [self.N_X /2, self.N_Y /2, 0, edge_scale, cocir_edgelist[4,:].max() *1.2, 0.]
                 return self.show_edges(cocir_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
-            except Exception, e:
+            except Exception as e:
                 log.error(' failed to generate cocir_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
                 return e, None # HACK to retrun something instead of None
 
@@ -861,7 +861,7 @@ class SparseEdges:
         if not(locked):
             try:
                 edgeslist = np.load(matname + '_edges.npy')
-            except Exception, e:
+            except Exception as e:
                 log.info(' >> There is no edgeslist: %s ', e)
 #                 log.info('>> Doing the edge extraction')
                 time.sleep(1.*np.random.rand())
@@ -888,10 +888,10 @@ class SparseEdges:
 #                 f = file(os.path.join(self.pe.figpath, exp + '_dependence_sym_' + name_database + note + '.txt'), 'w')
 #                 f.write(out)
 #                 f.close()
-                print out
+                print(out)
                 try:
                     os.remove(txtname + '_lock')
-                except Exception, e:
+                except Exception as e:
                     log.error('Failed to remove lock file %s_lock, error : %s ', txtname, e)
 
         # 4- Doing the edge figures to check the edge extraction process
@@ -916,9 +916,9 @@ class SparseEdges:
                         plt.close('all')
                         try:
                             os.remove(figname + '_lock')
-                        except Exception, e:
+                        except Exception as e:
                             log.info('Failed to remove lock file %s_lock , error : %s ', figname , e)
-                    except Exception, e:
+                    except Exception as e:
                         log.info('Failed to make edge image  %s, error : %s ', figname , traceback.print_tb(sys.exc_info()[2]))
 
                 figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct.png')
@@ -933,15 +933,15 @@ class SparseEdges:
                         plt.close('all')
                         try:
                             os.remove(figname + '_lock')
-                        except Exception, e:
+                        except Exception as e:
                             log.error('Failed to remove lock file %s_lock, error : %s ', figname, traceback.print_tb(sys.exc_info()[2]))
-                    except Exception, e:
+                    except Exception as e:
                         log.error('Failed to make reconstruct image  %s , error : %s  ', figname, traceback.print_tb(sys.exc_info()[2]))
 
             # 5- Computing RMSE to check the edge extraction process
             try:
                 RMSE = np.load(matname + '_RMSE.npy')
-            except Exception, e:
+            except Exception as e:
                 log.info(' >> There is no RMSE: %s ', e)
                 try:
                     RMSE = self.full_RMSE(exp, name_database, imagelist)
@@ -950,12 +950,12 @@ class SparseEdges:
                         locked = True
                     else:
                         np.save(matname + '_RMSE.npy', RMSE)
-                except Exception, e:
+                except Exception as e:
                     log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
 
             try:
                 log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
-            except Exception, e:
+            except Exception as e:
                 log.error('Failed to display RMSE %s ', e)
             # 6- Plotting the histogram
             try:
@@ -1008,7 +1008,7 @@ class SparseEdges:
                         plt.savefig(figname)
                         plt.close('all')
                         os.remove(figname + '_lock')
-            except Exception, e:
+            except Exception as e:
                 log.error('Failed to create figures, error : %s ', e)
 
             return imagelist, edgeslist, RMSE
@@ -1136,7 +1136,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery],
                         linestyle='None',  marker='o', ms=3)
                 eev += 1
-            except Exception, e:
+            except Exception as e:
                 print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
 
         ax.set_ylim([.0, 1.02])
@@ -1177,7 +1177,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
                 RMSE /= RMSE[:, 0][:, np.newaxis]
                 N = RMSE.shape[1] #number of edges
-                if RMSE.min()>threshold: print 'the threshold is never crossed for', experiment, name_database
+                if RMSE.min()>threshold: print('the threshold is never crossed for', experiment, name_database)
                 try:
                     l0_results = np.zeros(N)
                     for i_image in range(RMSE.shape[0]):
@@ -1195,7 +1195,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 l0.append(l0_results.mean())
                 l0_std.append(l0_results.std())
                 ind += 1
-            except Exception, e:
+            except Exception as e:
                 print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
 
 
@@ -1246,7 +1246,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
                 l0 = np.log2(mp.oc)/mp.N_X/mp.N_Y
                 relSE.append((RMSE/RMSE_ref).mean())
                 relSE_std.append((RMSE/RMSE_ref).std(axis=0).mean())
-            except Exception, e:
+            except Exception as e:
                 print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
         fig.subplots_adjust(wspace=0.1, hspace=0.1,
                             left=0.2, right=0.9,
@@ -1281,14 +1281,14 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
         for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
             try:
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                print len(imagelist)
+                print(len(imagelist))
                 RMSE /= RMSE[:, 0][:, np.newaxis] # normalize RMSE
                 N = RMSE.shape[1] #number of edges
                 L0 =  np.argmax(RMSE<threshold, axis=1)*1.
                 if scale: L0 *= np.log2(mp.oc)/mp.N_X/mp.N_Y
                 relL0.append((L0/L0_ref).mean())
                 relL0_std.append((L0/L0_ref).std())
-            except Exception, e:
+            except Exception as e:
                 print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
         fig.subplots_adjust(wspace=0.1, hspace=0.1,
                             left=0.2, right=0.9,
@@ -1296,7 +1296,7 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
 
         ind = len(relL0)
         width = .8
-        print "relL0=", relL0
+        print("relL0=", relL0)
         rects = ax.bar(np.arange(ind), relL0, yerr=relL0_std, alpha=.8, error_kw={'ecolor':'k'})
         rects[ref].set_color('w')
         rects[ref].set_edgecolor('k')
@@ -1363,7 +1363,7 @@ if __name__ == '__main__':
     Some examples of use for the class
 
     """
-    print 'main'
+    print('main')
 #     from plt import imread
 #     # whitening
 #     image = imread('database/gris512.png')[:,:,0]
