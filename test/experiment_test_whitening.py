@@ -1,4 +1,3 @@
-import __init__
 import numpy as np
 from NeuroTools.parameters import ParameterSet
 from SLIP import Image
@@ -9,7 +8,7 @@ pe = ParameterSet('default_param.py')
 # defining input image as Lena
 from pylab import imread
 #image = imread('../AssoField/database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
-image = imread('../AssoField/database/serre07_targets/B_N107001.jpg').mean(axis=-1)
+image = imread('/Users/lolo/pool/science/PerrinetBednar15/database/serre07_targets/B_N107001.jpg').mean(axis=-1)
 #print image.mean(), image.std()
 
 pe.N = 512
@@ -28,7 +27,6 @@ try:
     RMSE = np.load(matname_RMSE)
 except:
     edges, C_res = mp.run_mp(image, verbose=True)
-    print edges.shape
     np.save(matname, edges)    
 
     RMSE = np.ones(mp.N)

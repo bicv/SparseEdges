@@ -14,7 +14,7 @@ import sys
 
 pe = ParameterSet('default_param.py')
 
-def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N, path=''):
+def init_pe(pe, N_X=im.N_X, N_image=im.pe.N_image, N=im.pe.N, path=''):
     pe.N_image = N_image
     pe.N_X = N_X
     pe.N_Y = N_X
@@ -38,7 +38,7 @@ except:
     
 mps = []
 for size, size_str in zip([16, 32, 64, 128, 256], ['_016', '_032', '_064',  '_128', '']):
-    mp = init_pe(pe, N_X=size, N_image=pe.N_image*pe.N_X/size, N=pe.N*size**2/pe.N_X**2, path=path)
+    mp = init_pe(pe, N_X=size, N_image=pe.N_image*im.N_X/size, N=pe.N*size**2/im.N_X**2, path=path)
     mp.process('SparseLets' + size_str)
     mps.append(mp)
 

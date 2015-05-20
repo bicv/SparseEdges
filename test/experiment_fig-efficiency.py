@@ -25,7 +25,7 @@ except:
     path = ''
     dofig = False
     
-def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
+def init_pe(pe, N_X=im.N_X, N_image=pe.N_image, N=pe.N):
     pe.seed = 123456
     pe.N_image = N_image
     pe.N_X = N_X

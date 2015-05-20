@@ -1,21 +1,18 @@
 
 import numpy as np
-from NeuroTools.parameters import ParameterSet
 from SLIP import Image
 from LogGabor import LogGabor
 from SparseEdges import SparseEdges
-pe = ParameterSet('default_param.py')
+im = Image('default_param.py')
 
 # defining input image as Lena
 from pylab import imread
-image = imread('database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)
-image = imread('database/lena' + str(pe.N_X) + '.png').mean(axis=-1)
+image = imread('database/yelmo' + str(im.N_X) + '.png').mean(axis=-1)
+image = imread('database/lena' + str(im.N_X) + '.png').mean(axis=-1)
 #print image.mean(), image.std()
 #print pe.N_X
 
-pe.N = 512
-
-im = Image(pe)
+im.pe.N = 512
 image = im.normalize(image, center=True)
 #print image.mean(), image.std()
 lg = LogGabor(im)
@@ -26,7 +23,6 @@ try:
     edges = np.load(matname)
 except:
     edges, C_res = mp.run_mp(image, verbose=True)
-    print edges.shape
     np.save(matname, edges)    
 
 matname_RMSE = 'mat/example_RMSE.npy'
