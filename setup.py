@@ -1,21 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-# from distutils.core import setup
-from setuptools import setup
+from setuptools import setup, find_packages
 
 NAME = "SparseEdges"
-version = "0.1"
+version = "0.1.1"
 
 setup(
     name = NAME,
     version = version,
-    packages = [NAME],
-    package_dir = {NAME: NAME},
-    exclude_package_data={NAME: ['database', 'mat', 'figures']},
-#     packages=find_packages(exclude=('database', 'mat', 'figures',)),
-    include_package_data=True, 
-   #         py_modules=["pp", "ppauto", "ppcommon", "pptransport", "ppworker"],
+    packages=find_packages('src', exclude='docs'),
+    package_dir = {'': 'src'},
     author = "Laurent Perrinet INT - CNRS",
     author_email = "Laurent.Perrinet@univ-amu.fr",
     description = "SparseEdges: A bio-inspired sparse representation of edges in natural images.",
@@ -30,5 +25,9 @@ setup(
                    'Operating System :: POSIX',
                    'Topic :: Scientific/Engineering',
                    'Topic :: Utilities',
+                   'Programming Language :: Python :: 2',
+                   'Programming Language :: Python :: 2.7',
+                   'Programming Language :: Python :: 3',
+                   'Programming Language :: Python :: 3.4',
                   ],
      )
