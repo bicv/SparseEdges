@@ -26,7 +26,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import hashlib
 
-class SparseEdges:
+from LogGabor import LogGabor
+
+class SparseEdges(LogGabor):
     def __init__(self, lg):
         """
         Initializes the SparseEdges class

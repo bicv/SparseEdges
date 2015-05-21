@@ -6,29 +6,23 @@ This class exploits the LogGabor package to provide with a sparse representation
 This algorithm was presented in the following paper:
 
 ~~~~{.bibtex}
-@article{Fischer07,
-    author = {Fischer, Sylvain and Redondo, Rafael and Perrinet, Laurent and Cristobal, Gabriel},
-    citeulike-article-id = {12825723},
-    citeulike-linkout-0 = {http://dx.doi.org/10.1155/2007/90727},
-    doi = {10.1155/2007/90727},
-    issn = {1687-6180},
-    journal = {EURASIP Journal on Advances in Signal Processing},
-    keywords = {assofield, bicv-sparse, log-gabor, motion-clouds, perrinet11sfn, sanz12jnp, vacher14},
-    number = {1},
-    pages = {090727--122},
-    posted-at = {2013-12-10 14:09:00},
-    priority = {0},
-    publisher = {Hindawi Publishing Corp.},
-    title = {Sparse Approximation of Images Inspired from the Functional Architecture of the Primary Visual Areas},
-    url = {http://dx.doi.org/10.1155/2007/90727},
-    volume = {2007},
-    year = {2007}
+@inbook{Perrinet15bicv,
+    author = {Perrinet, Laurent U.},
+    booktitle = {Biologically-inspired Computer Vision},
+    chapter = {13},
+    citeulike-article-id = {13566753},
+    editor = {Keil, Matthias and Crist\'{o}bal, Gabriel and Perrinet, Laurent U.},
+    keywords = {anr-trax, bicv-sparse},
+    posted-at = {2015-03-31 14:21:35},
+    priority = {2},
+    publisher = {Wiley, New-York},
+    title = {Sparse models},
+    year = {2015}
 }
 ~~~~
 
 This package gives a python implementation.
 
 Moreover, it gives additional tools to compute useful stistics in images; first- and second order statistics of co-occurences in images.
-
-More information is available @ http://pythonhosted.org/SparseEdges
-
+More information is available @ http://nbviewer.ipython.org/github/meduz/SparseEdges/blob/master/SparseEdges.ipynb
+Tests for the packages are available @ http://nbviewer.ipython.org/github/meduz/SparseEdges/blob/master/test_SparseEdges.ipynb
