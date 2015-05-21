@@ -280,7 +280,7 @@ class SparseEdges:
             np.random.seed(seed=int(int("0x" +  hashlib.sha224(filename+str(croparea)).hexdigest(), 0)*1. % 4294967295))
         # white noise or texture
         if randn:
-            return np.random.randn(self.N_X, self.N_Y)
+            return np.random.randn(self.N_X, snnnnnelf.N_Y)
         else:
             edgeslist = np.zeros((6, N_edge))
             edgeslist[0, :] = self.N_X * np.random.rand(N_edge)
@@ -312,7 +312,7 @@ class SparseEdges:
                     time.sleep(1.*np.random.rand())
                     if not(os.path.isfile(matname + '_lock')):
                         log.info('Doing edge extraction of %s ', matname)
-                        file(matname + '_lock', 'w').close()
+                        open(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         edges, C = self.run_mp(image)
@@ -350,7 +350,7 @@ class SparseEdges:
                 matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
                 if not(os.path.isfile(matname)):
                     if not(os.path.isfile(matname + '_lock')):
-                        file(matname + '_lock', 'w').close()
+                        open(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
                         edges = np.load(os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy'))
                         # computing RMSE
@@ -878,7 +878,7 @@ class SparseEdges:
         if not(locked):
             txtname = os.path.join(self.pe.figpath, exp + '_dependence_' + name_database + note + '.txt')
             if not(os.path.isfile(txtname)) and not(os.path.isfile(txtname + '_lock')):
-                file(txtname + '_lock', 'w').close() # touching
+                open(txtname + '_lock', 'w').close() # touching
                 log.info(' >> Doing check_independence on %s ', txtname)
                 out = self.check_independence(self.cohistedges(edgeslist, symmetry=False, display=None), name_database, exp)
                 f = file(txtname, 'w')
@@ -967,7 +967,7 @@ class SparseEdges:
 #
                 figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note + self.pe.ext)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                    file(figname + '_lock', 'w').close()
+                    open(figname + '_lock', 'w').close()
                     fig, a = self.histedges_theta(edgeslist, display=True)
                     plt.savefig(figname)
                     plt.close('all')
@@ -975,7 +975,7 @@ class SparseEdges:
 
                 figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note + self.pe.ext)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                    file(figname + '_lock', 'w').close()
+                    open(figname + '_lock', 'w').close()
                     fig, a = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
                     plt.savefig(figname)
                     plt.close('all')
@@ -983,7 +983,7 @@ class SparseEdges:
 
                 figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_cocir_' + name_database + note + self.pe.ext)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                    file(figname + '_lock', 'w').close()
+                    open(figname + '_lock', 'w').close()
                     fig, a = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
                     plt.savefig(figname)
                     plt.close('all')
@@ -991,7 +991,7 @@ class SparseEdges:
 
                 figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note + self.pe.ext)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                    file(figname + '_lock', 'w').close()
+                    open(figname + '_lock', 'w').close()
                     fig, a = self.cohistedges(edgeslist, display='chevrons')
                     plt.savefig(figname)
                     plt.close('all')
@@ -1000,7 +1000,7 @@ class SparseEdges:
                 if 'targets' in name_database or 'laboratory' in name_database:
                     figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_priordistractors_' + name_database + '_' + note + self.pe.ext)
                     if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                        file(figname + '_lock', 'w').close()
+                        open(figname + '_lock', 'w').close()
                         imagelist_prior = self.im.get_imagelist(exp, name_database=name_database.replace('targets', 'distractors'))
                         edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist_prior, noise=noise)
                         v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
