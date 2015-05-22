@@ -36,13 +36,14 @@ class SparseEdges(LogGabor):
         """
         LogGabor.__init__(self, pe)
 
+    def init(self):
+        LogGabor.init(self)
+
         self.n_levels = int(np.log(np.max((self.N_X, self.N_Y)))/np.log(self.pe.base_levels))
         self.sf_0 = 1. / np.logspace(1, self.n_levels, self.n_levels, base=self.pe.base_levels)
         self.theta = np.linspace(-np.pi/2, np.pi/2, self.pe.n_theta+1)[1:]
 
         self.oc = (self.N_X * self.N_Y * self.pe.n_theta * self.n_levels) #(1 - self.pe.base_levels**-2)**-1)
-        if self.pe.MP_do_mask: self.oc *= np.pi / 4
-        self.MP_mask = (self.x**2 + self.y**2) < .9
         for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
             if not(os.path.isdir(path)): os.mkdir(path)
 
@@ -91,7 +92,6 @@ class SparseEdges(LogGabor):
                 FT_lg = self.loggabor(0, 0, sf_0=sf_0, B_sf=self.pe.B_sf,
                                     theta=theta, B_theta=self.pe.B_theta)
                 C[:, :, i_theta, i_sf_0] = self.FTfilter(image, FT_lg, full=True)
-                if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
         return C
 
     def dipole(self, edge):
@@ -111,7 +111,6 @@ class SparseEdges(LogGabor):
                 d = (1-self.pe.dip_epsilon)*distance + self.pe.dip_epsilon
                 D[:, :, i_theta, i_sf_0] = np.exp((np.cos(2*psi)-1.)/(self.pe.dip_B_psi**2 * d))
                 D[:, :, i_theta, i_sf_0] *= np.exp((np.cos(2*theta)-1.)/(self.pe.dip_B_theta**2 * d))
-#                 if self.pe.MP_do_mask: D[:, :, i_theta, i_sf_0] *= self.MP_mask
             D[:, :, :, i_sf_0] *= neighborhood[:, :, np.newaxis] * np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / self.pe.dip_scale)
         #print np.exp(-np.abs( np.log2(self.sf_0 / sf_0)) / self.pe.dip_scale)
         D -= D.mean()
@@ -148,7 +147,6 @@ class SparseEdges(LogGabor):
             for i_theta, theta in enumerate(self.theta):
                 FT_lg = self.loggabor(0, 0, sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
                 C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
-                if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
         return C
 
     def reconstruct(self, edges):
@@ -350,10 +348,7 @@ class SparseEdges(LogGabor):
                         if self.pe.do_whitening: image_ = self.whitening(image_)
                         for i_N in range(self.pe.N):
                             image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis])
-                            if self.pe.do_mask:
-                                RMSE[i_N] =  ((image_*self.mask-image_rec*self.mask)**2).sum()
-                            else:
-                                RMSE[i_N] =  ((image_-image_rec)**2).sum()
+                            RMSE[i_N] =  ((image_-image_rec)**2).sum()
                         np.save(matname, RMSE)
                         try:
                             os.remove(matname + '_lock')

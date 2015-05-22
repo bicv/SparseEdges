@@ -35,7 +35,6 @@
 'MP_alpha' : .7, # ratio of inhibition in alpha-Matching Pursuit
 'MP_rho' : None, # geometric scaling parameter
 'eta_SO' : 0., # including a dipole
-'MP_do_mask'  : True, # used in Matching Pursuit self.pe.do_mask
 # parameters for computing the histograms
 'd_width' : 45., # Geisler 1.23 deg (full image = 45deg)
 'd_min' : .25, # Geisler 1.23 deg (full image = 45deg)
@@ -65,7 +64,7 @@
 'edgefigpath' : 'figures/edges/',
 'matpath' : 'mat/',
 'edgematpath' : 'mat/edges/',
-'datapath' : '../AssoField/database/',
+'datapath' : 'https://raw.githubusercontent.com/meduz/SparseEdges/master/database/',
 'ext' : '.pdf',
 'scale' : .8,
 'scale_circle' : 0.08, # relativesize of segments and pivot
