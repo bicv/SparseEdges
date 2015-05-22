@@ -14,23 +14,19 @@ __author__ = "(c) Laurent Perrinet INT - CNRS"
 import matplotlib
 matplotlib.use("Agg") # agg-backend, so we can create figures without x-server (no PDF, just PNG etc.)
 
-import numpy as np
-from NeuroTools.parameters import ParameterSet
-from SLIP import Image
-from LogGabor import LogGabor
-from SparseEdges import SparseEdges, plot
-from NeuroTools.parameters import ParameterSet
-pe = ParameterSet('default_param.py')
+from SparseEdges import SparseEdges
+mp = SparseEdges('default_param.py')
+mp.N = 128
+image = mp.imread('/Users/lolo/pool/science/PerrinetBednar15/database/serre07_targets/B_N107001.jpg')
+mp.pe.figsize_edges = 9
+image = mp.normalize(image, center=True)
 FORMATS = ['pdf', 'eps']
 
-def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
-    pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
-    pe.N_image = N_image
-    pe.N_X = N_X
-    pe.N = N
-    im = Image(pe)
-    lg = LogGabor(im)
-    mp = SparseEdges(lg)
+def touch_pe(mp, N_X=mp.N_X, N_image=mp.pe.N_image, N=mp.N):
+    mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
+    mp.pe.N_image = N_image
+    mp.pe.N_X = N_X
+    mp.N = N
     return mp
 
 # TODO: here, we are more interested in the processing of the database, not the comparison - use the correct function
@@ -39,7 +35,7 @@ def init_pe(pe, N_X=pe.N_X, N_image=pe.N_image, N=pe.N):
 
 #! comparing databases
 #!--------------------
-mp = init_pe(pe)
+mp = touch_pe(mp)
 mp.process('testing_vanilla')
 mp.process('testing_noise', noise=pe.noise)
 mp.process('testing_vanilla', name_database='serre07_targets')
@@ -58,7 +54,7 @@ v_alpha = np.linspace(0.3, 1., 9)
 for MP_alpha in v_alpha:
     pe = ParameterSet('default_param.py')
     pe.MP_alpha = MP_alpha
-    mp = init_pe(pe, N=512)
+    mp = touch_pe(mp, N=512)
     exp = 'testing_MP_alpha_' + str(MP_alpha).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)

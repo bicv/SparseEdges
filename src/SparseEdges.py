@@ -29,32 +29,20 @@ import hashlib
 from LogGabor import LogGabor
 
 class SparseEdges(LogGabor):
-    def __init__(self, lg):
+    def __init__(self, pe):
         """
         Initializes the SparseEdges class
 
         """
-        self.pe = lg.pe
-        self.lg = lg
-        self.im = lg.im
-        self.N_X = lg.N_X
-        self.N_Y = lg.N_Y
+        LogGabor.__init__(self, pe)
 
         self.n_levels = int(np.log(np.max((self.N_X, self.N_Y)))/np.log(self.pe.base_levels))
         self.sf_0 = 1. / np.logspace(1, self.n_levels, self.n_levels, base=self.pe.base_levels)
+        self.theta = np.linspace(-np.pi/2, np.pi/2, self.pe.n_theta+1)[1:]
 
-        self.n_theta = self.pe.n_theta
-#         self.theta = - np.linspace(-np.pi/2, np.pi/2, self.n_theta, endpoint=False)[::-1]
-        self.theta = np.linspace(-np.pi/2, np.pi/2, self.n_theta+1)[1:]
-#         self.theta = np.linspace(0., np.pi, self.n_theta, endpoint=False)
-        self.B_theta = self.pe.B_theta
-        self.B_sf = self.pe.B_sf
-
-        self.N = self.pe.N
-        self.do_whitening = self.pe.do_whitening
-        self.oc = (self.N_X * self.N_Y * self.n_theta * self.n_levels) #(1 - self.pe.base_levels**-2)**-1)
+        self.oc = (self.N_X * self.N_Y * self.pe.n_theta * self.n_levels) #(1 - self.pe.base_levels**-2)**-1)
         if self.pe.MP_do_mask: self.oc *= np.pi / 4
-        self.MP_mask = (self.im.x**2 + self.im.y**2) < .9
+        self.MP_mask = (self.x**2 + self.y**2) < .9
         for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
             if not(os.path.isdir(path)): os.mkdir(path)
 
@@ -63,17 +51,17 @@ class SparseEdges(LogGabor):
         runs the MatchingPursuit algorithm on image
 
         """
-        edges = np.zeros((6, self.N))
+        edges = np.zeros((6, self.pe.N))
         image_ = image.copy()
 #         residual = image.copy()
-#         RMSE = np.ones(self.N)
-        if self.do_whitening: image_ = self.im.whitening(image_)
-        C = self.init(image_)
-        logD = np.zeros((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
+#         RMSE = np.ones(self.pe.N)
+        if self.pe.do_whitening: image_ = self.whitening(image_)
+        C = self.init_C(image_)
+        logD = np.zeros((self.N_X, self.N_Y, self.pe.n_theta, self.n_levels), dtype=np.complex)
         if verbose:
             import pyprind
-            my_prbar = pyprind.ProgPercent(self.N)   # 1) initialization with number of iterations
-        for i_edge in range(self.N):
+            my_prbar = pyprind.ProgPercent(self.pe.N)   # 1) initialization with number of iterations
+        for i_edge in range(self.pe.N):
 #             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
             ind_edge_star = self.argmax(C * np.exp( self.pe.eta_SO * logD))
@@ -81,11 +69,11 @@ class SparseEdges(LogGabor):
                 if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
                 coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) *C_Max
                 # recording
-                if verbose: print('Edge', i_edge, '/', self.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
+                if verbose: print('Edge', i_edge, '/', self.pe.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
             else:
                 coeff = self.pe.MP_alpha * np.absolute(C[ind_edge_star])
                 # recording
-                if verbose: print('Edge', i_edge, '/', self.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
+                if verbose: print('Edge', i_edge, '/', self.pe.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
             if verbose: my_prbar.update()
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta[ind_edge_star[2]],
@@ -96,13 +84,13 @@ class SparseEdges(LogGabor):
             C = self.backprop(C, ind_edge_star)
         return edges, C
 
-    def init(self, image):
-        C = np.empty((self.N_X, self.N_Y, self.n_theta, self.n_levels), dtype=np.complex)
+    def init_C(self, image):
+        C = np.empty((self.N_X, self.N_Y, self.pe.n_theta, self.n_levels), dtype=np.complex)
         for i_sf_0, sf_0 in enumerate(self.sf_0):
             for i_theta, theta in enumerate(self.theta):
-                FT_lg = self.lg.loggabor(0, 0, sf_0=sf_0, B_sf=self.B_sf,
-                                    theta=theta, B_theta=self.B_theta)
-                C[:, :, i_theta, i_sf_0] = self.im.FTfilter(image, FT_lg, full=True)
+                FT_lg = self.loggabor(0, 0, sf_0=sf_0, B_sf=self.pe.B_sf,
+                                    theta=theta, B_theta=self.pe.B_theta)
+                C[:, :, i_theta, i_sf_0] = self.FTfilter(image, FT_lg, full=True)
                 if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
         return C
 
@@ -111,15 +99,15 @@ class SparseEdges(LogGabor):
         y, x, theta_edge, sf_0, C, phase = edge # HACK
         theta_edge = np.pi/2 - theta_edge
 
-        D = np.ones((self.N_X, self.N_Y, self.n_theta, self.n_levels))
-        distance = np.sqrt(((1.*self.im.X-x)**2+(1.*self.im.Y-y)**2)/(self.N_X**2+self.N_Y**2))/self.pe.dip_w
+        D = np.ones((self.N_X, self.N_Y, self.pe.n_theta, self.n_levels))
+        distance = np.sqrt(((1.*self.X-x)**2+(1.*self.Y-y)**2)/(self.N_X**2+self.N_Y**2))/self.pe.dip_w
         neighborhood = np.exp(-distance**2)
         for i_sf_0, sf_0_ in enumerate(self.sf_0):
             for i_theta, theta_layer in enumerate(self.theta):
                 theta_layer = np.pi/2 - theta_layer # HACK - to correct in +LogGabor
                 theta_layer = ((theta_layer + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
                 theta = theta_layer - theta_edge # angle between edge's orientation and the layer's one
-                psi = np.arctan2(self.im.Y-y, self.im.X-x) - theta_edge -np.pi/2 - theta/2 #- np.pi/4
+                psi = np.arctan2(self.Y-y, self.X-x) - theta_edge -np.pi/2 - theta/2 #- np.pi/4
                 d = (1-self.pe.dip_epsilon)*distance + self.pe.dip_epsilon
                 D[:, :, i_theta, i_sf_0] = np.exp((np.cos(2*psi)-1.)/(self.pe.dip_B_psi**2 * d))
                 D[:, :, i_theta, i_sf_0] *= np.exp((np.cos(2*theta)-1.)/(self.pe.dip_B_theta**2 * d))
@@ -150,29 +138,29 @@ class SparseEdges(LogGabor):
 
         """
         C_star = self.pe.MP_alpha * C[ind_edge_star]
-        FT_lg_star = self.lg.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
-                                      theta=self.theta[ind_edge_star[2]], B_theta=self.B_theta,
-                                      sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.B_sf,
+        FT_lg_star = self.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
+                                      theta=self.theta[ind_edge_star[2]], B_theta=self.pe.B_theta,
+                                      sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.pe.B_sf,
                                       )
         # image of the winning filter
-        lg_star = self.im.invert(C_star*FT_lg_star, full=False)
+        lg_star = self.invert(C_star*FT_lg_star, full=False)
         for i_sf_0, sf_0 in enumerate(self.sf_0):
             for i_theta, theta in enumerate(self.theta):
-                FT_lg = self.lg.loggabor(0, 0, sf_0=sf_0, B_sf=self.B_sf, theta=theta, B_theta=self.B_theta)
-                C[:, :, i_theta, i_sf_0] -= self.im.FTfilter(lg_star, FT_lg, full=True)
+                FT_lg = self.loggabor(0, 0, sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
+                C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
                 if self.pe.MP_do_mask: C[:, :, i_theta, i_sf_0] *= self.MP_mask
         return C
 
     def reconstruct(self, edges):
         image = np.zeros((self.N_X, self.N_Y))
 #        print edges.shape, edges[:, 0]
-        for i_edge in range(edges.shape[1]):#self.N):
+        for i_edge in range(edges.shape[1]):#self.pe.N):
             # TODO : check that it is correct when we remove alpha when making new MP
-            image += self.im.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
-                                    self.lg.loggabor(
+            image += self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
+                                    self.loggabor(
                                                     edges[0, i_edge], edges[1, i_edge],
-                                                    theta=edges[2, i_edge], B_theta=self.B_theta,
-                                                    sf_0=edges[3, i_edge], B_sf=self.B_sf,
+                                                    theta=edges[2, i_edge], B_theta=self.pe.B_theta,
+                                                    sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
                                                     ),
                                     full=False)
         return image
@@ -213,7 +201,7 @@ class SparseEdges(LogGabor):
 #         Data limits for the axes. The default assigns zero-based row, column indices to the x, y centers of the pixels.
         if type(image)==np.ndarray:
 #             if image.ndim==2: opts['cmap'] = cm.gray
-            if norm: image = self.im.normalize(image, center=True, use_max=True)
+            if norm: image = self.normalize(image, center=True, use_max=True)
             a.imshow(image, **opts)
         else:
             a.imshow([[v_max]], **opts)
@@ -315,7 +303,7 @@ class SparseEdges(LogGabor):
                     if not(os.path.isfile(matname + '_lock')):
                         log.info('Doing edge extraction of %s ', matname)
                         open(matname + '_lock', 'w').close()
-                        image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
+                        image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         edges, C = self.run_mp(image)
                         np.save(matname, edges)
@@ -333,7 +321,7 @@ class SparseEdges(LogGabor):
         else:
             try:
                 N_image = len(imagelist)
-                edgeslist = np.zeros((6, self.N, N_image))
+                edgeslist = np.zeros((6, self.pe.N, N_image))
                 i_image = 0
                 for filename, croparea in imagelist:
                     matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
@@ -353,17 +341,17 @@ class SparseEdges(LogGabor):
                 if not(os.path.isfile(matname)):
                     if not(os.path.isfile(matname + '_lock')):
                         open(matname + '_lock', 'w').close()
-                        image, filename_, croparea_ = self.im.patch(name_database, filename=filename, croparea=croparea)
+                        image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
                         edges = np.load(os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy'))
                         # computing RMSE
-                        RMSE = np.ones(self.N)
+                        RMSE = np.ones(self.pe.N)
                         image_ = image.copy()
                         image_rec = np.zeros_like(image_)
-                        if self.do_whitening: image_ = self.im.whitening(image_)
-                        for i_N in range(self.N):
+                        if self.pe.do_whitening: image_ = self.whitening(image_)
+                        for i_N in range(self.pe.N):
                             image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis])
                             if self.pe.do_mask:
-                                RMSE[i_N] =  ((image_*self.im.mask-image_rec*self.im.mask)**2).sum()
+                                RMSE[i_N] =  ((image_*self.mask-image_rec*self.mask)**2).sum()
                             else:
                                 RMSE[i_N] =  ((image_-image_rec)**2).sum()
                         np.save(matname, RMSE)
@@ -380,7 +368,7 @@ class SparseEdges(LogGabor):
         else:
             try:
                 N_image = len(imagelist)
-                RMSE = np.ones((N_image, self.N))
+                RMSE = np.ones((N_image, self.pe.N))
                 for i_image in range(N_image):
                     filename, croparea = imagelist[i_image]
                     matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
@@ -856,7 +844,7 @@ class SparseEdges(LogGabor):
         locked = False
         matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
         #while os.path.isfile(matname + '_images_lock'):
-        imagelist = self.im.get_imagelist(exp, name_database=name_database)
+        imagelist = self.get_imagelist(exp, name_database=name_database)
         locked = (imagelist=='locked')
 #         print 'DEBUG: theta used in this experiment: ', self.theta*180/np.pi
         # 2- Doing the edge extraction for each image in this list
@@ -910,9 +898,9 @@ class SparseEdges(LogGabor):
                     try:
                         file(figname + '_lock', 'w').close()
                         log.info('> redoing figure %s ', figname)
-                        image, filename_, croparea_ = self.im.patch(name_database=name_database, filename=filename, croparea=croparea)
+                        image, filename_, croparea_ = self.patch(name_database=name_database, filename=filename, croparea=croparea)
                         if noise >0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
-                        if self.do_whitening: image = self.im.whitening(image)
+                        if self.pe.do_whitening: image = self.whitening(image)
                         fig, a = self.show_edges(edgeslist[:, :, index], image=image*1.)
                         plt.savefig(figname)
                         plt.close('all')
@@ -929,7 +917,7 @@ class SparseEdges(LogGabor):
                         file(figname + '_lock', 'w').close()
                         log.info('> reconstructing figure %s ', figname)
                         image_ = self.reconstruct(edgeslist[:, :, index])
-#                         if self.do_whitening: image_ = self.im.dewhitening(image_)
+#                         if self.pe.do_whitening: image_ = self.dewhitening(image_)
                         fig, a = self.show_edges(edgeslist[:, :, index], image=image_*1.)
                         plt.savefig(figname)
                         plt.close('all')
@@ -1003,7 +991,7 @@ class SparseEdges(LogGabor):
                     figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_priordistractors_' + name_database + '_' + note + self.pe.ext)
                     if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                         open(figname + '_lock', 'w').close()
-                        imagelist_prior = self.im.get_imagelist(exp, name_database=name_database.replace('targets', 'distractors'))
+                        imagelist_prior = self.get_imagelist(exp, name_database=name_database.replace('targets', 'distractors'))
                         edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist_prior, noise=noise)
                         v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
                         fig, a = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior)

@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 {
+'verbose': 15,
 # Image
 # 'N_image' : None, #use all images in the folder
 'N_image' : 100, #use 100 images in the folder

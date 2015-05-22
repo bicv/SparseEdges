@@ -1,28 +1,13 @@
 import numpy as np
-from NeuroTools.parameters import ParameterSet
-from SLIP import Image
-from LogGabor import LogGabor
 from SparseEdges import SparseEdges
-pe = ParameterSet('default_param.py')
-
-# defining input image as Lena
-from pylab import imread
-#image = imread('../AssoField/database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
-image = imread('/Users/lolo/pool/science/PerrinetBednar15/database/serre07_targets/B_N107001.jpg').mean(axis=-1)
-
-pe.figsize_edges = 9
-
-im = Image(pe)
-image = im.normalize(image, center=True)
-
-lg = LogGabor(im)
-mp = SparseEdges(lg)
+mp = SparseEdges('default_param.py')
+mp.N = 128
+image = mp.imread('/Users/lolo/pool/science/PerrinetBednar15/database/serre07_targets/B_N107001.jpg')
+mp.pe.figsize_edges = 9
+image = mp.normalize(image, center=True)
 
 #! trying now using no whitening of the image
-pe.do_whitening = False
-im = Image(pe)
-lg = LogGabor(im)
-mp = SparseEdges(lg)
+mp.pe.do_whitening = False
 
 matname = 'mat/experiment_test_nowhitening.npy'
 matname_RMSE = 'mat/experiment_test_nowhitening_RMSE.npy'

@@ -1,22 +1,18 @@
 
 import numpy as np
-from SLIP import Image
-from LogGabor import LogGabor
 from SparseEdges import SparseEdges
-im = Image('default_param.py')
+mp = SparseEdges('default_param.py')
+mp.N = 128
 
 # defining input image as Lena
 from pylab import imread
-image = imread('database/yelmo' + str(im.N_X) + '.png').mean(axis=-1)
-image = imread('database/lena' + str(im.N_X) + '.png').mean(axis=-1)
+image = mp.imread('database/yelmo' + str(mp.N_X) + '.png')
+image = mp.imread('database/lena' + str(mp.N_X) + '.png')
 #print image.mean(), image.std()
 #print pe.N_X
 
-im.pe.N = 512
-image = im.normalize(image, center=True)
+image = mp.normalize(image, center=True)
 #print image.mean(), image.std()
-lg = LogGabor(im)
-mp = SparseEdges(lg)
 
 matname = 'mat/example.npy'
 try:

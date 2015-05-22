@@ -1,24 +1,12 @@
 import numpy as np
-from NeuroTools.parameters import ParameterSet
-from SLIP import Image
-from LogGabor import LogGabor
 from SparseEdges import SparseEdges
-pe = ParameterSet('default_param.py')
+mp = SparseEdges('default_param.py')
+mp.N = 128
 
-# defining input image as Lena
-from pylab import imread
-#image = imread('../AssoField/database/yelmo' + str(pe.N_X) + '.png').mean(axis=-1)#.flipud().fliplr()
-image = imread('/Users/lolo/pool/science/PerrinetBednar15/database/serre07_targets/B_N107001.jpg').mean(axis=-1)
+image = mp.imread('/Users/lolo/pool/science/PerrinetBednar15/database/serre07_targets/B_N107001.jpg')
 #print image.mean(), image.std()
-
-pe.N = 512
-
-im = Image(pe)
-image = im.normalize(image, center=True)
+image = mp.normalize(image, center=True)
 #print image.mean(), image.std()
-
-lg = LogGabor(im)
-mp = SparseEdges(lg)
 
 matname = 'mat/experiment_test_whitening.npy'
 matname_RMSE = 'mat/experiment_test_whitening_RMSE.npy'
@@ -32,9 +20,9 @@ except:
     RMSE = np.ones(mp.N)
     image_ = image.copy()
     image_rec = np.zeros_like(image_)
-    if mp.do_whitening: image_ = mp.im.whitening(image_)
+    if mp.do_whitening: image_ = mp.whitening(image_)
     for i_N in range(mp.N):
         image_rec += mp.reconstruct(edges[:, i_N][:, np.newaxis])
-        RMSE[i_N] =  ((image_*im.mask-image_rec*im.mask)**2).sum()
+        RMSE[i_N] =  ((image_*mp.mask-image_rec*mp.mask)**2).sum()
 
     np.save(matname_RMSE, RMSE)        
