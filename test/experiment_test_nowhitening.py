@@ -2,7 +2,8 @@ import numpy as np
 from SparseEdges import SparseEdges
 mp = SparseEdges('default_param.py')
 mp.N = 128
-image = mp.imread('/Users/lolo/pool/science/PerrinetBednar15/database/serre07_targets/B_N107001.jpg')
+mp.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
+image = mp.imread(mp.datapath + 'serre07_targets/B_N107001.jpg')
 mp.pe.figsize_edges = 9
 image = mp.normalize(image, center=True)
 

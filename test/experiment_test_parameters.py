@@ -2,8 +2,7 @@
 # -*- coding: utf8 -*-
 """
 
-Doing the real stuff: taking a bunch of images, computing edges and then doing
-statistics on that.
+Testing some parameters of the SparseEdges framework on its efficiency.
 
 rm -fr mat/edges/testing_* mat/testing_* figures/edges/testing_* figures/testing_*
 frioul_batch  -n "14,15,16"  -M 36 'python experiment_test_parameters.py'
@@ -17,17 +16,11 @@ matplotlib.use("Agg") # agg-backend, so we can create figures without x-server (
 from SparseEdges import SparseEdges
 mp = SparseEdges('default_param.py')
 mp.N = 128
-image = mp.imread('/Users/lolo/pool/science/PerrinetBednar15/database/serre07_targets/B_N107001.jpg')
+mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
+image = mp.imread(mp.pe.datapath + 'serre07_targets/B_N107001.jpg')
 mp.pe.figsize_edges = 9
 image = mp.normalize(image, center=True)
 FORMATS = ['pdf', 'eps']
-
-def touch_pe(mp, N_X=mp.N_X, N_image=mp.pe.N_image, N=mp.N):
-    mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
-    mp.pe.N_image = N_image
-    mp.pe.N_X = N_X
-    mp.N = N
-    return mp
 
 # TODO: here, we are more interested in the processing of the database, not the comparison - use the correct function
 # TODO : annotate the efficiency of different LogGabor bases (RMSE?)
@@ -35,9 +28,8 @@ def touch_pe(mp, N_X=mp.N_X, N_image=mp.pe.N_image, N=mp.N):
 
 #! comparing databases
 #!--------------------
-mp = touch_pe(mp)
 mp.process('testing_vanilla')
-mp.process('testing_noise', noise=pe.noise)
+mp.process('testing_noise', noise=mp.pe.noise)
 mp.process('testing_vanilla', name_database='serre07_targets')
 
 pe = ParameterSet('default_param.py')
@@ -52,13 +44,12 @@ fig_width = fig_width_pt*inches_per_pt  # width in inches
 mps, experiments = [], []
 v_alpha = np.linspace(0.3, 1., 9)
 for MP_alpha in v_alpha:
-    pe = ParameterSet('default_param.py')
-    pe.MP_alpha = MP_alpha
-    mp = touch_pe(mp, N=512)
+    mp_ = mp.copy()
+    mp_.pe.MP_alpha = MP_alpha
     exp = 'testing_MP_alpha_' + str(MP_alpha).replace('.', '_')
-    mp.process(exp)
+    mp_.process(exp)
     experiments.append(exp)
-    mps.append(mp)
+    mps.append(mp_)
 
 threshold = None
 threshold = .25

@@ -1,4 +1,5 @@
 # -*- coding: utf8 -*-
+from __future__ import division
 """
 SparseEdges
 
@@ -35,6 +36,7 @@ class SparseEdges(LogGabor):
 
         """
         LogGabor.__init__(self, pe)
+        self.init()
 
     def init(self):
         LogGabor.init(self)
@@ -265,10 +267,10 @@ class SparseEdges(LogGabor):
     def texture(self, N_edge = 256, filename='', croparea='', randn=True):
         # a way to get always the same seed for each image
         if not (filename==''):# or not (croparea==''):
-            np.random.seed(seed=int(int("0x" +  hashlib.sha224(filename+str(croparea)).hexdigest(), 0)*1. % 4294967295))
+            np.random.seed(seed=int(int("0x" +  hashlib.sha224((filename+str(croparea)).encode('utf-8')).hexdigest(), 0)*1. % 4294967295))
         # white noise or texture
         if randn:
-            return np.random.randn(self.N_X, snnnnnelf.N_Y)
+            return np.random.randn(self.N_X, self.N_Y)
         else:
             edgeslist = np.zeros((6, N_edge))
             edgeslist[0, :] = self.N_X * np.random.rand(N_edge)
