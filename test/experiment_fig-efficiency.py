@@ -6,37 +6,24 @@ rm -fr **/efficiency_* **/**/efficiency_*
 
 """
 
-import __init__
-import numpy as np
-from NeuroTools.parameters import ParameterSet
-from SLIP import Image
-from LogGabor import LogGabor
-from SparseEdges import SparseEdges, plot
-import sys
-pe = ParameterSet('default_param.py')
+from SparseEdges import SparseEdges
+FORMATS = ['pdf', 'eps']
 
 threshold = None # classical plots
 threshold = .15 # plot sparseness obtained when reaching this threshold
 
 dofig = True
 try:
+    import sys
     path = sys.argv[1]
 except:
     path = ''
     dofig = False
     
-def init_pe(pe, N_X=im.N_X, N_image=pe.N_image, N=pe.N):
-    pe.seed = 123456
-    pe.N_image = N_image
-    pe.N_X = N_X
-    pe.N = N
-    pe.figpath = path + 'figures/'
-    pe.edgefigpath = path + 'figures/edges/'
-    pe.matpath = path + 'mat/'
-    pe.edgematpath = path + 'mat/edges/'
-    im = Image(pe)
-    lg = LogGabor(im)
-    mp = SparseEdges(lg)
+def init_mp():
+    mp = SparseEdges('default_param.py')
+    mp.pe.seed = 42
+    mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
     return mp
 
     
@@ -58,9 +45,8 @@ fig, [[A, B], [C, D]] = plt.subplots(2, 2, figsize=(fig_width, fig_width), subpl
 mps, experiments = [], []
 v_B_sf = np.logspace(-.2, .2, 5, base=10, endpoint=True)*pe.B_sf
 for B_sf in v_B_sf:
-    pe = ParameterSet('default_param.py')
-    pe.B_sf = B_sf
-    mp = init_pe(pe)
+    mp = init_mp()
+    mp.B_sf = B_sf
     exp = 'efficiency_B_sf_' + str(B_sf).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -80,9 +66,8 @@ except Exception, e:
 mps, experiments = [], []
 v_B_theta = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_theta
 for B_theta in v_B_theta:
-    pe = ParameterSet('default_param.py')
-    pe.B_theta = B_theta
-    mp = init_pe(pe)
+    mp = init_mp()
+    mp.B_theta = B_theta
     exp = 'efficiency_B_theta_' + str(B_theta).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -104,9 +89,8 @@ except Exception, e:
 mps, experiments = [], []
 v_n_theta = [6, 12, 24, 48]
 for n_theta in v_n_theta:
-    pe = ParameterSet('default_param.py')
-    pe.n_theta = n_theta
-    mp = init_pe(pe)
+    mp = init_mp()
+    mp.n_theta = n_theta
     exp = 'efficiency_n_theta_' + str(n_theta).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -127,9 +111,8 @@ mps, experiments = [], []
 v_base_levels = [np.sqrt(2), np.sqrt(5)/2.+.5, np.sqrt(3), 2. , np.sqrt(5)]
 #np.logspace(.25, 1.25, 5, base=2, endpoint=True)
 for base_levels in v_base_levels:
-    pe = ParameterSet('default_param.py')
-    pe.base_levels = base_levels
-    mp = init_pe(pe)
+    mp = init_mp()
+    mp.base_levels = base_levels
     exp = 'efficiency_base_levels_' + str(base_levels).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
