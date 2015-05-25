@@ -32,6 +32,9 @@ install_dev:
 todo:
 	grep -R * (^|#)[ ]*(TODO|FIXME|XXX|HINT|TIP)( |:)([^#]*)
 
+update:
+	cd ../SLIP; git pull; pip install -U --user . ; cd ../SparseEdges/
+	cd ../LogGabor; git pull; pip install -U --user . ; cd ../SparseEdges/
 
 console:
 	open -a /Applications/Utilities/Console.app/ log-sparseedges-debug.log
