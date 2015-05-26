@@ -21,7 +21,7 @@ except:
     dofig = False
     
 def init_mp():
-    mp = SparseEdges('default_param.py')
+    mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
     mp.pe.seed = 42
     mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
     return mp

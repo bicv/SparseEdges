@@ -16,12 +16,6 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 import time
 import sys, traceback
-import logging
-logging.basicConfig(filename='debug.log', format='%(asctime)s@[' + TAG + '] %(message)s', datefmt='%Y%m%d-%H:%M:%S')
-log = logging.getLogger("SparseEdges")
-# log.setLevel(level=logging.WARN)
-# log.setLevel(level=logging.INFO)
-log.setLevel(level=logging.DEBUG) #set verbosity to show all messages of severity >= DEBUG
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -301,22 +295,22 @@ class SparseEdges(LogGabor):
                 if not(os.path.isfile(matname)):
                     time.sleep(1.*np.random.rand())
                     if not(os.path.isfile(matname + '_lock')):
-                        log.info('Doing edge extraction of %s ', matname)
+                        self.log.info('Doing edge extraction of %s ', matname)
                         open(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         edges, C = self.run_mp(image)
                         np.save(matname, edges)
-                        log.info('Finished edge extraction of %s ', matname)
+                        self.log.info('Finished edge extraction of %s ', matname)
                         try:
                             os.remove(matname + '_lock')
                         except Exception as e:
-                            log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
+                            self.log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
                     else:
-                        log.info('The edge extraction at step %s is locked', matname)
+                        self.log.info('The edge extraction at step %s is locked', matname)
                         global_lock = True
         if global_lock is True:
-            log.error(' some locked edge extractions ')
+            self.log.error(' some locked edge extractions ')
             return 'locked'
         else:
             try:
@@ -329,7 +323,7 @@ class SparseEdges(LogGabor):
                     i_image += 1
                 return edgeslist
             except Exception as e:
-                log.error(' some locked edge extractions %s, error ', e)
+                self.log.error(' some locked edge extractions %s, error ', e)
                 return 'locked'
 
     def full_RMSE(self, exp, name_database, imagelist):
@@ -355,12 +349,12 @@ class SparseEdges(LogGabor):
                         try:
                             os.remove(matname + '_lock')
                         except Exception as e:
-                            log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
+                            self.log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
                     else:
-                        log.info('The edge extraction at step %s is locked', matname)
+                        self.log.info('The edge extraction at step %s is locked', matname)
                         global_lock = True
         if global_lock is True:
-            log.error(' some locked RMSE extractions ')
+            self.log.error(' some locked RMSE extractions ')
             return 'locked'
         else:
             try:
@@ -372,7 +366,7 @@ class SparseEdges(LogGabor):
                     RMSE[i_image, :] = np.load(matname_RMSE)
                 return RMSE
             except Exception as e:
-                log.error(' some locked RMSE extractions %s, error ', e)
+                self.log.error(' some locked RMSE extractions %s, error ', e)
                 return 'locked'
 
     def init_edges(self):
@@ -542,7 +536,7 @@ class SparseEdges(LogGabor):
                                                  weights=weights.ravel()
                                                 )
 #                 print v_hist_.sum(), v_hist_.min(), v_hist_.max(), d.ravel().shape
-                if v_hist_.sum()<.01: log.debug(' less than 1 percent of co-occurences within ranges: %f ', v_hist_.sum())
+                if v_hist_.sum()<.01: self.log.debug(' less than 1 percent of co-occurences within ranges: %f ', v_hist_.sum())
                 if not(v_hist_.sum() == 0.):
                     # add to the full histogram
                     if v_hist is None:
@@ -631,7 +625,7 @@ class SparseEdges(LogGabor):
                 colin_edgelist[:, -1] = [self.N_X /2, self.N_Y /2, 0, edge_scale, colin_edgelist[4,:].max() *1.2, 0.]
                 return self.show_edges(colin_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
             except Exception as e:
-                log.error(' failed to generate colin_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
+                self.log.error(' failed to generate colin_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
                 return e, None # HACK to return something instead of None
 
         elif display=='cocir_geisler':
@@ -658,7 +652,7 @@ class SparseEdges(LogGabor):
                 cocir_edgelist[:, -1] = [self.N_X /2, self.N_Y /2, 0, edge_scale, cocir_edgelist[4,:].max() *1.2, 0.]
                 return self.show_edges(cocir_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
             except Exception as e:
-                log.error(' failed to generate cocir_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
+                self.log.error(' failed to generate cocir_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
                 return e, None # HACK to retrun something instead of None
 
         elif display=='cohist_scale':
@@ -673,7 +667,7 @@ class SparseEdges(LogGabor):
                 a.set_ylabel('probability')
                 return fig, a
             except:
-                log.error(' failed to generate cohist_scale, %s', e)
+                self.log.error(' failed to generate cohist_scale, %s', e)
                 return e, None # HACK to retrun something instead of None
 
 
@@ -836,7 +830,7 @@ class SparseEdges(LogGabor):
 
         """
 
-        log.info(' > computing edges for experiment %s with database %s ', exp, name_database)
+        self.log.info(' > computing edges for experiment %s with database %s ', exp, name_database)
         #: 1 - Creating an image list
         locked = False
         matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
@@ -849,12 +843,12 @@ class SparseEdges(LogGabor):
             try:
                 edgeslist = np.load(matname + '_edges.npy')
             except Exception as e:
-                log.info(' >> There is no edgeslist: %s ', e)
-#                 log.info('>> Doing the edge extraction')
+                self.log.info(' >> There is no edgeslist: %s ', e)
+#                 self.log.info('>> Doing the edge extraction')
                 time.sleep(1.*np.random.rand())
                 edgeslist = self.full_run(exp, name_database, imagelist, noise=noise)
                 if edgeslist == 'locked':
-                    log.info('>> Edge extraction %s is locked', matname)
+                    self.log.info('>> Edge extraction %s is locked', matname)
                     locked = True
                 else:
                     np.save(matname + '_edges.npy', edgeslist)
@@ -866,20 +860,16 @@ class SparseEdges(LogGabor):
             txtname = os.path.join(self.pe.figpath, exp + '_dependence_' + name_database + note + '.txt')
             if not(os.path.isfile(txtname)) and not(os.path.isfile(txtname + '_lock')):
                 open(txtname + '_lock', 'w').close() # touching
-                log.info(' >> Doing check_independence on %s ', txtname)
+                self.log.info(' >> Doing check_independence on %s ', txtname)
                 out = self.check_independence(self.cohistedges(edgeslist, symmetry=False, display=None), name_database, exp)
-                f = file(txtname, 'w')
+                f = open(txtname, 'w')
                 f.write(out)
                 f.close()
-#                 out = self.check_independence(self.cohistedges(edgeslist, symmetry=True, display=None), name_database, exp)
-#                 f = file(os.path.join(self.pe.figpath, exp + '_dependence_sym_' + name_database + note + '.txt'), 'w')
-#                 f.write(out)
-#                 f.close()
                 print(out)
                 try:
                     os.remove(txtname + '_lock')
                 except Exception as e:
-                    log.error('Failed to remove lock file %s_lock, error : %s ', txtname, e)
+                    self.log.error('Failed to remove lock file %s_lock, error : %s ', txtname, e)
 
         # 4- Doing the edge figures to check the edge extraction process
         edgedir = os.path.join(self.pe.edgefigpath, exp + '_' + name_database)
@@ -893,8 +883,8 @@ class SparseEdges(LogGabor):
                 figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '.png')
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     try:
-                        file(figname + '_lock', 'w').close()
-                        log.info('> redoing figure %s ', figname)
+                        open(figname + '_lock', 'w').close()
+                        self.log.info('> redoing figure %s ', figname)
                         image, filename_, croparea_ = self.patch(name_database=name_database, filename=filename, croparea=croparea)
                         if noise >0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         if self.pe.do_whitening: image = self.whitening(image)
@@ -904,15 +894,15 @@ class SparseEdges(LogGabor):
                         try:
                             os.remove(figname + '_lock')
                         except Exception as e:
-                            log.info('Failed to remove lock file %s_lock , error : %s ', figname , e)
+                            self.log.info('Failed to remove lock file %s_lock , error : %s ', figname , e)
                     except Exception as e:
-                        log.info('Failed to make edge image  %s, error : %s ', figname , traceback.print_tb(sys.exc_info()[2]))
+                        self.log.info('Failed to make edge image  %s, error : %s ', figname , traceback.print_tb(sys.exc_info()[2]))
 
                 figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct.png')
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     try:
-                        file(figname + '_lock', 'w').close()
-                        log.info('> reconstructing figure %s ', figname)
+                        open(figname + '_lock', 'w').close()
+                        self.log.info('> reconstructing figure %s ', figname)
                         image_ = self.reconstruct(edgeslist[:, :, index])
 #                         if self.pe.do_whitening: image_ = self.dewhitening(image_)
                         fig, a = self.show_edges(edgeslist[:, :, index], image=image_*1.)
@@ -921,29 +911,29 @@ class SparseEdges(LogGabor):
                         try:
                             os.remove(figname + '_lock')
                         except Exception as e:
-                            log.error('Failed to remove lock file %s_lock, error : %s ', figname, traceback.print_tb(sys.exc_info()[2]))
+                            self.log.error('Failed to remove lock file %s_lock, error : %s ', figname, traceback.print_tb(sys.exc_info()[2]))
                     except Exception as e:
-                        log.error('Failed to make reconstruct image  %s , error : %s  ', figname, traceback.print_tb(sys.exc_info()[2]))
+                        self.log.error('Failed to make reconstruct image  %s , error : %s  ', figname, traceback.print_tb(sys.exc_info()[2]))
 
             # 5- Computing RMSE to check the edge extraction process
             try:
                 RMSE = np.load(matname + '_RMSE.npy')
             except Exception as e:
-                log.info(' >> There is no RMSE: %s ', e)
+                self.log.info(' >> There is no RMSE: %s ', e)
                 try:
                     RMSE = self.full_RMSE(exp, name_database, imagelist)
                     if RMSE == 'locked':
-                        log.info('>> RMSE extraction %s is locked', matname)
+                        self.log.info('>> RMSE extraction %s is locked', matname)
                         locked = True
                     else:
                         np.save(matname + '_RMSE.npy', RMSE)
                 except Exception as e:
-                    log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
+                    self.log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
 
             try:
-                log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
+                self.log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
             except Exception as e:
-                log.error('Failed to display RMSE %s ', e)
+                self.log.error('Failed to display RMSE %s ', e)
             # 6- Plotting the histogram
             try:
 #            figname = os.path.join(self.pe.figpath, exp + '_proba-scale_' + name_database + note + self.pe.ext)
@@ -996,7 +986,7 @@ class SparseEdges(LogGabor):
                         plt.close('all')
                         os.remove(figname + '_lock')
             except Exception as e:
-                log.error('Failed to create figures, error : %s ', e)
+                self.log.error('Failed to create figures, error : %s ', e)
 
             return imagelist, edgeslist, RMSE
         else:
@@ -1004,7 +994,7 @@ class SparseEdges(LogGabor):
 
     # some helper funtion to compare the databases
     def KL(self, v_hist, v_hist_obs):
-        if v_hist.sum()==0 or v_hist_obs.sum()==0: log.error('>X>X>X KL function:  problem with null histograms! <X<X<X<')
+        if v_hist.sum()==0 or v_hist_obs.sum()==0: self.log.error('>X>X>X KL function:  problem with null histograms! <X<X<X<')
         if True:
             v_hist /= v_hist.sum()
             v_hist_obs /= v_hist_obs.sum()

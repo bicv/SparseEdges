@@ -26,6 +26,16 @@ pypi_docs:
 	zip web.zip index.html
 	open https://pypi.python.org/pypi?action=pkg_edit&name=$NAME
 
+RIOU = /riou/work/invibe/USERS/perrinet/science/$(NAME)
+FRIOUL = perrinet.l@frioul.int.univ-amu.fr
+OPTIONS = -av --progress --exclude .AppleDouble --exclude .git
+
+transfer_to_riou:
+		rsync $(OPTIONS) {*.log,figures,mat} $(FRIOUL):$(RIOU)/
+transfer_from_riou:
+		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/{*.log,figures,mat} .
+
+
 install_dev:
 	pip uninstall -y $(NAME)
 	pip install -e .
