@@ -5,7 +5,7 @@ $ python experiment_fig-efficiency.py ../../CNRS/BICV-book/BICV-sparse/src/
 rm -fr **/efficiency_* **/**/efficiency_* 
 
 """
-
+import numpy as np
 from SparseEdges import SparseEdges
 FORMATS = ['pdf', 'eps']
 
@@ -20,8 +20,9 @@ except:
     path = ''
     dofig = False
     
+mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
 def init_mp():
-    mp = SparseEdges('default_param.py')
+    mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
     mp.pe.seed = 42
     mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
     return mp
@@ -43,10 +44,10 @@ fig, [[A, B], [C, D]] = plt.subplots(2, 2, figsize=(fig_width, fig_width), subpl
 
 
 mps, experiments = [], []
-v_B_sf = np.logspace(-.2, .2, 5, base=10, endpoint=True)*pe.B_sf
+v_B_sf = np.logspace(-.2, .2, 5, base=10, endpoint=True)*mp.pe.B_sf
 for B_sf in v_B_sf:
     mp = init_mp()
-    mp.B_sf = B_sf
+    mp.pe.B_sf = B_sf
     exp = 'efficiency_B_sf_' + str(B_sf).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -60,14 +61,14 @@ try:
                       fig=fig, ax=A, color=[0., 1., 0.], threshold=threshold, scale=True)    
     A.set_xlabel(r'frequency bandwith $B_{sf}$')
     #A.set_yticks([0., 0.02, 0.04, 0.06])
-except Exception, e:
+except Exception as e:
     print('Failed to plot  with error : %s ' % e )
     
 mps, experiments = [], []
-v_B_theta = np.logspace(-.5, .5, 5, base=10, endpoint=True)*pe.B_theta
+v_B_theta = np.logspace(-.5, .5, 5, base=10, endpoint=True)*mp.pe.B_theta
 for B_theta in v_B_theta:
     mp = init_mp()
-    mp.B_theta = B_theta
+    mp.pe.B_theta = B_theta
     exp = 'efficiency_B_theta_' + str(B_theta).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -83,14 +84,14 @@ try:
     B.set_ylabel('')
     #B.set_yticks([0., 0.02, 0.04, 0.06])
     #B.set_yticklabels(['', '', '', ''])
-except Exception, e:
+except Exception as e:
     print('Failed to plot  with error : %s ' % e )
     
 mps, experiments = [], []
 v_n_theta = [6, 12, 24, 48]
 for n_theta in v_n_theta:
     mp = init_mp()
-    mp.n_theta = n_theta
+    mp.pe.n_theta = n_theta
     exp = 'efficiency_n_theta_' + str(n_theta).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -104,7 +105,7 @@ try:
                       fig=fig, ax=C, threshold=threshold, scale=True, color=[0., 1., 0.])    
     C.set_xlabel(r'number of orientations $N_{\theta}$')
     #C.set_yticks([0., 0.02, 0.04, 0.06])
-except Exception, e:
+except Exception as e:
     print('Failed to plot  with error : %s ' % e )
     
 mps, experiments = [], []
@@ -112,7 +113,7 @@ v_base_levels = [np.sqrt(2), np.sqrt(5)/2.+.5, np.sqrt(3), 2. , np.sqrt(5)]
 #np.logspace(.25, 1.25, 5, base=2, endpoint=True)
 for base_levels in v_base_levels:
     mp = init_mp()
-    mp.base_levels = base_levels
+    mp.pe.base_levels = base_levels
     exp = 'efficiency_base_levels_' + str(base_levels).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -131,7 +132,7 @@ try:
     D.set_ylabel('')
     D.set_yticks([0., 1., 1.3])
     D.set_yticklabels(['0', '1', ''])
-except Exception, e:
+except Exception as e:
     print('Failed to plot  with error : %s ' % e )
 
 for ax, label in zip([A, B, C, D], ['A', 'B', 'C', 'D']):

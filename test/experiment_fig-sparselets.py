@@ -27,7 +27,7 @@ N_image = 32
 N = 1024
 
 for size, size_str in zip(sizes, ['_016', '_032', '_064',  '_128', '']):
-    mp = SparseEdges('default_param.py')
+    mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
     mp.pe.seed = 42
     mp.N = 128
     mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
