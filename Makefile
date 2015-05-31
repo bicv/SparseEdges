@@ -37,8 +37,7 @@ transfer_from_riou:
 
 
 install_dev:
-	pip uninstall -y $(NAME)
-	pip install -e .
+	pip uninstall -y $(NAME) ; pip install -e .
 todo:
 	grep -R * (^|#)[ ]*(TODO|FIXME|XXX|HINT|TIP)( |:)([^#]*)
 
@@ -51,6 +50,11 @@ update:
 	cd ../SLIP; git pull; pip install -U --user . ; cd ../SparseEdges/
 	cd ../LogGabor; git pull; pip install -U --user . ; cd ../SparseEdges/
 	git pull; pip install -U --user . 
+
+update_dev:
+	cd ../SLIP; git pull; pip uninstall -y SLIP; pip install -e . ; cd ../SparseEdges/
+	cd ../LogGabor; git pull; pip uninstall -y LogGabor; pip install -e . ; cd ../SparseEdges/
+	pip uninstall -y $(NAME) ; pip install -e .
 
 console:
 	open -a /Applications/Utilities/Console.app/ log-sparseedges-debug.log
