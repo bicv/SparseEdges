@@ -31,9 +31,9 @@ FRIOUL = perrinet.l@frioul.int.univ-amu.fr
 OPTIONS = -av --progress --exclude .AppleDouble --exclude .git
 
 transfer_to_riou:
-		rsync $(OPTIONS) {*.log,figures,mat} $(FRIOUL):$(RIOU)/
+		rsync $(OPTIONS) {*.log,figures,mat,test} $(FRIOUL):$(RIOU)/
 transfer_from_riou:
-		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/{*.log,figures,mat} .
+		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/{*.log,figures,mat,test} .
 
 
 install_dev:

@@ -49,7 +49,7 @@ experiments = ['SparseLets_' + '%0.3d' % size for size in sizes]
 experiments[-1] = 'SparseLets'
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(size) for size in sizes]
-fig, a, ax = plot(fig=fig, mps=mps, experiments=experiments, databases=databases, 
+fig, a, ax = mp.plot(fig=fig, mps=mps, experiments=experiments, databases=databases, 
                   labels=labels, scale=True)    
 if dofig: 
     FORMATS = ['pdf', 'eps']

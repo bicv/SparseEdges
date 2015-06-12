@@ -1065,115 +1065,115 @@ class SparseEdges(LogGabor):
         out += '-'*60 + '\n'
         return out
 
-def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 0.], threshold=None, scale=False, ref=None):
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import matplotlib
+    def plot(self, mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 0.], threshold=None, scale=False, ref=None):
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import matplotlib
 
-    plt.rc('axes', linewidth=.25)
-    plt.rc('axes', edgecolor='black')
-    if fig==None:
-        # parameters for plots
-        fig_width_pt = 318.670  # Get this from LaTeX using \showthe\columnwidth
-        inches_per_pt = 1.0/72.27               # Convert pt to inches
-        fig_width = fig_width_pt*inches_per_pt  # width in inches
+        plt.rc('axes', linewidth=.25)
+        plt.rc('axes', edgecolor='black')
+        if fig==None:
+            # parameters for plots
+            fig_width_pt = 318.670  # Get this from LaTeX using \showthe\columnwidth
+            inches_per_pt = 1.0/72.27               # Convert pt to inches
+            fig_width = fig_width_pt*inches_per_pt  # width in inches
 
-        fig = plt.figure(figsize=(fig_width, fig_width/1.618))
-    # main axis
-    if ax==None: ax = fig.add_subplot(111, axisbg='w')
-    # axes.edgecolor      : black   # axes edge color
-    if (threshold==None) and (ref==None):
-        # this is another inset axes over the main axes
-        inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
-        #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
-        grad =  np.linspace(0., 1., 2*len(experiments))
-        grad[1::2] = grad[::2]
-        CCycle = np.array(color)[np.newaxis, :] * grad[:, np.newaxis]
-        ax.set_color_cycle(CCycle)
-        inset.set_color_cycle(CCycle)
-        l0_max, eev = 0., -len(experiments)/2
-        for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-            try:
-                imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                RMSE /= RMSE[:, 0][:, np.newaxis]
-                N = RMSE.shape[1] #number of edges
-                l0_max = max(l0_max, N*np.log2(mp.oc)/mp.N_X/mp.N_Y)
+            fig = plt.figure(figsize=(fig_width, fig_width/1.618))
+        # main axis
+        if ax==None: ax = fig.add_subplot(111, axisbg='w')
+        # axes.edgecolor      : black   # axes edge color
+        if (threshold==None) and (ref==None):
+            # this is another inset axes over the main axes
+            inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
+            #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
+            grad =  np.linspace(0., 1., 2*len(experiments))
+            grad[1::2] = grad[::2]
+            CCycle = np.array(color)[np.newaxis, :] * grad[:, np.newaxis]
+            ax.set_color_cycle(CCycle)
+            inset.set_color_cycle(CCycle)
+            l0_max, eev = 0., -len(experiments)/2
+            for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
+                if True: #try:
+                    imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                    RMSE /= RMSE[:, 0][:, np.newaxis]
+                    N = RMSE.shape[1] #number of edges
+                    l0_max = max(l0_max, N*np.log2(mp.oc)/mp.N_X/mp.N_Y)
+                    if not(scale):
+                        l0_axis = np.arange(N)
+                    else:
+                        l0_axis = np.linspace(0, N*np.log2(mp.oc)/mp.N_X/mp.N_Y, N)
+                    errorevery_zoom = 1.4**(1.*eev/len(experiments))
+                    errorevery = np.max((int(RMSE.shape[1]/8*errorevery_zoom), 1))
+                    ax.errorbar(l0_axis, RMSE.mean(axis=0),
+                                yerr=RMSE.std(axis=0), errorevery=errorevery)
+                    inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
+                               yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=errorevery)
+                    ax.plot(l0_axis[::errorevery], RMSE.mean(axis=0)[::errorevery],
+                            linestyle='None', marker='o', ms=3)
+                    inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery],
+                            linestyle='None',  marker='o', ms=3)
+                    eev += 1
+                #except Exception as e:
+                #    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+
+            ax.set_ylim([.0, 1.02])
+            for a in [ax, inset]:
                 if not(scale):
-                    l0_axis = np.arange(N)
+                    a.set_xlim([-0.05*N, 1.05*N])
                 else:
-                    l0_axis = np.linspace(0, N*np.log2(mp.oc)/mp.N_X/mp.N_Y, N)
-                errorevery_zoom = 1.4**(1.*eev/len(experiments))
-                errorevery = np.max((int(RMSE.shape[1]/8*errorevery_zoom), 1))
-                ax.errorbar(l0_axis, RMSE.mean(axis=0),
-                            yerr=RMSE.std(axis=0), errorevery=errorevery)
-                inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
-                           yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=errorevery)
-                ax.plot(l0_axis[::errorevery], RMSE.mean(axis=0)[::errorevery],
-                        linestyle='None', marker='o', ms=3)
-                inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery],
-                        linestyle='None',  marker='o', ms=3)
-                eev += 1
-            except Exception as e:
-                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+                    a.set_xlim([-0.05*l0_max, 1.05*l0_max])
+                    a.ticklabel_format(axis='x', style='sci', scilimits=(0, 1))#, useOffset=False)
+                #a.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+                a.spines['left'].set_position('zero')#('outward', -10))
+                a.spines['right'].set_visible(False)
+                a.spines['bottom'].set_position('zero')#(('outward', -10))
+                a.spines['top'].set_visible(False)
+                a.spines['left'].set_smart_bounds(True)
+                a.spines['bottom'].set_smart_bounds(True)
+                a.xaxis.set_ticks_position('bottom')
+                a.yaxis.set_ticks_position('left')
+                if not(scale):#False and a==ax:
+                    a.set_xlabel(r'$\ell_0$-norm')
+                else:
+                    ax.set_xlabel(r'relative $\ell_0$ pseudo-norm (bits / pixel)')#relative $\ell_0$-norm')
 
-        ax.set_ylim([.0, 1.02])
-        for a in [ax, inset]:
-            if not(scale):
-                a.set_xlim([-0.05*N, 1.05*N])
-            else:
-                a.set_xlim([-0.05*l0_max, 1.05*l0_max])
-                a.ticklabel_format(axis='x', style='sci', scilimits=(0, 1))#, useOffset=False)
-            #a.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-            a.spines['left'].set_position('zero')#('outward', -10))
-            a.spines['right'].set_visible(False)
-            a.spines['bottom'].set_position('zero')#(('outward', -10))
-            a.spines['top'].set_visible(False)
-            a.spines['left'].set_smart_bounds(True)
-            a.spines['bottom'].set_smart_bounds(True)
-            a.xaxis.set_ticks_position('bottom')
-            a.yaxis.set_ticks_position('left')
-            if not(scale):#False and a==ax:
-                a.set_xlabel(r'$\ell_0$-norm')
-            else:
-                ax.set_xlabel(r'relative $\ell_0$ pseudo-norm (bits / pixel)')#relative $\ell_0$-norm')
+                a.grid(b=False, which="both")
 
-            a.grid(b=False, which="both")
+            ax.set_ylabel(r'Squared error')
+            inset.set_ylabel(r'Coefficient')
 
-        ax.set_ylabel(r'Squared error')
-        inset.set_ylabel(r'Coefficient')
-
-        inset.legend(loc='upper right', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
-        return fig, ax, inset
-    elif (threshold==None):
-        if ax==None: ax = fig.add_axes([0.15, 0.25, .75, .75], axisbg='w')
-        ind, l0, l0_std = 0, [], []
-        from lmfit.models import ExpressionModel
-        mod = ExpressionModel('1 - (1- eps_inf) * ( 1 - rho**x)')
-        for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-            try:
-                imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                RMSE /= RMSE[:, 0][:, np.newaxis]
-                N = RMSE.shape[1] #number of edges
-                if RMSE.min()>threshold: print('the threshold is never crossed for', experiment, name_database)
+            inset.legend(loc='upper right', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+            return fig, ax, inset
+        elif (threshold==None):
+            if ax==None: ax = fig.add_axes([0.15, 0.25, .75, .75], axisbg='w')
+            ind, l0, l0_std = 0, [], []
+            from lmfit.models import ExpressionModel
+            mod = ExpressionModel('1 - (1- eps_inf) * ( 1 - rho**x)')
+            for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
                 try:
-                    l0_results = np.zeros(N)
-                    for i_image in range(RMSE.shape[0]):
-                        mod.def_vals = {'eps_inf':.1, 'rho':.99}
-                        out  = mod.fit(RMSE[i_image, :], x=np.arange(N))
-                        eps_inf = out.params.get('eps_inf').value
-                        rho =  out.params.get('rho').value
-                        #print rho, eps_inf, np.log((threshold-eps_inf)/(1-eps_inf))/np.log(rho)
+                    imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                    RMSE /= RMSE[:, 0][:, np.newaxis]
+                    N = RMSE.shape[1] #number of edges
+                    if RMSE.min()>threshold: print('the threshold is never crossed for', experiment, name_database)
+                    try:
+                        l0_results = np.zeros(N)
+                        for i_image in range(RMSE.shape[0]):
+                            mod.def_vals = {'eps_inf':.1, 'rho':.99}
+                            out  = mod.fit(RMSE[i_image, :], x=np.arange(N))
+                            eps_inf = out.params.get('eps_inf').value
+                            rho =  out.params.get('rho').value
+                            #print rho, eps_inf, np.log((threshold-eps_inf)/(1-eps_inf))/np.log(rho)
 
-                        l0_results[i_image] = np.log((threshold-eps_inf)/(1-eps_inf))/np.log(rho)
-                except:
-                    l0_results = np.argmax(RMSE<threshold, axis=1)*1.
-                if (scale):
-                    l0_results *= np.log2(mp.oc)/mp.N_X/mp.N_Y
-                l0.append(l0_results.mean())
-                l0_std.append(l0_results.std())
-                ind += 1
-            except Exception as e:
-                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+                            l0_results[i_image] = np.log((threshold-eps_inf)/(1-eps_inf))/np.log(rho)
+                    except:
+                        l0_results = np.argmax(RMSE<threshold, axis=1)*1.
+                    if (scale):
+                        l0_results *= np.log2(mp.oc)/mp.N_X/mp.N_Y
+                    l0.append(l0_results.mean())
+                    l0_std.append(l0_results.std())
+                    ind += 1
+                except Exception as e:
+                    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
 
 
 #  subplots_adjust(left=None, bottom=None, right=None, top=None,
@@ -1187,144 +1187,149 @@ def plot(mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 
 #  top = 0.9      # the top of the subplots of the figure
 #  wspace = 0.2   # the amount of width reserved for blank space between subplots
 #  hspace = 0.2   # the amount of height reserved for white space between subplots
-        fig.subplots_adjust(wspace=0.1, hspace=0.1,
-                            left=0.2, right=0.9,
-                            top=0.9,    bottom=0.175)
+            fig.subplots_adjust(wspace=0.1, hspace=0.1,
+                                left=0.2, right=0.9,
+                                top=0.9,    bottom=0.175)
 
-        width = .8
-        ax.bar(np.arange(ind), l0)#, yerr=l0_std)
-        ax.set_xlim([-width/4, ind+.0*width])
+            width = .8
+            ax.bar(np.arange(ind), l0)#, yerr=l0_std)
+            ax.set_xlim([-width/4, ind+.0*width])
 
-        if not(scale):#False and a==ax:
-            ax.set_ylabel(r'$\ell_0$ pseudo-norm')
-        else:
+            if not(scale):#False and a==ax:
+                ax.set_ylabel(r'$\ell_0$ pseudo-norm')
+            else:
 #             ax.set_ylabel(r'relative $\ell_0$ pseudo-norm')# (bits / pixel)')#relative $\ell_0$-norm')
-            ax.set_ylabel(r'rel. $\ell_0$ norm')# (bits / pixel)')#relative $\ell_0$-norm')
+                ax.set_ylabel(r'rel. $\ell_0$ norm')# (bits / pixel)')#relative $\ell_0$-norm')
 
-        ax.set_xticks(np.arange(ind)+.5*width)
-        ax.set_xticklabels(labels)
+            ax.set_xticks(np.arange(ind)+.5*width)
+            ax.set_xticklabels(labels)
 
 #         plt.tight_layout()
 #         fig.set_tight_layout(True)
 
-        return fig, ax, ax
+            return fig, ax, ax
 
-    elif (ref==None):
-        relSE, relSE_std = [], []
-        imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
-        RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis]
-        l0_ref = np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
+        elif (ref==None):
+            relSE, relSE_std = [], []
+            imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
+            RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis]
+            l0_ref = np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
 
-        for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-            try:
-                imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                RMSE /= RMSE[:, 0][:, np.newaxis]
-                N = RMSE.shape[1] #number of edges
-                l0 = np.log2(mp.oc)/mp.N_X/mp.N_Y
-                relSE.append((RMSE/RMSE_ref).mean())
-                relSE_std.append((RMSE/RMSE_ref).std(axis=0).mean())
-            except Exception as e:
-                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
-        fig.subplots_adjust(wspace=0.1, hspace=0.1,
-                            left=0.2, right=0.9,
-                            top=0.9,    bottom=0.175)
+            for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
+                try:
+                    imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                    RMSE /= RMSE[:, 0][:, np.newaxis]
+                    N = RMSE.shape[1] #number of edges
+                    l0 = np.log2(mp.oc)/mp.N_X/mp.N_Y
+                    relSE.append((RMSE/RMSE_ref).mean())
+                    relSE_std.append((RMSE/RMSE_ref).std(axis=0).mean())
+                except Exception as e:
+                    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+            fig.subplots_adjust(wspace=0.1, hspace=0.1,
+                                left=0.2, right=0.9,
+                                top=0.9,    bottom=0.175)
 
-        ind = len(relSE)
-        width = .8
-        ax.bar(np.arange(ind), relSE, yerr=relSE_std)
-        ax.set_xlim([-width/4, ind+.0*width])
+            ind = len(relSE)
+            width = .8
+            ax.bar(np.arange(ind), relSE, yerr=relSE_std)
+            ax.set_xlim([-width/4, ind+.0*width])
 
-        if not(scale):#False and a==ax:
-            ax.set_ylabel(r'SE')
-        else:
+            if not(scale):#False and a==ax:
+                ax.set_ylabel(r'SE')
+            else:
 #             ax.set_ylabel(r'relative $\ell_0$ pseudo-norm')# (bits / pixel)')#relative $\ell_0$-norm')
-            ax.set_ylabel(r'rel. SE')# (bits / pixel)')#relative $\ell_0$-norm')
+                ax.set_ylabel(r'rel. SE')# (bits / pixel)')#relative $\ell_0$-norm')
 
-        ax.set_xticks(np.arange(ind)+.5*width)
-        ax.set_xticklabels(labels)
+            ax.set_xticks(np.arange(ind)+.5*width)
+            ax.set_xticklabels(labels)
 
 #         plt.tight_layout()
 #         fig.set_tight_layout(True)
 
-        return fig, ax, ax
+            return fig, ax, ax
 
-    else: # fourth type: we have a reference and a threshold
-        relL0, relL0_std = [], []
-        imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
-        RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
-        L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1.
-        if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
+        else: # fourth type: we have a reference and a threshold
+            relL0, relL0_std = [], []
+            imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
+            RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
+            L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1.
+            if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
 
-        for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-            try:
-                imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                print(len(imagelist))
-                RMSE /= RMSE[:, 0][:, np.newaxis] # normalize RMSE
-                N = RMSE.shape[1] #number of edges
-                L0 =  np.argmax(RMSE<threshold, axis=1)*1.
-                if scale: L0 *= np.log2(mp.oc)/mp.N_X/mp.N_Y
-                relL0.append((L0/L0_ref).mean())
-                relL0_std.append((L0/L0_ref).std())
-            except Exception as e:
-                print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
-        fig.subplots_adjust(wspace=0.1, hspace=0.1,
-                            left=0.2, right=0.9,
-                            top=0.9,    bottom=0.175)
+            for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
+                try:
+                    imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                    print(len(imagelist))
+                    RMSE /= RMSE[:, 0][:, np.newaxis] # normalize RMSE
+                    N = RMSE.shape[1] #number of edges
+                    L0 =  np.argmax(RMSE<threshold, axis=1)*1.
+                    if scale: L0 *= np.log2(mp.oc)/mp.N_X/mp.N_Y
+                    relL0.append((L0/L0_ref).mean())
+                    relL0_std.append((L0/L0_ref).std())
+                except Exception as e:
+                    print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
+            fig.subplots_adjust(wspace=0.1, hspace=0.1,
+                                left=0.2, right=0.9,
+                                top=0.9,    bottom=0.175)
 
-        ind = len(relL0)
-        width = .8
-        print("relL0=", relL0)
-        rects = ax.bar(np.arange(ind), relL0, yerr=relL0_std, alpha=.8, error_kw={'ecolor':'k'})
-        rects[ref].set_color('w')
-        rects[ref].set_edgecolor('k')
-        ax.set_xlim([-width/4, ind+.0*width])
+            ind = len(relL0)
+            width = .8
+            print("relL0=", relL0)
+            rects = ax.bar(np.arange(ind), relL0, yerr=relL0_std, alpha=.8, error_kw={'ecolor':'k'})
+            rects[ref].set_color('w')
+            rects[ref].set_edgecolor('k')
+            ax.set_xlim([-width/4, ind+.0*width])
 
-        ax.set_ylabel(r'relative coding cost wrt default')# (bits / pixel)')#relative $\ell_0$-norm')
+            ax.set_ylabel(r'relative coding cost wrt default')# (bits / pixel)')#relative $\ell_0$-norm')
 
-        ax.set_xticks(np.arange(ind)+.5*width)
-        ax.set_xticklabels(labels)
+            ax.set_xticks(np.arange(ind)+.5*width)
+            ax.set_xticklabels(labels)
 
-        ax.grid(b=False, which="both")
+            ax.grid(b=False, which="both")
 #         plt.tight_layout()
 #         fig.set_tight_layout(True)
 
-        return fig, ax, ax
+            return fig, ax, ax
 
 
-def golden_pyramid(mp, z):
-    phi = (np.sqrt(5) +1.)/2. # golden number
-    opts= {'vmin':0., 'vmax':1., 'interpolation':'nearest', 'origin':'upper'}
-    fig_width = 13
-    fig = plt.figure(figsize=(fig_width, fig_width/phi))
-    xmin, ymin, size = 0, 0, 1.
-    for i_sf_0, sf_0_ in enumerate(mp.sf_0):
-        a = fig.add_axes((xmin/phi, ymin, size/phi, size), axisbg='w')
-        a.axis(c='b', lw=0)
-        plt.setp(a, xticks=[])
-        plt.setp(a, yticks=[])
-        im_RGB = np.zeros((mp.pe.N_X, mp.pe.N_Y, 3))
-        for i_theta, theta_ in enumerate(mp.theta):
-            im_abs = np.absolute(z[:, :, i_theta, i_sf_0])
-            RGB = np.array([.5*np.sin(2*theta_ + 2*i*np.pi/3)+.5 for i in range(3)])
-            im_RGB += im_abs[:,:, np.newaxis] * RGB[np.newaxis, np.newaxis, :]
+    def golden_pyramid(self, z):
+        """
+        TODO : put in LogGabor
 
-        im_RGB /= im_RGB.max()
-        a.imshow(im_RGB, **opts)
-        #a.grid(False)
-        a.grid(b=False, which="both")
-        i_orientation = np.mod(i_sf_0, 4)
-        if i_orientation==0:
-            xmin += size
-            ymin += size/phi**2
-        elif i_orientation==1:
-            xmin += size/phi**2
-            ymin += -size/phi
-        elif i_orientation==2:
-            xmin += -size/phi
-        elif i_orientation==3:
-            ymin += size
-        size /= phi
-    return fig
+        """
+
+        phi = (np.sqrt(5) +1.)/2. # golden ratio
+        opts= {'vmin':0., 'vmax':1., 'interpolation':'nearest', 'origin':'upper'}
+        fig_width = 13
+        fig = plt.figure(figsize=(fig_width, fig_width/phi))
+        xmin, ymin, size = 0, 0, 1.
+        for i_sf_0, sf_0_ in enumerate(self.sf_0):
+            a = fig.add_axes((xmin/phi, ymin, size/phi, size), axisbg='w')
+            a.axis(c='b', lw=0)
+            plt.setp(a, xticks=[])
+            plt.setp(a, yticks=[])
+            im_RGB = np.zeros((self.N_X, self.N_Y, 3))
+            for i_theta, theta_ in enumerate(self.theta):
+                im_abs = np.absolute(z[:, :, i_theta, i_sf_0])
+                RGB = np.array([.5*np.sin(2*theta_ + 2*i*np.pi/3)+.5 for i in range(3)])
+                im_RGB += im_abs[:,:, np.newaxis] * RGB[np.newaxis, np.newaxis, :]
+
+            im_RGB /= im_RGB.max()
+            a.imshow(im_RGB, **opts)
+            #a.grid(False)
+            a.grid(b=False, which="both")
+            i_orientation = np.mod(i_sf_0, 4)
+            if i_orientation==0:
+                xmin += size
+                ymin += size/phi**2
+            elif i_orientation==1:
+                xmin += size/phi**2
+                ymin += -size/phi
+            elif i_orientation==2:
+                xmin += -size/phi
+            elif i_orientation==3:
+                ymin += size
+            size /= phi
+        return fig
 
 
 def _test():

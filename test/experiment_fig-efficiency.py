@@ -24,7 +24,8 @@ mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/def
 def init_mp():
     mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
     mp.pe.seed = 42
-    mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
+    mp.pe.N_image = 20
+    mp.pe.datapath = '../../SLIP/database/'
     return mp
 
     
@@ -56,7 +57,7 @@ for B_sf in v_B_sf:
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_sf for B_sf in v_B_sf]
 try:
-    fig, A, ax = plot(mps=mps,
+    fig, A, ax = mp.plot(mps=mps,
                       experiments=experiments, databases=databases, labels=labels, ref=2,
                       fig=fig, ax=A, color=[0., 1., 0.], threshold=threshold, scale=True)    
     A.set_xlabel(r'frequency bandwith $B_{sf}$')
@@ -77,7 +78,7 @@ for B_theta in v_B_theta:
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_theta for B_theta in v_B_theta]
 try:
-    fig, B, ax = plot(mps=mps, 
+    fig, B, ax = mp.plot(mps=mps, 
                       experiments=experiments, databases=databases, labels=labels, ref=2, 
                       fig=fig, ax=B, threshold=threshold, scale=True, color=[0., 1., 0.])    
     B.set_xlabel(r'orientation bandwith $B_{\theta}$ (radians)')
@@ -92,6 +93,7 @@ v_n_theta = [6, 12, 24, 48]
 for n_theta in v_n_theta:
     mp = init_mp()
     mp.pe.n_theta = n_theta
+    mp = init_mp()
     exp = 'efficiency_n_theta_' + str(n_theta).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -100,7 +102,7 @@ for n_theta in v_n_theta:
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(n_theta) for n_theta in v_n_theta]
 try:
-    fig, C, ax = plot(mps=mps, 
+    fig, C, ax = mp.plot(mps=mps, 
                       experiments=experiments, databases=databases, labels=labels, ref=2, 
                       fig=fig, ax=C, threshold=threshold, scale=True, color=[0., 1., 0.])    
     C.set_xlabel(r'number of orientations $N_{\theta}$')
@@ -114,6 +116,7 @@ v_base_levels = [np.sqrt(2), np.sqrt(5)/2.+.5, np.sqrt(3), 2. , np.sqrt(5)]
 for base_levels in v_base_levels:
     mp = init_mp()
     mp.pe.base_levels = base_levels
+    mp = init_mp()
     exp = 'efficiency_base_levels_' + str(base_levels).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -125,7 +128,7 @@ labels[0] = r'$\sqrt{2}$'
 labels[1] = r'$\phi$'
 labels[3] = '2'
 try:
-    fig, D, ax = plot(mps=mps, 
+    fig, D, ax = mp.plot(mps=mps, 
                       experiments=experiments, databases=databases, labels=labels, ref=3, 
                       fig=fig, ax=D, threshold=threshold, scale=True, color=[0., 1., 0.])    
     D.set_xlabel(r'scale ratio')
