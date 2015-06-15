@@ -10,7 +10,7 @@ from SparseEdges import SparseEdges
 FORMATS = ['pdf', 'eps']
 
 threshold = None # classical plots
-threshold = .15 # plot sparseness obtained when reaching this threshold
+threshold = .15 # plot L0 sparseness obtained when reaching this threshold
 
 dofig = True
 try:
@@ -57,7 +57,7 @@ for B_sf in v_B_sf:
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_sf for B_sf in v_B_sf]
 try:
-    fig, A, ax = mp.plot(mps=mps,
+    fig, A, inset = mp.plot(mps=mps,
                       experiments=experiments, databases=databases, labels=labels, ref=2,
                       fig=fig, ax=A, color=[0., 1., 0.], threshold=threshold, scale=True)    
     A.set_xlabel(r'frequency bandwith $B_{sf}$')
@@ -78,7 +78,7 @@ for B_theta in v_B_theta:
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % B_theta for B_theta in v_B_theta]
 try:
-    fig, B, ax = mp.plot(mps=mps, 
+    fig, B, inset = mp.plot(mps=mps, 
                       experiments=experiments, databases=databases, labels=labels, ref=2, 
                       fig=fig, ax=B, threshold=threshold, scale=True, color=[0., 1., 0.])    
     B.set_xlabel(r'orientation bandwith $B_{\theta}$ (radians)')
@@ -102,7 +102,7 @@ for n_theta in v_n_theta:
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(n_theta) for n_theta in v_n_theta]
 try:
-    fig, C, ax = mp.plot(mps=mps, 
+    fig, C, inset = mp.plot(mps=mps, 
                       experiments=experiments, databases=databases, labels=labels, ref=2, 
                       fig=fig, ax=C, threshold=threshold, scale=True, color=[0., 1., 0.])    
     C.set_xlabel(r'number of orientations $N_{\theta}$')
@@ -128,7 +128,7 @@ labels[0] = r'$\sqrt{2}$'
 labels[1] = r'$\phi$'
 labels[3] = '2'
 try:
-    fig, D, ax = mp.plot(mps=mps, 
+    fig, D, inset = mp.plot(mps=mps, 
                       experiments=experiments, databases=databases, labels=labels, ref=3, 
                       fig=fig, ax=D, threshold=threshold, scale=True, color=[0., 1., 0.])    
     D.set_xlabel(r'scale ratio')
