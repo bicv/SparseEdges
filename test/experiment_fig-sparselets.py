@@ -29,8 +29,7 @@ N = 1024
 for size, size_str in zip(sizes, ['_016', '_032', '_064',  '_128', '']):
     mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
     mp.pe.seed = 42
-    mp.N = 128
-    mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
+    mp.pe.datapath = '../../SLIP/database/'
     mp.set_size((size, size))
     mp.pe.N_image= int(N_image*sizes[-1]/size)
     mp.N = int(N*(size/sizes[-1])**2)
