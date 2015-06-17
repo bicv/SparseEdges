@@ -1086,7 +1086,7 @@ class SparseEdges(LogGabor):
             # this is another inset axes over the main axes
             inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
             #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
-            grad =  np.linspace(0., 1., 2*len(experiments))
+            grad = np.linspace(0., 1., 2*len(experiments))
             grad[1::2] = grad[::2]
             CCycle = np.array(color)[np.newaxis, :] * grad[:, np.newaxis]
             ax.set_color_cycle(CCycle)
@@ -1107,15 +1107,15 @@ class SparseEdges(LogGabor):
                     ax.errorbar(l0_axis, RMSE.mean(axis=0),
                                 yerr=RMSE.std(axis=0), errorevery=errorevery)
                     inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
-                               yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=errorevery)
+                                yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=errorevery)
                     ax.plot(l0_axis[::errorevery], RMSE.mean(axis=0)[::errorevery],
-                            linestyle='None', marker='o', ms=3)
+                                linestyle='None', marker='o', ms=3)
                     inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery],
-                            linestyle='None',  marker='o', ms=3)
+                                linestyle='None',  marker='o', ms=3)
                     eev += 1
                 #except Exception as e:
                 #    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
-
+                print(l0_axis, RMSE.mean(axis=0))
             ax.set_ylim([.0, 1.02])
             for a in [ax, inset]:
                 #a.set_yscale("log")#, nonposx = 'clip')
