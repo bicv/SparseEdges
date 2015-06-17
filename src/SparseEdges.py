@@ -1118,6 +1118,7 @@ class SparseEdges(LogGabor):
 
             ax.set_ylim([.0, 1.02])
             for a in [ax, inset]:
+                #a.set_yscale("log")#, nonposx = 'clip')
                 if not(scale):
                     a.set_xlim([-0.05*N, 1.05*N])
                 else:
@@ -1141,8 +1142,8 @@ class SparseEdges(LogGabor):
 
             ax.set_ylabel(r'Squared error')
             inset.set_ylabel(r'Coefficient')
-
             inset.legend(loc='upper right', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+            plt.tight_layout()            
             return fig, ax, inset
         elif (threshold==None):
             if ax==None: ax = fig.add_axes([0.15, 0.25, .75, .75], axisbg='w')
@@ -1204,7 +1205,7 @@ class SparseEdges(LogGabor):
             ax.set_xticks(np.arange(ind)+.5*width)
             ax.set_xticklabels(labels)
 
-#         plt.tight_layout()
+            plt.tight_layout()
 #         fig.set_tight_layout(True)
 
             return fig, ax, ax
@@ -1243,7 +1244,7 @@ class SparseEdges(LogGabor):
             ax.set_xticks(np.arange(ind)+.5*width)
             ax.set_xticklabels(labels)
 
-#         plt.tight_layout()
+            plt.tight_layout()
 #         fig.set_tight_layout(True)
 
             return fig, ax, ax
