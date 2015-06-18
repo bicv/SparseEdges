@@ -145,12 +145,13 @@ class SparseEdges(LogGabor):
                 C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
         return C
 
-    def reconstruct(self, edges):
+    def reconstruct(self, edges, mask=False):
         image = np.zeros((self.N_X, self.N_Y))
 #        print edges.shape, edges[:, 0]
         for i_edge in range(edges.shape[1]):#self.pe.N):
             # TODO : check that it is correct when we remove alpha when making new MP
-            image += self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
+            if not mask or ((edges[0, i_edge]/self.N_X -.5)**2+(edges[1, i_edge]/self.N_Y -.5)**2) < .5**2:
+                image += self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
                                     self.loggabor(
                                                     edges[0, i_edge], edges[1, i_edge],
                                                     theta=edges[2, i_edge], B_theta=self.pe.B_theta,
@@ -165,7 +166,7 @@ class SparseEdges(LogGabor):
 
     def show_edges(self, edges, fig=None, a=None, image=None, norm=True,
                    color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1.,
-                   pedestal=0., mappable=False):
+                   pedestal=0., mask=False, mappable=False):
         """
         Shows the quiver plot of a set of edges, optionally associated to an image.
 
@@ -213,33 +214,34 @@ class SparseEdges(LogGabor):
             phases = edges[5, :]
 
             for x, y, theta, sf_0, weight, phase in zip(X, Y, Theta, Sf_0, weights, phases):
-                u_, v_ = np.cos(theta)*scale/sf_0, np.sin(theta)*scale/sf_0
-                segment = [(x - u_, y - v_), (x + u_, y + v_)]
-                segments.append(segment)
-                if color=='auto':
-                    if not(show_phase):
-                        fc = cm.hsv(0, alpha=pedestal + (1. - pedestal)*weight**gamma)
-                    else:
-                        fc = cm.hsv((phase/np.pi/2) % 1., alpha=pedestal + (1. - pedestal)*weight**gamma)
+                if not mask or ((x/self.N_X -.5)**2+(y/self.N_Y -.5)**2) < .5**2:
+                    u_, v_ = np.cos(theta)*scale/sf_0, np.sin(theta)*scale/sf_0
+                    segment = [(x - u_, y - v_), (x + u_, y + v_)]
+                    segments.append(segment)
+                    if color=='auto':
+                        if not(show_phase):
+                            fc = cm.hsv(0, alpha=pedestal + (1. - pedestal)*weight**gamma)
+                        else:
+                            fc = cm.hsv((phase/np.pi/2) % 1., alpha=pedestal + (1. - pedestal)*weight**gamma)
 # TODO                     https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
 #                     RGB_weight = [0.299, 0.587, 0.114]
 #                     luminance = np.sqrt(np.dot(np.array(fc[:, :3]) ** 2, RGB_weight))
 #                     print luminance
 #                     fc[:, :3] /= luminance
 
-                elif color == 'black':
-                    fc = (0, 0, 0, 1)# black
-                elif color == 'green': # figure 1DE
-                    fc = (0.05, 0.5, 0.05, np.abs(weight)**gamma)
-                elif color == 'blue': # figure 1DE
-                    fc = (0.05, 0.05, 0.5, np.abs(weight)**gamma)
-                elif color == 'brown': # figure 1DE
-                    fc = (0.5, 0.05, 0.05, np.abs(weight)**gamma)
-                else:
-                    fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
-                colors.append(fc)
-                linewidths.append(linewidth) # *weight thinning byalpha...
-                patch_circles.append(patches.Circle((x,y), self.pe.scale_circle*scale/sf_0, lw=0., facecolor=fc, edgecolor='none'))
+                    elif color == 'black':
+                        fc = (0, 0, 0, 1)# black
+                    elif color == 'green': # figure 1DE
+                        fc = (0.05, 0.5, 0.05, np.abs(weight)**gamma)
+                    elif color == 'blue': # figure 1DE
+                        fc = (0.05, 0.05, 0.5, np.abs(weight)**gamma)
+                    elif color == 'brown': # figure 1DE
+                        fc = (0.5, 0.05, 0.05, np.abs(weight)**gamma)
+                    else:
+                        fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
+                    colors.append(fc)
+                    linewidths.append(linewidth) # *weight thinning byalpha...
+                    patch_circles.append(patches.Circle((x,y), self.pe.scale_circle*scale/sf_0, lw=0., facecolor=fc, edgecolor='none'))
 
             line_segments = LineCollection(segments, linewidths=linewidths, colors=colors, linestyles='solid')
             a.add_collection(line_segments)
@@ -250,6 +252,9 @@ class SparseEdges(LogGabor):
             plt.setp(a, xticks=[])
             plt.setp(a, yticks=[])
 
+        if mask:
+            circ = plt.Circle((.5*self.N_Y, .5*self.N_Y), radius=0.5*self.N_Y-linewidth/2., fill=False, facecolor='none', edgecolor = 'black', alpha = 0.5, ls='dashed', lw=linewidth)
+            a.add_patch(circ)
         a.axis([0, self.N_Y, self.N_X, 0])
         a.grid(b=False, which="both")
         plt.draw()
