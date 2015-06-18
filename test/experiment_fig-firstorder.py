@@ -16,7 +16,7 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
     mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
     mp.pe.datapath = 'database'
     mp.pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
-    mp.pe.N_image = 20
+    mp.pe.N_image = 100
     mp.pe.N = 1024
 
     # control experiment
@@ -40,7 +40,7 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
 
         mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
         mp.pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
-        mp.pe.N_image = 20
+        mp.pe.N_image = 100
         mp.pe.N = 1024
         
         imageslist, edgeslist, RMSE =  mp.process(exp='prior_firstorder', name_database=name_database)
