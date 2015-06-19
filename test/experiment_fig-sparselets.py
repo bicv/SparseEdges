@@ -32,8 +32,8 @@ for size, size_str in zip(sizes, ['_016', '_032', '_064',  '_128', '']):
     mp.pe.datapath = '../../SLIP/database/'
     mp.set_size((size, size))
     downscale_factor = sizes[-1]/size # > 1
-    mp.pe.N_image= int(N_image*downscale_factor)
-    mp.N = int(N/downscale_factor**2)
+    mp.pe.N_image = int(N_image*downscale_factor)
+    mp.pe.N = int(N/downscale_factor**2)
     mp.init()
     mp.process('SparseLets' + size_str)
     mps.append(mp)
