@@ -26,6 +26,7 @@ mp = SparseEdges('default_param.py')
 mp.N = 128
 mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
 mp.process('testing_vanilla')
+# TODO: CRF
 mp.process('testing_noise', noise=mp.pe.noise)
 mp.process('testing_vanilla', name_database='serre07_targets')
 
@@ -56,6 +57,9 @@ fig, a, ax = plot(mps=mps,
                   experiments=experiments, databases=databases, labels=labels, 
                   fig=fig, color=[0., 1., 0.], threshold=threshold, scale=True)    
 a.set_xlabel(r' $\alpha$')
-for ext in FORMATS: fig.savefig(mp.pe.figpath + 'testing_alpha.' + ext)
+
+mp.pe.figpath = 'test/figures'
+import os
+for ext in FORMATS: fig.savefig(os.path.join(mp.pe.figpath, 'testing_alpha.' + ext))
         
 ## TODO:  would be interesting to see how that changes with number of image patches used, i.e. whether it settles down to that particular pattern or just jumps around.
