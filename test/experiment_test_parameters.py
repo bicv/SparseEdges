@@ -26,7 +26,7 @@ FORMATS = ['pdf', 'eps']
 #!--------------------
 mp = SparseEdges('default_param.py')
 mp.N = 128
-mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
+mp.pe.datapath = '../../SLIP/database/'
 mp.process('testing_vanilla')
 # TODO: CRF
 mp.process('testing_noise', noise=mp.pe.noise)
@@ -38,7 +38,7 @@ v_alpha = np.linspace(0.3, 1., 9)
 for MP_alpha in v_alpha:
     mp = SparseEdges('default_param.py')
     mp.N = 128
-    mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
+    mp.pe.datapath = '../../SLIP/database/'
     mp.pe.MP_alpha = MP_alpha
     exp = 'testing_MP_alpha_' + str(MP_alpha).replace('.', '_')
     mp.process(exp)
