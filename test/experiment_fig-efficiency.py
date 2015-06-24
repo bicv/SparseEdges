@@ -3,7 +3,7 @@
 from __future__ import division, print_function
 """
 
-$ python experiment_fig-efficiency.py ./figures
+$ ipython experiment_fig-efficiency.py
 
 rm -fr **/efficiency_* **/**/efficiency_* 
 
@@ -19,7 +19,7 @@ mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/def
 def init_mp():
     mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
     mp.pe.seed = 42
-    mp.pe.N_image = 20
+    mp.pe.N_image = 60
     mp.pe.datapath = '../../SLIP/database/'
     return mp
 
