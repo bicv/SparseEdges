@@ -55,7 +55,7 @@ threshold = .25
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % MP_alpha for MP_alpha in v_alpha]
 fig = plt.figure(figsize=(fig_width, fig_width/1.618))
-fig, a, ax = plot(mps=mps,
+fig, a, ax = mp.plot(mps=mps,
                   experiments=experiments, databases=databases, labels=labels, 
                   fig=fig, color=[0., 1., 0.], threshold=threshold, scale=True)    
 a.set_xlabel(r' $\alpha$')
