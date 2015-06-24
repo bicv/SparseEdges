@@ -23,7 +23,7 @@ pypi_docs:
 	#ipython nbconvert --to html $(NAME).ipynb
 	#mv $(NAME).html index.html
 	#runipy $(NAME).ipynb  --html  index.html
-	#zip web.zip index.html
+	zip web.zip index.html
 	open https://pypi.python.org/pypi?action=pkg_edit&name=$NAME
 
 RIOU = /riou/work/invibe/USERS/perrinet/science/$(NAME)
