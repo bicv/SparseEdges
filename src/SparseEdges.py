@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-from __future__ import division
+from __future__ import division, print_function
 """
 SparseEdges
 
@@ -1120,7 +1120,6 @@ class SparseEdges(LogGabor):
                     eev += 1
                 #except Exception as e:
                 #    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
-                print(l0_axis, RMSE.mean(axis=0))
             ax.set_ylim([.0, 1.02])
             for a in [ax, inset]:
                 #a.set_yscale("log")#, nonposx = 'clip')
@@ -1160,7 +1159,7 @@ class SparseEdges(LogGabor):
                     imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
                     RMSE /= RMSE[:, 0][:, np.newaxis]
                     N = RMSE.shape[1] #number of edges
-                    if RMSE.min()>threshold: print('the threshold is never crossed for', experiment, name_database)
+                    if RMSE.min()>threshold: print('the threshold is never reached for', experiment, name_database)
                     try:
                         l0_results = np.zeros(N)
                         for i_image in range(RMSE.shape[0]):
@@ -1256,18 +1255,20 @@ class SparseEdges(LogGabor):
 
         else: # fourth type: we have a reference and a threshold
             relL0, relL0_std = [], []
+            # computes for the reference 
             imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
             RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
-            L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1.
+            L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1. +1
             if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
+            print("ref-thr - L0_ref=", L0_ref)
 
             for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
                 try:
                     imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                    print(len(imagelist))
                     RMSE /= RMSE[:, 0][:, np.newaxis] # normalize RMSE
                     N = RMSE.shape[1] #number of edges
                     L0 =  np.argmax(RMSE<threshold, axis=1)*1.
+                    if RMSE.min()>threshold: print('the threshold is never reached for', experiment, name_database)
                     if scale: L0 *= np.log2(mp.oc)/mp.N_X/mp.N_Y
                     relL0.append((L0/L0_ref).mean())
                     relL0_std.append((L0/L0_ref).std())
@@ -1279,7 +1280,7 @@ class SparseEdges(LogGabor):
 
             ind = len(relL0)
             width = .8
-            print("relL0=", relL0)
+            print("ref-thr - relL0=", relL0)
             rects = ax.bar(np.arange(ind), relL0, yerr=relL0_std, alpha=.8, error_kw={'ecolor':'k'})
             rects[ref].set_color('w')
             rects[ref].set_edgecolor('k')

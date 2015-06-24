@@ -64,7 +64,7 @@
 'edgefigpath' : 'figures/edges/',
 'matpath' : 'mat/',
 'edgematpath' : 'mat/edges/',
-'datapath' : 'https://raw.githubusercontent.com/meduz/SparseEdges/master/database/',
+'datapath' : 'database/',
 'ext' : '.pdf',
 'scale' : .8,
 'scale_circle' : 0.08, # relativesize of segments and pivot

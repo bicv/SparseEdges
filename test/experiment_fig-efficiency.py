@@ -1,6 +1,9 @@
+#! /usr/bin/env python
+# -*- coding: utf8 -*-
+from __future__ import division, print_function
 """
 
-$ python experiment_fig-efficiency.py ../../CNRS/BICV-book/BICV-sparse/src/
+$ python experiment_fig-efficiency.py ./figures
 
 rm -fr **/efficiency_* **/**/efficiency_* 
 
@@ -10,16 +13,8 @@ from SparseEdges import SparseEdges
 FORMATS = ['pdf', 'eps']
 
 threshold = None # classical plots
-threshold = .15 # plot L0 sparseness obtained when reaching this threshold
-
-dofig = True
-try:
-    import sys
-    path = sys.argv[1]
-except:
-    path = ''
-    dofig = False
-    
+threshold = .1 # plot L0 sparseness obtained when reaching this threshold
+ 
 mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
 def init_mp():
     mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
@@ -37,13 +32,13 @@ matplotlib.use('Agg')
 matplotlib.rcParams.update({'text.usetex': False})
 
 import matplotlib.pyplot as plt
-fig_width_pt = 318.67085 # Get this from LaTeX using \showthe\columnwidth
+fig_width_pt = 800 #318.67085 # Get this from LaTeX using \showthe\columnwidth
 inches_per_pt = 1.0/72.27               # Convert pt to inches
 fig_width = fig_width_pt*inches_per_pt  # width in inches
 
+# ==================================================================================================#
 fig, [[A, B], [C, D]] = plt.subplots(2, 2, figsize=(fig_width, fig_width), subplot_kw={'axisbg':'w'})
-
-
+# ==================================================================================================#
 mps, experiments = [], []
 v_B_sf = np.logspace(-.2, .2, 5, base=10, endpoint=True)*mp.pe.B_sf
 for B_sf in v_B_sf:
@@ -59,12 +54,13 @@ labels = ['%0.2f' % B_sf for B_sf in v_B_sf]
 try:
     fig, A, inset = mp.plot(mps=mps,
                       experiments=experiments, databases=databases, labels=labels, ref=2,
-                      fig=fig, ax=A, color=[0., 1., 0.], threshold=threshold, scale=True)    
+                      fig=fig, ax=A, color=[0., 1., 0.], threshold=threshold, scale=False)    
     A.set_xlabel(r'frequency bandwith $B_{sf}$')
     #A.set_yticks([0., 0.02, 0.04, 0.06])
 except Exception as e:
     print('Failed to plot  with error : %s ' % e )
-    
+
+# ==================================================================================================#    
 mps, experiments = [], []
 v_B_theta = np.logspace(-.5, .5, 5, base=10, endpoint=True)*mp.pe.B_theta
 for B_theta in v_B_theta:
@@ -80,14 +76,15 @@ labels = ['%0.2f' % B_theta for B_theta in v_B_theta]
 try:
     fig, B, inset = mp.plot(mps=mps, 
                       experiments=experiments, databases=databases, labels=labels, ref=2, 
-                      fig=fig, ax=B, threshold=threshold, scale=True, color=[0., 1., 0.])    
+                      fig=fig, ax=B, threshold=threshold, scale=False, color=[0., 1., 0.])    
     B.set_xlabel(r'orientation bandwith $B_{\theta}$ (radians)')
     B.set_ylabel('')
     #B.set_yticks([0., 0.02, 0.04, 0.06])
     #B.set_yticklabels(['', '', '', ''])
 except Exception as e:
     print('Failed to plot  with error : %s ' % e )
-    
+
+# ==================================================================================================#    
 mps, experiments = [], []
 v_n_theta = [6, 12, 24, 48]
 for n_theta in v_n_theta:
@@ -109,7 +106,8 @@ try:
     #C.set_yticks([0., 0.02, 0.04, 0.06])
 except Exception as e:
     print('Failed to plot  with error : %s ' % e )
-    
+
+# ==================================================================================================#    
 mps, experiments = [], []
 v_base_levels = [np.sqrt(2), np.sqrt(5)/2.+.5, np.sqrt(3), 2. , np.sqrt(5)]
 #np.logspace(.25, 1.25, 5, base=2, endpoint=True)
@@ -146,6 +144,8 @@ for ax, label in zip([A, B, C, D], ['A', 'B', 'C', 'D']):
     if label in ['B', 'D']: ax.set_yticklabels(['', '', ''])
 
 
+# TODO : show CRF
+        
 #The parameter meanings (and suggested defaults) are::
 #
 #  left  = 0.125  # the left side of the subplots of the figure
@@ -158,6 +158,4 @@ fig.subplots_adjust(wspace=0.12, hspace=0.3,
                             left=0.125, right=0.98,
                             top=0.98,    bottom=0.12)
     
-if dofig:
-    for ext in FORMATS: fig.savefig(mp.pe.figpath + 'efficiency.' + ext)
-fig.show()
+for ext in FORMATS: fig.savefig(mp.pe.figpath + 'efficiency.' + ext)

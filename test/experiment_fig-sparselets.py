@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+# -*- coding: utf8 -*-
+from __future__ import division, print_function
 """
 
 $ python test/experiment_fig-sparselets.py ./figures
@@ -5,19 +8,7 @@ $ python test/experiment_fig-sparselets.py ./figures
 $ rm -fr **/SparseLets* **/**/SparseLets* 
 
 """
-
 __author__ = "(c) Laurent Perrinet INT - CNRS"
-import matplotlib
-matplotlib.use("Agg") # agg-backend, so we can create figures without x-server (no PDF, just PNG etc.)
-
-dofig = True
-try:
-    import sys
-    path = sys.argv[1]
-except:
-    path = ''
-    dofig = False
-
     
 from SparseEdges import SparseEdges
 FORMATS = ['pdf', 'eps']
@@ -38,7 +29,6 @@ for size, size_str in zip(sizes, ['_016', '_032', '_064',  '_128', '']):
     mp.process('SparseLets' + size_str)
     mps.append(mp)
 
-    
 import matplotlib.pyplot as plt
 fig_width_pt = 600 # Get this from LaTeX using \showthe\columnwidth
 inches_per_pt = 1.0/72.27               # Convert pt to inches
@@ -51,9 +41,6 @@ experiments[-1] = 'SparseLets'
 databases = ['serre07_distractors'] * len(experiments)
 labels = [str(size) for size in sizes]
 fig, ax, inset = mp.plot(fig=fig, mps=mps, experiments=experiments, databases=databases, 
-                  labels=labels, scale=False)    
-if dofig: 
-    FORMATS = ['pdf', 'eps']
-    for ext in FORMATS: fig.savefig(mps[0].pe.figpath + 'SparseLets_B.' + ext)
-else:
-    fig.show()
+                  labels=labels, scale=True)    
+FORMATS = ['pdf', 'eps']
+for ext in FORMATS: fig.savefig(mps[0].pe.figpath + 'SparseLets_B.' + ext)
