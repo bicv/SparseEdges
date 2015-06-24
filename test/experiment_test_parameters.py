@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf8 -*-
+from __future__ import division, print_function
 """
 
 Testing some parameters of the SparseEdges framework on its efficiency.
@@ -10,6 +11,7 @@ frioul_batch -M 200 'python experiment_test_parameters.py'
 
 """
 __author__ = "(c) Laurent Perrinet INT - CNRS"
+import numpy as np
 import matplotlib
 matplotlib.use("Agg") # agg-backend, so we can create figures without x-server (no PDF, just PNG etc.)
 
