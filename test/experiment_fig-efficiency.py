@@ -13,7 +13,7 @@ from SparseEdges import SparseEdges
 FORMATS = ['pdf', 'eps']
 
 threshold = None # classical plots
-threshold = .1 # plot L0 sparseness obtained when reaching this threshold
+threshold = .3 # plot L0 sparseness obtained when reaching this threshold
  
 mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
 def init_mp():

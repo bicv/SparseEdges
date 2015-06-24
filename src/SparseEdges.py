@@ -1260,7 +1260,7 @@ class SparseEdges(LogGabor):
             RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
             L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1. +1
             if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
-            print("ref-thr - L0_ref=", L0_ref)
+#             print("ref-thr - L0_ref=", L0_ref)
 
             for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
                 try:
@@ -1280,7 +1280,7 @@ class SparseEdges(LogGabor):
 
             ind = len(relL0)
             width = .8
-            print("ref-thr - relL0=", relL0)
+#             print("ref-thr - relL0=", relL0)
             rects = ax.bar(np.arange(ind), relL0, yerr=relL0_std, alpha=.8, error_kw={'ecolor':'k'})
             rects[ref].set_color('w')
             rects[ref].set_edgecolor('k')
