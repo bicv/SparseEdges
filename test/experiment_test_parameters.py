@@ -24,7 +24,7 @@ FORMATS = ['pdf', 'eps']
 
 #! comparing databases
 #!--------------------
-mp = SparseEdges('default_param.py')
+mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
 mp.N = 128
 mp.pe.datapath = '../../SLIP/database/'
 mp.process('testing_vanilla')
@@ -36,10 +36,11 @@ mp.process('testing_vanilla', name_database='serre07_targets')
 mps, experiments = [], []
 v_alpha = np.linspace(0.3, 1., 9)
 for MP_alpha in v_alpha:
-    mp = SparseEdges('default_param.py')
+    mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
     mp.N = 128
     mp.pe.datapath = '../../SLIP/database/'
     mp.pe.MP_alpha = MP_alpha
+    mp.init()
     exp = 'testing_MP_alpha_' + str(MP_alpha).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
@@ -60,7 +61,6 @@ fig, a, ax = mp.plot(mps=mps,
                   fig=fig, color=[0., 1., 0.], threshold=threshold, scale=True)    
 a.set_xlabel(r' $\alpha$')
 
-mp.pe.figpath = 'test/figures'
 import os
 for ext in FORMATS: fig.savefig(os.path.join(mp.pe.figpath, 'testing_alpha.' + ext))
         
