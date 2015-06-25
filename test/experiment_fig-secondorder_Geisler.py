@@ -37,9 +37,9 @@ eta_SO = 0.15
 figname = 'Geisler01Fig7A_rec'
 if False: #os.path.isfile('database/' + figname + '.png'):
     # defining input image 
-    # from pylab import imread
-    # image = imread('database/' + figname + '.png').mean(axis=-1)
-    # print (image.mean(), image.std())
+    from pylab import imread
+    image = imread('database/' + figname + '.png').mean(axis=-1)
+    print (image.mean(), image.std())
 else:
     N, N_circle, N_image = 1024, 36, 1
     edgeslist = np.zeros((6, N+N_circle, N_image))
