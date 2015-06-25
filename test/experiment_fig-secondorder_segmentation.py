@@ -33,7 +33,7 @@ eta_SO = 0.15
 
 ##############################################################################################################
 figname = 'circle_in_noise'
-if os.path.isfile('database/' + figname + '.png'):
+if False:#os.path.isfile('database/' + figname + '.png'):
     # defining input image 
     from pylab import imread
     image = imread('database/' + figname + '.png').mean(axis=-1)
@@ -59,8 +59,8 @@ else:
 
     print (edgeslist.shape)
     image = mp.reconstruct(edgeslist[:,:,0])
-    from pylab import imsave, gray
-    imsave(fname='database/' + figname + '.png', arr=image, vmin=image.min(), vmax=image.max(), cmap=gray())
+    #from pylab import imsave, gray
+    #imsave(fname='database/' + figname + '.png', arr=image, vmin=image.min(), vmax=image.max(), cmap=gray())
 
 image = mp.normalize(image, center=True)
 print (image.mean(), image.std())
