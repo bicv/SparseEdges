@@ -28,12 +28,12 @@ pypi_docs:
 
 RIOU = /riou/work/invibe/USERS/perrinet/science/$(NAME)
 FRIOUL = perrinet.l@frioul.int.univ-amu.fr
-OPTIONS = -av --progress --exclude .AppleDouble --exclude .git
+OPTIONS = -av --delete --progress --exclude .AppleDouble --exclude .git
 
 transfer_to_riou:
-		rsync $(OPTIONS) {*.log,test} $(FRIOUL):$(RIOU)/
+		rsync $(OPTIONS) test $(FRIOUL):$(RIOU)/
 transfer_from_riou:
-		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/{*.log,test} .
+		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/test .
 
 
 install_dev:

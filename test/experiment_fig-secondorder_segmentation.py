@@ -18,6 +18,7 @@ fig_width = fig_width_pt*inches_per_pt  # width in inches
 
 def init_mp():
     mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+    mp.pe.datapath = '../../SLIP/database/'
     mp.pe.N = 60
     mp.pe.do_whitening = True
     mp.pe.MP_alpha = 1.
@@ -58,8 +59,8 @@ else:
 
     print (edgeslist.shape)
     image = mp.reconstruct(edgeslist[:,:,0])
-    #from pylab import imsave, gray
-    #imsave(fname='database/' + figname + '.png', arr=image, vmin=image.min(), vmax=image.max(), cmap=gray())
+    from pylab import imsave, gray
+    imsave(fname='database/' + figname + '.png', arr=image, vmin=image.min(), vmax=image.max(), cmap=gray())
 
 image = mp.normalize(image, center=True)
 print (image.mean(), image.std())
@@ -109,7 +110,7 @@ try:
     edges = np.load(matname)
     edges[4, :] *= -1 # turn red in blue...
     fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
-    fig.show()
+    fig
     if not(figpath==None): 
         for ext in FORMATS: 
                 fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.' + ext), dpi=450)

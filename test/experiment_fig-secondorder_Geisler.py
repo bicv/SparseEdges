@@ -20,6 +20,7 @@ fig_width = fig_width_pt*inches_per_pt  # width in inches
 
 def init_mp():
     mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+    mp.pe.datapath = '../../SLIP/database/'
     mp.pe.N = 60
     mp.pe.do_whitening = True
     mp.pe.MP_alpha = 1.
@@ -34,11 +35,11 @@ eta_SO = 0.15
 
 ##############################################################################################################
 figname = 'Geisler01Fig7A_rec'
-if os.path.isfile('database/' + figname + '.png'):
+if False: #os.path.isfile('database/' + figname + '.png'):
     # defining input image 
-    from pylab import imread
-    image = imread('database/' + figname + '.png').mean(axis=-1)
-    print (image.mean(), image.std())
+    # from pylab import imread
+    # image = imread('database/' + figname + '.png').mean(axis=-1)
+    # print (image.mean(), image.std())
 else:
     N, N_circle, N_image = 1024, 36, 1
     edgeslist = np.zeros((6, N+N_circle, N_image))
@@ -233,6 +234,7 @@ if True:
             edges[4, :] *= -1 # turn red in blue...
             fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
             fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
+            fig
         except:
             print ('File ', matname, ' is locked')
         plt.close('all')
