@@ -60,11 +60,11 @@
 'dip_scale':1.5,
 'dip_epsilon':.5,
 # PATHS
-'figpath' : '../figures/',
-'edgefigpath' : '../figures/edges/',
-'matpath' : '../mat/',
-'edgematpath' : '../mat/edges/',
-'datapath' : '../../AssoField/database/',
+'figpath' : 'figures/',
+'edgefigpath' : 'figures/edges/',
+'matpath' : 'mat/',
+'edgematpath' : 'mat/edges/',
+'datapath' : '../../SLIP/database/',
 'ext' : '.pdf',
 'scale' : .8,
 'scale_circle' : 0.08, # relativesize of segments and pivot

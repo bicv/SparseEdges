@@ -31,9 +31,9 @@ FRIOUL = perrinet.l@frioul.int.univ-amu.fr
 OPTIONS = -av --progress --exclude .AppleDouble --exclude .git
 
 transfer_to_riou:
-		rsync $(OPTIONS) {*.log,figures,mat,test} $(FRIOUL):$(RIOU)/
+		rsync $(OPTIONS) {*.log,test} $(FRIOUL):$(RIOU)/
 transfer_from_riou:
-		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/{*.log,figures,mat,test} .
+		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/{*.log,test} .
 
 
 install_dev:
@@ -49,7 +49,7 @@ pull:
 update:
 	cd ../SLIP; git pull; pip install -U --user . ; cd ../SparseEdges/
 	cd ../LogGabor; git pull; pip install -U --user . ; cd ../SparseEdges/
-	git pull; pip install -U --user . 
+	git pull; pip install -U --user .
 
 update_dev:
 	cd ../SLIP; git pull; pip uninstall -y SLIP; pip install -e . ; cd ../SparseEdges/
