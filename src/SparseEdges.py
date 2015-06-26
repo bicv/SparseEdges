@@ -40,8 +40,6 @@ class SparseEdges(LogGabor):
         self.theta = np.linspace(-np.pi/2, np.pi/2, self.pe.n_theta+1)[1:]
 
         self.oc = (self.N_X * self.N_Y * self.pe.n_theta * self.n_levels) #(1 - self.pe.base_levels**-2)**-1)
-        for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
-            if not(os.path.isdir(path)): os.mkdir(path)
 
     def run_mp(self, image, verbose=False):
         """
@@ -288,6 +286,8 @@ class SparseEdges(LogGabor):
 
         """
         N_do = 2
+        for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
+            if not(os.path.isdir(path)): os.mkdir(path)
         for _ in range(N_do): # repeat this loop to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
             for index in np.random.permutation(np.arange(len(imagelist))):
