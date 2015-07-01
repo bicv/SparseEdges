@@ -1,9 +1,10 @@
 import numpy as np
 from SparseEdges import SparseEdges
-mp = SparseEdges('default_param.py')
+mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
 mp.N = 128
 
-image = mp.imread('/Users/lolo/pool/science/PerrinetBednar15/database/serre07_targets/B_N107001.jpg')
+image = mp.imread('https://raw.githubusercontent.com/meduz/SLIP/master/database/serre07_targets/B_N107001.jpg')
+
 #print image.mean(), image.std()
 image = mp.normalize(image, center=True)
 #print image.mean(), image.std()

@@ -1,9 +1,9 @@
 import numpy as np
 from SparseEdges import SparseEdges
-mp = SparseEdges('default_param.py')
+mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
 mp.N = 128
-mp.pe.datapath = '/Users/lolo/pool/science/PerrinetBednar15/database/'
-image = mp.imread(mp.pe.datapath + 'serre07_targets/B_N107001.jpg')
+
+image = mp.imread('https://raw.githubusercontent.com/meduz/SLIP/master/database/serre07_targets/B_N107001.jpg')
 mp.pe.figsize_edges = 9
 image = mp.normalize(image, center=True)
 
@@ -18,4 +18,4 @@ except:
     edges, C_res = mp.run_mp(image, verbose=True)
     np.save(matname, edges)    
     
-fig, a = mp.show_edges(edges, image=image)
+fig, a = mp.show_edges(edges, image=image, mask=True)

@@ -1,7 +1,7 @@
 import numpy as np
 from SparseEdges import SparseEdges
 
-mp = SparseEdges('default_param.py')
+mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
 mp.N = 128 # number of edges
 mp.pe.figsize_edges = 9
 
