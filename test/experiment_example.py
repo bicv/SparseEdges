@@ -1,20 +1,33 @@
+#! /usr/bin/env python
+# -*- coding: utf8 -*-
+from __future__ import division, print_function
+"""
+
+An example MP run.
+
+To run:
+$ python test/experiment_example.py 
+
+To remove cache:
+$ rm -fr **/example*
+
+"""
+__author__ = "(c) Laurent Perrinet INT - CNRS"
+
 
 import numpy as np
 from SparseEdges import SparseEdges
-mp = SparseEdges('default_param.py')
+mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
 mp.N = 128
 
-# defining input image as Lena
-from pylab import imread
-image = mp.imread('database/yelmo' + str(mp.N_X) + '.png')
-image = mp.imread('database/lena' + str(mp.N_X) + '.png')
-#print image.mean(), image.std()
-#print pe.N_X
+image = mp.imread('https://raw.githubusercontent.com/meduz/SparseEdges/master/database/lena256.png')
 
+name = 'example'
 image = mp.normalize(image, center=True)
 #print image.mean(), image.std()
 
-matname = 'mat/example.npy'
+import os
+matname = os.path.join(mp.pe.matpath, name + '.npy')
 try:
     edges = np.load(matname)
 except:
@@ -33,4 +46,5 @@ except:
         image_rec += mp.reconstruct(edges[:, i_N][:, np.newaxis])
         RMSE[i_N] =  ((image_*im.mask-image_rec*im.mask)**2).sum()
 
-    np.save(matname_RMSE, RMSE)        
+    np.save(matname_RMSE, RMSE)            
+    
