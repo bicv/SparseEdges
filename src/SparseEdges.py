@@ -1215,21 +1215,21 @@ class SparseEdges(LogGabor):
             return fig, ax, ax
 
         elif (ref==None):
-            relSE, relSE_std = [], []
-            imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
-            RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis]
-            l0_ref = np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
+            relL0, relL0_std = [], []
+            try:
+                imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
+                RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis]
+                l0_ref = np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
 
-            for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-                try:
+                for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
                     imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
                     RMSE /= RMSE[:, 0][:, np.newaxis]
                     N = RMSE.shape[1] #number of edges
                     l0 = np.log2(mp.oc)/mp.N_X/mp.N_Y
                     relSE.append((RMSE/RMSE_ref).mean())
                     relSE_std.append((RMSE/RMSE_ref).std(axis=0).mean())
-                except Exception as e:
-                    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+            except Exception as e:
+                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
             fig.subplots_adjust(wspace=0.1, hspace=0.1,
                                 left=0.2, right=0.9,
                                 top=0.9,    bottom=0.175)
@@ -1255,15 +1255,15 @@ class SparseEdges(LogGabor):
 
         else: # fourth type: we have a reference and a threshold
             relL0, relL0_std = [], []
-            # computes for the reference 
-            imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
-            RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
-            L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1. +1
-            if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
+            try:
+                # computes for the reference 
+                imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
+                RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
+                L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1. +1
+                if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
 #             print("ref-thr - L0_ref=", L0_ref)
 
-            for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-                try:
+                for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
                     imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
                     RMSE /= RMSE[:, 0][:, np.newaxis] # normalize RMSE
                     N = RMSE.shape[1] #number of edges
@@ -1272,8 +1272,8 @@ class SparseEdges(LogGabor):
                     if scale: L0 *= np.log2(mp.oc)/mp.N_X/mp.N_Y
                     relL0.append((L0/L0_ref).mean())
                     relL0_std.append((L0/L0_ref).std())
-                except Exception as e:
-                    print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
+            except Exception as e:
+                print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
             fig.subplots_adjust(wspace=0.1, hspace=0.1,
                                 left=0.2, right=0.9,
                                 top=0.9,    bottom=0.175)
