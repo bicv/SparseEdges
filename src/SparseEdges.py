@@ -1215,8 +1215,8 @@ class SparseEdges(LogGabor):
             return fig, ax, ax
 
         elif (ref==None):
-            relL0, relL0_std = [], []
             try:
+                relL0, relL0_std = [], []
                 imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
                 RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis]
                 l0_ref = np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
@@ -1228,34 +1228,34 @@ class SparseEdges(LogGabor):
                     l0 = np.log2(mp.oc)/mp.N_X/mp.N_Y
                     relSE.append((RMSE/RMSE_ref).mean())
                     relSE_std.append((RMSE/RMSE_ref).std(axis=0).mean())
-            except Exception as e:
-                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
-            fig.subplots_adjust(wspace=0.1, hspace=0.1,
-                                left=0.2, right=0.9,
-                                top=0.9,    bottom=0.175)
+                fig.subplots_adjust(wspace=0.1, hspace=0.1,
+                                    left=0.2, right=0.9,
+                                    top=0.9,    bottom=0.175)
 
-            ind = len(relSE)
-            width = .8
-            ax.bar(np.arange(ind), relSE, yerr=relSE_std)
-            ax.set_xlim([-width/4, ind+.0*width])
+                ind = len(relSE)
+                width = .8
+                ax.bar(np.arange(ind), relSE, yerr=relSE_std)
+                ax.set_xlim([-width/4, ind+.0*width])
 
-            if not(scale):#False and a==ax:
-                ax.set_ylabel(r'SE')
-            else:
+                if not(scale):#False and a==ax:
+                    ax.set_ylabel(r'SE')
+                else:
 #             ax.set_ylabel(r'relative $\ell_0$ pseudo-norm')# (bits / pixel)')#relative $\ell_0$-norm')
-                ax.set_ylabel(r'rel. SE')# (bits / pixel)')#relative $\ell_0$-norm')
+                    ax.set_ylabel(r'rel. SE')# (bits / pixel)')#relative $\ell_0$-norm')
 
-            ax.set_xticks(np.arange(ind)+.5*width)
-            ax.set_xticklabels(labels)
+                ax.set_xticks(np.arange(ind)+.5*width)
+                ax.set_xticklabels(labels)
 
-            plt.tight_layout()
+                plt.tight_layout()
 #         fig.set_tight_layout(True)
 
-            return fig, ax, ax
+                return fig, ax, ax
+            except Exception as e:
+                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
 
         else: # fourth type: we have a reference and a threshold
-            relL0, relL0_std = [], []
             try:
+                relL0, relL0_std = [], []
                 # computes for the reference 
                 imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
                 RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
@@ -1272,31 +1272,32 @@ class SparseEdges(LogGabor):
                     if scale: L0 *= np.log2(mp.oc)/mp.N_X/mp.N_Y
                     relL0.append((L0/L0_ref).mean())
                     relL0_std.append((L0/L0_ref).std())
-            except Exception as e:
-                print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
-            fig.subplots_adjust(wspace=0.1, hspace=0.1,
-                                left=0.2, right=0.9,
-                                top=0.9,    bottom=0.175)
+                
+                fig.subplots_adjust(wspace=0.1, hspace=0.1,
+                                    left=0.2, right=0.9,
+                                    top=0.9,    bottom=0.175)
 
-            ind = len(relL0)
-            width = .8
+                ind = len(relL0)
+                width = .8
 #             print("ref-thr - relL0=", relL0)
-            rects = ax.bar(np.arange(ind), relL0, yerr=relL0_std, alpha=.8, error_kw={'ecolor':'k'})
-            rects[ref].set_color('w')
-            rects[ref].set_edgecolor('k')
-            ax.set_xlim([-width/4, ind+.0*width])
+                rects = ax.bar(np.arange(ind), relL0, yerr=relL0_std, alpha=.8, error_kw={'ecolor':'k'})
+                rects[ref].set_color('w')
+                rects[ref].set_edgecolor('k')
+                ax.set_xlim([-width/4, ind+.0*width])
 
-            ax.set_ylabel(r'relative coding cost wrt default')# (bits / pixel)')#relative $\ell_0$-norm')
+                ax.set_ylabel(r'relative coding cost wrt default')# (bits / pixel)')#relative $\ell_0$-norm')
 
-            ax.set_xticks(np.arange(ind)+.5*width)
-            ax.set_xticklabels(labels)
+                ax.set_xticks(np.arange(ind)+.5*width)
+                ax.set_xticklabels(labels)
 
-            ax.grid(b=False, which="both")
+                ax.grid(b=False, which="both")
 #         plt.tight_layout()
 #         fig.set_tight_layout(True)
 
-            return fig, ax, ax
+                return fig, ax, ax
 
+            except Exception as e:
+                print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
 
     def golden_pyramid(self, z):
         """
