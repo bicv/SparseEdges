@@ -1251,7 +1251,7 @@ class SparseEdges(LogGabor):
 
                 return fig, ax, ax
             except Exception as e:
-                print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+                print('Failed to plot with error : %s ' % (e) )
 
         else: # fourth type: we have a reference and a threshold
             try:
