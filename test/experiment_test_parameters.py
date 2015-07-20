@@ -47,12 +47,12 @@ for MP_alpha in v_alpha:
     mps.append(mp)
     
 import matplotlib.pyplot as plt
-fig_width_pt = 318.670*.61 # Get this from LaTeX using \showthe\columnwidth
+fig_width_pt = 900 #318.670*.61 # Get this from LaTeX using \showthe\columnwidth
 inches_per_pt = 1.0/72.27               # Convert pt to inches
 fig_width = fig_width_pt*inches_per_pt  # width in inches
 
-threshold = .25
 threshold = None
+threshold = .25
 databases = ['serre07_distractors'] * len(experiments)
 labels = ['%0.2f' % MP_alpha for MP_alpha in v_alpha]
 fig = plt.figure(figsize=(fig_width, fig_width/1.618))

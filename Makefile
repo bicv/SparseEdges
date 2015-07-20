@@ -33,7 +33,7 @@ OPTIONS = -av --delete --progress --exclude .AppleDouble --exclude .git
 transfer_to_riou:
 		rsync $(OPTIONS) test $(FRIOUL):$(RIOU)/
 transfer_from_riou:
-		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/test/mat ./test
+		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/test/{mat,debug.log} ./test
 
 
 install_dev:

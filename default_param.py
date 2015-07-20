@@ -32,7 +32,7 @@
 # 'N' : 32, # number of edges extracted
 'N' : 2**11,
 # 'N' : 2**8,
-'MP_alpha' : .7, # ratio of inhibition in alpha-Matching Pursuit
+'MP_alpha' : .9, # ratio of inhibition in alpha-Matching Pursuit
 'MP_rho' : None, # geometric scaling parameter
 'eta_SO' : 0., # including a dipole
 # parameters for computing the histograms
