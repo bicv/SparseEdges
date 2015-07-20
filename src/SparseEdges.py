@@ -1215,43 +1215,37 @@ class SparseEdges(LogGabor):
             return fig, ax, ax
 
         elif (ref==None):
-            try:
-                relL0, relL0_std = [], []
-                imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
-                RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis]
-                l0_ref = np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
+            absSE, absSE_std = [], []
 
-                for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-                    imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                    RMSE /= RMSE[:, 0][:, np.newaxis]
-                    N = RMSE.shape[1] #number of edges
-                    l0 = np.log2(mp.oc)/mp.N_X/mp.N_Y
-                    relSE.append((RMSE/RMSE_ref).mean())
-                    relSE_std.append((RMSE/RMSE_ref).std(axis=0).mean())
-                fig.subplots_adjust(wspace=0.1, hspace=0.1,
-                                    left=0.2, right=0.9,
-                                    top=0.9,    bottom=0.175)
+            for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
+                imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                RMSE /= RMSE[:, 0][:, np.newaxis]
+                N = RMSE.shape[1] #number of edges
+                l0 = np.log2(mp.oc)/mp.N_X/mp.N_Y
+                absSE.append(RMSE.mean())
+                absSE_std.append(RMSE.std(axis=0).mean())
+            fig.subplots_adjust(wspace=0.1, hspace=0.1,
+                                left=0.2, right=0.9,
+                                top=0.9,    bottom=0.175)
 
-                ind = len(relSE)
-                width = .8
-                ax.bar(np.arange(ind), relSE, yerr=relSE_std)
-                ax.set_xlim([-width/4, ind+.0*width])
+            ind = len(absSE)
+            width = .8
+            ax.bar(np.arange(ind), absSE, yerr=absSE_std)
+            ax.set_xlim([-width/4, ind+.0*width])
 
-                if not(scale):#False and a==ax:
-                    ax.set_ylabel(r'SE')
-                else:
-#             ax.set_ylabel(r'relative $\ell_0$ pseudo-norm')# (bits / pixel)')#relative $\ell_0$-norm')
-                    ax.set_ylabel(r'rel. SE')# (bits / pixel)')#relative $\ell_0$-norm')
+            if not(scale):#False and a==ax:
+                ax.set_ylabel(r'SE')
+            else:
+#             ax.set_ylabel(r'absative $\ell_0$ pseudo-norm')# (bits / pixel)')#absative $\ell_0$-norm')
+                ax.set_ylabel(r'abs. SE')# (bits / pixel)')#absative $\ell_0$-norm')
 
-                ax.set_xticks(np.arange(ind)+.5*width)
-                ax.set_xticklabels(labels)
+            ax.set_xticks(np.arange(ind)+.5*width)
+            ax.set_xticklabels(labels)
 
-                plt.tight_layout()
+            plt.tight_layout()
 #         fig.set_tight_layout(True)
 
-                return fig, ax, ax
-            except Exception as e:
-                print('Failed to plot with error : %s ' % (e) )
+            return fig, ax, ax
 
         else: # fourth type: we have a reference and a threshold
             try:
