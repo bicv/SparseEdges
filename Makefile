@@ -60,9 +60,12 @@ console:
 	open -a /Applications/Utilities/Console.app/ log-sparseedges-debug.log
 
 # macros for tests
-index.html: $(NAME).ipynb
+index.pdf: $(NAME).ipynb
 	runipy $(NAME).ipynb -o
-	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to html index.html $(NAME).ipynb
+	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to pdf index.pdf $(NAME).ipynb
+
+run_all:
+	for i in *.py; do echo $i; ipython $i ; done
 
 %.pdf: %.ipynb
 	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to latex --post PDF $<
