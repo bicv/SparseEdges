@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 {
 'verbose': 15,
 # Image
