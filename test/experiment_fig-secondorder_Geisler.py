@@ -234,6 +234,7 @@ if True:
             edges[4, :] *= -1 # turn red in blue...
             fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
             fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
+            print('toto')
             fig
         except:
             print ('File ', matname, ' is locked')
