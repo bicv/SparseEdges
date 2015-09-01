@@ -31,6 +31,7 @@ class SparseEdges(LogGabor):
         """
         LogGabor.__init__(self, pe)
         self.init()
+        self.init_logging(name='SparseEdges')
 
     def init(self):
         LogGabor.init(self)
@@ -178,6 +179,7 @@ class SparseEdges(LogGabor):
             a = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
         a.axis(c='b', lw=0, frame_on=False)
 
+        # HACK
         if color == 'black' or color == 'redblue' or color in['brown', 'green', 'blue']: #cocir or chevrons
             linewidth = self.pe.line_width_chevrons
             scale = self.pe.scale_chevrons
