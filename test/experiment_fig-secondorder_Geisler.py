@@ -8,7 +8,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from SparseEdges import SparseEdges
+from SparseEdges import SparseEdgesWithDipole as SparseEdges
 
 #figpath = '../../CNRS/BICV-book/BICV_sparse/'
 figpath = './'
@@ -34,7 +34,7 @@ mp = init_mp()
 eta_SO = 0.15
 
 ##############################################################################################################
-figname = 'Geisler01Fig7A_rec'
+figname = 'circle_in_noise'
 if False: #os.path.isfile('database/' + figname + '.png'):
     # defining input image 
     from pylab import imread
@@ -234,7 +234,6 @@ if True:
             edges[4, :] *= -1 # turn red in blue...
             fig, a = mp.show_edges(edges, image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
             fig.savefig(matname.replace('mat/', mp.pe.figpath).replace('.npy', '.pdf'))
-            print('toto')
             fig
         except:
             print ('File ', matname, ' is locked')

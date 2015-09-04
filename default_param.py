@@ -33,7 +33,6 @@
 # 'N' : 2**8,
 'MP_alpha' : .9, # ratio of inhibition in alpha-Matching Pursuit
 'MP_rho' : None, # geometric scaling parameter
-'eta_SO' : 0., # including a dipole
 # parameters for computing the histograms
 'd_width' : 45., # Geisler 1.23 deg (full image = 45deg)
 'd_min' : .25, # Geisler 1.23 deg (full image = 45deg)
@@ -52,12 +51,6 @@
 'multiscale': True,
 'kappa_phase': 0.,
 'weight_by_distance': True,
-# Dipole
-'dip_w':.2,
-'dip_B_psi':.1,
-'dip_B_theta':1.,
-'dip_scale':1.5,
-'dip_epsilon':.5,
 # PATHS
 'figpath' : 'figures/',
 'edgefigpath' : 'figures/edges/',
