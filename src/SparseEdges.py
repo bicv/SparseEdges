@@ -498,8 +498,9 @@ class SparseEdges(LogGabor):
 
                 if weights.sum()>0:
                     weights /= weights.sum()
+                    weights = weights.ravel()
                 else:
-                    weights = 1.
+                    weights = np.ones_like(weights)
 #                 print 'd', d.min(), self.edges_d.min(), ' / ', d.max(), self.edges_d.max(), ' / ', d.std(), ' / ', np.median(d), ' / ', (d*weights).sum(), ' / ', weights.sum()
 
 #                 print (np.sin(theta + theta.T)).std()
@@ -514,7 +515,7 @@ class SparseEdges(LogGabor):
                 v_hist_, edges_ = np.histogramdd([d.ravel(), phi.ravel(), theta.ravel(), loglevel.ravel()], #data,
                                                  bins=(self.edges_d, self.edges_phi, self.edges_theta, self.edges_loglevel),
                                                  normed=False, # TODO check if correct True,
-                                                 weights=weights.ravel()
+                                                 weights = weights
                                                 )
 #                 print v_hist_.sum(), v_hist_.min(), v_hist_.max(), d.ravel().shape
                 if v_hist_.sum()<.01: self.log.debug(' less than 1 percent of co-occurences within ranges: %f ', v_hist_.sum())
