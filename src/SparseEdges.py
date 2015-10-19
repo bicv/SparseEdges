@@ -304,7 +304,7 @@ class SparseEdges(LogGabor):
                     i_image += 1
                 return edgeslist
             except Exception as e:
-                self.log.error(' some locked edge extractions %s, error ', e)
+                self.log.error(' some locked edge extractions %s, error on file %s', e, matname)
                 return 'locked'
 
     def full_RMSE(self, exp, name_database, imagelist):
