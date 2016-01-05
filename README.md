@@ -3,7 +3,7 @@ What is the SparseEdges package?
 
 Our goal here is to build practical algorithms of sparse coding for computer vision.
 
-This class exploits the LogGabor package to provide with a sparse representation of edges in images.
+This class exploits the [LogGabor](https://pythonhosted.org/LogGabor/) package to provide with a sparse representation of edges in images.
 
 This algorithm was presented in the following paper:
 
