@@ -13,14 +13,14 @@ pypi_tags:
 	git push --tags origin master
 
 pypi_push:
-	python setup.py register
+	python3 setup.py register
 
 pypi_upload:
-	python setup.py sdist upload
+	python3 setup.py sdist upload
 
 pypi_docs:
 	#rm web.zip index.html
-	#ipython nbconvert --to html $(NAME).ipynb
+	#ipython3 nbconvert --to html $(NAME).ipynb
 	#mv $(NAME).html index.html
 	#runipy $(NAME).ipynb  --html  index.html
 	zip web.zip index.html
@@ -37,7 +37,7 @@ transfer_from_riou:
 
 
 install_dev:
-	pip uninstall -y $(NAME) ; pip install -e .
+	pip3 uninstall -y $(NAME) ; pip3 install -e .
 todo:
 	grep -R * (^|#)[ ]*(TODO|FIXME|XXX|HINT|TIP)( |:)([^#]*)
 
@@ -47,14 +47,14 @@ pull:
 	git pull
 
 update:
-	cd ../SLIP; git pull; pip install -U --user . ; cd ../SparseEdges/
-	cd ../LogGabor; git pull; pip install -U --user . ; cd ../SparseEdges/
-	git pull; pip install -U --user .
+	cd ../SLIP; git pull; pip3 install -U --user . ; cd ../SparseEdges/
+	cd ../LogGabor; git pull; pip3 install -U --user . ; cd ../SparseEdges/
+	git pull; pip3 install -U --user .
 
 update_dev:
-	cd ../SLIP; git pull; pip uninstall -y SLIP; pip install -e . ; cd ../SparseEdges/
-	cd ../LogGabor; git pull; pip uninstall -y LogGabor; pip install -e . ; cd ../SparseEdges/
-	pip uninstall -y $(NAME) ; pip install -e .
+	cd ../SLIP; git pull; pip3 uninstall -y SLIP; pip3 install -e . ; cd ../SparseEdges/
+	cd ../LogGabor; git pull; pip3 uninstall -y LogGabor; pip3 install -e . ; cd ../SparseEdges/
+	pip3 uninstall -y $(NAME) ; pip3 install -e .
 
 console:
 	open -a /Applications/Utilities/Console.app/ log-sparseedges-debug.log
@@ -62,13 +62,13 @@ console:
 # macros for tests
 index.pdf: $(NAME).ipynb
 	runipy $(NAME).ipynb -o
-	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to pdf index.pdf $(NAME).ipynb
+	ipython3 nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to pdf index.pdf $(NAME).ipynb
 
 run_all:
-	for i in *.py; do echo $i; ipython $i ; done
+	for i in *.py; do echo $i; ipython3 $i ; done
 
 %.pdf: %.ipynb
-	ipython nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to latex --post PDF $<
+	ipython3 nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to latex --post PDF $<
 
 # cleaning macros
 clean_tmp:
