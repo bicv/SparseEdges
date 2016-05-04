@@ -227,7 +227,7 @@ class SparseEdges(LogGabor):
             plt.setp(a, yticks=[])
 
         if mask:
-            linewidth_mask = 1
+            linewidth_mask = 1 # HACK
             circ = plt.Circle((.5*self.N_Y, .5*self.N_Y), radius=0.5*self.N_Y-linewidth_mask/2., fill=False, facecolor='none', edgecolor = 'black', alpha = 0.5, ls='dashed', lw=linewidth_mask)
             a.add_patch(circ)
         a.axis([0, self.N_Y, self.N_X, 0])

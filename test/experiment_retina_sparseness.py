@@ -14,7 +14,7 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
     mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
     mp.pe.datapath = '../../SLIP/database/'
     mp.pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
-    mp.pe.N_image = 2
+    mp.pe.N_image = 20
     mp.pe.N = 1024
     mp.pe.n_theta = 1
     mp.pe.B_theta = np.inf
