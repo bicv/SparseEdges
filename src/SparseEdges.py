@@ -705,8 +705,7 @@ class SparseEdges(LogGabor):
                     score = radius[(s_phi - i_phi - i_phi_shift) % self.pe.N_phi, (i_theta + i_theta_shift) % self.pe.N_Dtheta]
                     circ = patches.Circle((rad_Y * (i_phi + .5) + .5,
                                        self.N_X - rad_X * (s_theta - i_theta - .5) + .5),
-#                                             facecolor=fc, edgecolor=fc,
-                                       rad, lw=self.pe.line_width_chevrons/2)
+                                       rad)#self.pe.line_width_chevrons/2)
                     mypatches.append(circ)
                     colors.append(value*score)
 
@@ -743,7 +742,8 @@ class SparseEdges(LogGabor):
                     return z
 
 #             p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=matplotlib.cm.RdBu_r, alpha=0.8)
-            p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=cm.coolwarm, alpha=1.0)
+            p = PatchCollection(mypatches, norm=MidpointNormalize(midpoint=0, vmin=v_min, vmax=v_max), cmap=cm.coolwarm, lw=0., alpha=1.0)
+
             p.set_array(np.array(colors))
             if dolog:
                 p.set_clim([v_min, v_max])
