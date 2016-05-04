@@ -42,7 +42,7 @@ class SparseEdges(LogGabor):
 
         self.oc = (self.N_X * self.N_Y * self.pe.n_theta * self.n_levels) #(1 - self.pe.base_levels**-2)**-1)
 
-    def run_mp(self, image, verbose=False):
+    def run_mp(self, image, verbose=False, progress=False):
         """
         runs the MatchingPursuit algorithm on image
 
@@ -53,7 +53,7 @@ class SparseEdges(LogGabor):
 #         RMSE = np.ones(self.pe.N)
         if self.pe.do_whitening: image_ = self.whitening(image_)
         C = self.init_C(image_)
-        if verbose:
+        if progress:
             import pyprind
             my_prbar = pyprind.ProgPercent(self.pe.N)   # 1) initialization with number of iterations
         for i_edge in range(self.pe.N):
@@ -69,7 +69,7 @@ class SparseEdges(LogGabor):
                 coeff = self.pe.MP_alpha * np.absolute(C[ind_edge_star])
                 # recording
                 if verbose: print('Edge', i_edge, '/', self.pe.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
-            if verbose: my_prbar.update()
+            if progress: my_prbar.update()
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta[ind_edge_star[2]],
                                          self.sf_0[ind_edge_star[3]],
@@ -227,7 +227,8 @@ class SparseEdges(LogGabor):
             plt.setp(a, yticks=[])
 
         if mask:
-            circ = plt.Circle((.5*self.N_Y, .5*self.N_Y), radius=0.5*self.N_Y-linewidth/2., fill=False, facecolor='none', edgecolor = 'black', alpha = 0.5, ls='dashed', lw=linewidth)
+            linewidth_mask = 1
+            circ = plt.Circle((.5*self.N_Y, .5*self.N_Y), radius=0.5*self.N_Y-linewidth_mask/2., fill=False, facecolor='none', edgecolor = 'black', alpha = 0.5, ls='dashed', lw=linewidth_mask)
             a.add_patch(circ)
         a.axis([0, self.N_Y, self.N_X, 0])
         a.grid(b=False, which="both")
@@ -1124,7 +1125,7 @@ class SparseEdges(LogGabor):
             ax.set_ylabel(r'Squared error')
             inset.set_ylabel(r'Coefficient')
             inset.legend(loc='upper right', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
-            plt.tight_layout()            
+            plt.tight_layout()
             return fig, ax, inset
         elif (threshold==None):
             if ax==None: ax = fig.add_axes([0.15, 0.25, .75, .75], axisbg='w')
@@ -1227,7 +1228,7 @@ class SparseEdges(LogGabor):
         else: # fourth type: we have a reference and a threshold
             try:
                 relL0, relL0_std = [], []
-                # computes for the reference 
+                # computes for the reference
                 imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
                 RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
                 L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1. +1
@@ -1243,7 +1244,7 @@ class SparseEdges(LogGabor):
                     if scale: L0 *= np.log2(mp.oc)/mp.N_X/mp.N_Y
                     relL0.append((L0/L0_ref).mean())
                     relL0_std.append((L0/L0_ref).std())
-                
+
                 fig.subplots_adjust(wspace=0.1, hspace=0.1,
                                     left=0.2, right=0.9,
                                     top=0.9,    bottom=0.175)
@@ -1319,19 +1320,16 @@ class SparseEdgesWithDipole(SparseEdges):
         http://invibe.net/Publications/Perrinet15eusipco
 
         """
-        SparseEdges.__init__(self, pe)
+        SparseEdges.__init__(self, pe=pe)
 #         self.init()
         self.init_logging(name='SparseEdgesWithDipole')
-        self.pe.update(
-            {# Dipole
-            'eta_SO' : 0., # including a dipole
-            'dip_w':.2,
-            'dip_B_psi':.1,
-            'dip_B_theta':1.,
-            'dip_scale':1.5,
-            'dip_epsilon':.5,
-            }
-        )
+
+        self.pe.eta_SO =  0.
+        self.pe.dip_w =  0.2
+        self.pe.dip_B_psi =  0.1
+        self.pe.dip_B_theta =  1.
+        self.pe.dip_scale =  1.5
+        self.pe.dip_epsilon =  .5
 
     def run_mp(self, image, verbose=False):
         """
@@ -1414,4 +1412,3 @@ if __name__ == '__main__':
 #     # whitening
 #     image = imread('database/gris512.png')[:,:,0]
 #     lg = LogGabor(image.shape)
-
