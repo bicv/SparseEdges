@@ -14,10 +14,13 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
     mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
     mp.pe.datapath = '../../SLIP/database/'
     mp.pe.N_image = 100
-    mp.pe.N = 2048
+    mp.pe.N = 2**14
     mp.pe.n_theta = 1
     mp.pe.B_theta = np.inf
     mp.init()
-
-    # control experiment
+    # normal experiment
     imageslist, edgeslist, RMSE = mp.process(exp='retina_sparseness', name_database=name_database)
+    # control experiment
+    mp.pe.MP_alpha = np.inf
+    mp.init()
+    imageslist, edgeslist, RMSE = mp.process(exp='retina_sparseness_linear', name_database=name_database)
