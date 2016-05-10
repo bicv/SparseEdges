@@ -1,6 +1,7 @@
 default: index.html
 NAME = SparseEdges
-
+PYTHON = python3
+PIP = pip-3.2
 edit:
 	mvim -p setup.py src/__init__.py src/$(NAME).py README.md Makefile requirements.txt
 
@@ -13,14 +14,14 @@ pypi_tags:
 	git push --tags origin master
 
 pypi_push:
-	python3 setup.py register
+	$(PYTHON) setup.py register
 
 pypi_upload:
-	python3 setup.py sdist upload
+	$(PYTHON) setup.py sdist upload
 
 pypi_docs:
 	#rm web.zip index.html
-	#ipython3 nbconvert --to html $(NAME).ipynb
+	#i$(PYTHON) nbconvert --to html $(NAME).ipynb
 	#mv $(NAME).html index.html
 	#runipy $(NAME).ipynb  --html  index.html
 	zip web.zip index.html
@@ -37,7 +38,7 @@ transfer_from_riou:
 
 
 install_dev:
-	pip3 uninstall -y $(NAME) ; pip3 install -e .
+	$(PIP) uninstall -y $(NAME) ; $(PIP) install --user -e .
 todo:
 	grep -R * (^|#)[ ]*(TODO|FIXME|XXX|HINT|TIP)( |:)([^#]*)
 
@@ -47,14 +48,14 @@ pull:
 	git pull
 
 update:
-	cd ../SLIP; git pull; pip3 install -U --user . ; cd ../SparseEdges/
-	cd ../LogGabor; git pull; pip3 install -U --user . ; cd ../SparseEdges/
-	git pull; pip3 install -U --user .
+	cd ../SLIP; git pull; $(PIP) install -U --user . ; cd ../SparseEdges/
+	cd ../LogGabor; git pull; $(PIP) install -U --user . ; cd ../SparseEdges/
+	git pull; $(PIP) install -U --user .
 
 update_dev:
-	cd ../SLIP; git pull; pip3 uninstall -y SLIP; pip3 install -e . ; cd ../SparseEdges/
-	cd ../LogGabor; git pull; pip3 uninstall -y LogGabor; pip3 install -e . ; cd ../SparseEdges/
-	pip3 uninstall -y $(NAME) ; pip3 install -e .
+	cd ../SLIP; git pull; $(PIP) uninstall -y SLIP; $(PIP) install --user -e . ; cd ../SparseEdges/
+	cd ../LogGabor; git pull; $(PIP) uninstall -y LogGabor; $(PIP) install --user -e . ; cd ../SparseEdges/
+	$(PIP) uninstall -y $(NAME) ; $(PIP) install --user -e .
 
 console:
 	open -a /Applications/Utilities/Console.app/ log-sparseedges-debug.log
@@ -62,13 +63,13 @@ console:
 # macros for tests
 index.pdf: $(NAME).ipynb
 	runipy $(NAME).ipynb -o
-	ipython3 nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to pdf index.pdf $(NAME).ipynb
+	i$(PYTHON) nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to pdf index.pdf $(NAME).ipynb
 
 run_all:
-	for i in *.py; do echo $i; ipython3 $i ; done
+	for i in *.py; do echo $i; i$(PYTHON) $i ; done
 
 %.pdf: %.ipynb
-	ipython3 nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to latex --post PDF $<
+	i$(PYTHON) nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to latex --post PDF $<
 
 # cleaning macros
 clean_tmp:
