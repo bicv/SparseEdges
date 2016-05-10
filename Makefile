@@ -1,7 +1,7 @@
 default: index.html
 NAME = SparseEdges
-PYTHON = python3
-PIP = pip-3.2
+PYTHON = python
+PIP = /usr/bin/pip
 edit:
 	mvim -p setup.py src/__init__.py src/$(NAME).py README.md Makefile requirements.txt
 
@@ -27,7 +27,7 @@ pypi_docs:
 	zip web.zip index.html
 	open https://pypi.python.org/pypi?action=pkg_edit&name=$NAME
 
-RIOU = /riou/work/invibe/USERS/perrinet/science/$(NAME)
+RIOU = /hpc/invibe/perrineti.l/science/$(NAME)
 FRIOUL = perrinet.l@frioul.int.univ-amu.fr
 OPTIONS = -av --delete --progress --exclude .AppleDouble --exclude .git
 
@@ -35,7 +35,6 @@ transfer_to_riou:
 		rsync $(OPTIONS) test $(FRIOUL):$(RIOU)/
 transfer_from_riou:
 		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/test/{mat,debug.log} ./test
-
 
 install_dev:
 	$(PIP) uninstall -y $(NAME) ; $(PIP) install --user -e .
