@@ -62,9 +62,11 @@ class SparseEdges(LogGabor):
             ind_edge_star = self.argmax(C)
             if not self.pe.MP_rho is None:
                 if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
-                coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) *C_Max
+                coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) * C_Max
                 # recording
                 if verbose: print('Edge', i_edge, '/', self.pe.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
+            elif self.pe.MP_alpha == 0:
+                coeff = np.absolute(C[ind_edge_star])
             else:
                 coeff = self.pe.MP_alpha * np.absolute(C[ind_edge_star])
                 # recording
@@ -105,17 +107,20 @@ class SparseEdges(LogGabor):
         Removes edge_star from the activity
 
         """
-        C_star = self.pe.MP_alpha * C[ind_edge_star]
-        FT_lg_star = self.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
-                                      theta=self.theta[ind_edge_star[2]], B_theta=self.pe.B_theta,
-                                      sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.pe.B_sf,
-                                      )
-        # image of the winning filter
-        lg_star = self.invert(C_star*FT_lg_star, full=False)
-        for i_sf_0, sf_0 in enumerate(self.sf_0):
-            for i_theta, theta in enumerate(self.theta):
-                FT_lg = self.loggabor(0, 0, sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
-                C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
+        if self.pe.MP_alpha == 0:
+            C[ind_edge_star] = 0
+        else:
+            C_star = self.pe.MP_alpha * C[ind_edge_star]
+            FT_lg_star = self.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
+                                          theta=self.theta[ind_edge_star[2]], B_theta=self.pe.B_theta,
+                                          sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.pe.B_sf,
+                                          )
+            # image of the winning filter
+            lg_star = self.invert(C_star*FT_lg_star, full=False)
+            for i_sf_0, sf_0 in enumerate(self.sf_0):
+                for i_theta, theta in enumerate(self.theta):
+                    FT_lg = self.loggabor(0, 0, sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
+                    C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
         return C
 
     def reconstruct(self, edges, mask=False):
@@ -1048,7 +1053,8 @@ class SparseEdges(LogGabor):
         out += '-'*60 + '\n'
         return out
 
-    def plot(self, mps, experiments, databases, labels, fig=None, ax=None, color=[1., 0., 0.], threshold=None, scale=False, ref=None):
+    def plot(self, mps, experiments, databases, labels, fig=None, ax=None,
+            color=[1., 0., 0.], threshold=None, scale=False, ref=None):
         import matplotlib.pyplot as plt
         import numpy as np
         import matplotlib
