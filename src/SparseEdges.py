@@ -446,7 +446,7 @@ class SparseEdges(LogGabor):
         """
         self.init_edges()
 
-        if not(edgeslist==None):
+        if not(edgeslist is None):
             v_hist = None
             six, N_edge, N_image = edgeslist.shape
             # TODO: vectorize over images?
