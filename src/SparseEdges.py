@@ -330,12 +330,15 @@ class SparseEdges(LogGabor):
                         edges = np.load(os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy'))
                         # computing RMSE
                         RMSE = np.ones(self.pe.N)
-                        image_ = image.copy()
-                        image_rec = np.zeros_like(image_)
-                        if self.pe.do_whitening: image_ = self.whitening(image_)
-                        for i_N in range(self.pe.N):
-                            image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis])
-                            RMSE[i_N] =  ((image_-image_rec)**2).sum()
+                        if self.pe.MP_alpha == np.inf:
+                            RMSE *= np.nan
+                        else:
+                            image_ = image.copy()
+                            image_rec = np.zeros_like(image_)
+                            if self.pe.do_whitening: image_ = self.whitening(image_)
+                            for i_N in range(self.pe.N):
+                                image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis])
+                                RMSE[i_N] =  ((image_-image_rec)**2).sum()
                         np.save(matname, RMSE)
                         try:
                             os.remove(matname + '_lock')
@@ -914,7 +917,7 @@ class SparseEdges(LogGabor):
                 self.log.info(' >> There is no RMSE: %s ', e)
                 try:
                     RMSE = self.full_RMSE(exp, name_database, imagelist)
-                    if RMSE == 'locked':
+                    if RMSE is 'locked':
                         self.log.info('>> RMSE extraction %s is locked', matname)
                         locked = True
                     else:
@@ -1076,8 +1079,9 @@ class SparseEdges(LogGabor):
         if ax==None: ax = fig.add_subplot(111, axisbg='w')
         # axes.edgecolor      : black   # axes edge color
         if (threshold==None) and (ref==None):
+            inset = fig.add_subplot(111, axisbg='w')
             # this is another inset axes over the main axes
-            inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
+            ax = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
             #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
             grad = np.linspace(0., 1., 2*len(experiments))
             grad[1::2] = grad[::2]
@@ -1086,8 +1090,9 @@ class SparseEdges(LogGabor):
             inset.set_color_cycle(CCycle)
             l0_max, eev = 0., -len(experiments)/2
             for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-                if True: #try:
+                try:
                     imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                    # print(RMSE.shape, RMSE[:, 0])
                     RMSE /= RMSE[:, 0][:, np.newaxis]
                     N = RMSE.shape[1] #number of edges
                     l0_max = max(l0_max, N*np.log2(mp.oc)/mp.N_X/mp.N_Y)
@@ -1098,7 +1103,7 @@ class SparseEdges(LogGabor):
                     errorevery_zoom = 1.4**(1.*eev/len(experiments))
                     errorevery = np.max((int(RMSE.shape[1]/8*errorevery_zoom), 1))
                     ax.errorbar(l0_axis, RMSE.mean(axis=0),
-                                yerr=RMSE.std(axis=0), errorevery=errorevery)
+                                yerr=RMSE.std(axis=0), label=label, errorevery=errorevery)
                     inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
                                 yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=errorevery)
                     ax.plot(l0_axis[::errorevery], RMSE.mean(axis=0)[::errorevery],
@@ -1106,9 +1111,8 @@ class SparseEdges(LogGabor):
                     inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery],
                                 linestyle='None',  marker='o', ms=3)
                     eev += 1
-                #except Exception as e:
-                #    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
-            ax.set_ylim([.0, 1.02])
+                except Exception as e:
+                    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
             for a in [ax, inset]:
                 #a.set_yscale("log")#, nonposx = 'clip')
                 if not(scale):
@@ -1121,7 +1125,7 @@ class SparseEdges(LogGabor):
                 a.spines['right'].set_visible(False)
                 a.spines['bottom'].set_position('zero')#(('outward', -10))
                 a.spines['top'].set_visible(False)
-                a.spines['left'].set_smart_bounds(True)
+                #a.spines['left'].set_smart_bounds(True)
                 a.spines['bottom'].set_smart_bounds(True)
                 a.xaxis.set_ticks_position('bottom')
                 a.yaxis.set_ticks_position('left')
@@ -1132,9 +1136,11 @@ class SparseEdges(LogGabor):
 
                 a.grid(b=False, which="both")
 
+            ax.set_ylim(-.02, 1.02)
             ax.set_ylabel(r'Squared error')
             inset.set_ylabel(r'Coefficient')
-            inset.legend(loc='upper right', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+            ax.legend(loc='best', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+            plt.locator_params(tight=False, nbins=4)
             plt.tight_layout()
             return fig, ax, inset
         elif (threshold==None):
@@ -1787,7 +1793,7 @@ class EdgeFactory(SparseEdges):
                     with open(txtname, 'w') as f: f.write(results)
                 self.log.info("Prediction on the testing set done in %0.3fs", (time.time() - t0))
 
-                if edgeslist == None:# try: #(kernel=='rbf'):#len(databases)<3:
+                if edgeslist is None:# try: #(kernel=='rbf'):#len(databases)<3:
                     self.log.info(">> compiling results ")
                     t0 = time.time()
                     # tested_indices is the index of the image that is tested
