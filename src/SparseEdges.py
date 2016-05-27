@@ -22,7 +22,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import hashlib
 import pickle
-
+from scipy.stats import powerlaw
 
 from LogGabor import LogGabor
 
@@ -63,18 +63,18 @@ class SparseEdges(LogGabor):
 #             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
             ind_edge_star = self.argmax(C)
-            if not self.pe.MP_rho is None:
+            if not (self.pe.MP_rho is None):
                 print('dooh!')
                 if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
                 coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) * C_Max
                 # recording
-                if verbose: print('Edge', i_edge, '/', self.pe.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
+                if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
             elif self.pe.MP_alpha == np.inf:
                 coeff = np.absolute(C[ind_edge_star])
             else:
-                coeff = self.pe.MP_alpha * np.absolute(C[ind_edge_star])
+                coeff = self.pe.MP_alpha * np.abs(C[ind_edge_star])
                 # recording
-                if verbose: print('Edge', i_edge, '/', self.pe.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
+                if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
             if progress: my_prbar.update()
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta[ind_edge_star[2]],
@@ -247,7 +247,7 @@ class SparseEdges(LogGabor):
         else:
             return fig, a
 
-    def texture(self, N_edge = 256, filename='', croparea='', randn=True):
+    def texture(self, N_edge=256, a=None, filename='', croparea='', randn=True):
         # a way to get always the same seed for each image
         if not (filename==''):# or not (croparea==''):
             np.random.seed(seed=int(int("0x" +  hashlib.sha224((filename+str(croparea)).encode('utf-8')).hexdigest(), 0)*1. % 4294967295))
@@ -259,8 +259,15 @@ class SparseEdges(LogGabor):
             edgeslist[0, :] = self.N_X * np.random.rand(N_edge)
             edgeslist[1, :] = self.N_X * np.random.rand(N_edge)
             edgeslist[2, :] = (np.pi* np.random.rand(N_edge) ) % np.pi
-            edgeslist[3, :] =  self.sf_0[np.random.randint(self.sf_0.size, size=(N_edge))] # best would be to have more high frequency components
-            edgeslist[4, :] = np.random.randn(N_edge)
+            if a is None:
+                edgeslist[3, :] =  self.sf_0[np.random.randint(self.sf_0.size, size=(N_edge))] # best would be to have more high frequency components
+                edgeslist[4, :] = np.random.randn(N_edge)
+            else:
+                #edgeslist[4, :] = 1 / np.random.power(a=a, size=N_edge)
+                edgeslist[3, :] =  self.sf_0.max() * powerlaw.rvs(a=4., size = N_edge) # HACK
+                edgeslist[4, :]  = 1 / powerlaw.rvs(a=a, size = N_edge)
+
+
             edgeslist[5, :] = 2*np.pi*np.random.rand(N_edge)
             image_rec = self.reconstruct(edgeslist)
             image_rec /= image_rec.std()
@@ -290,7 +297,7 @@ class SparseEdges(LogGabor):
                         open(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
-                        edges, C = self.run_mp(image)
+                        edges, C = self.run_mp(image, verbose=self.pe.verbose>50)
                         np.save(matname, edges)
                         self.log.info('Finished edge extraction of %s ', matname)
                         try:
@@ -1483,7 +1490,7 @@ class EdgeFactory(SparseEdges):
                 # Download the data, if not already on disk and load it as numpy arrays
                 n_databases = len(databases)
                 for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
-                    matname_hist = os.path.join(self.pe.matpath, exp + '_SVMhist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
+                    matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
                     if not(os.path.isfile(matname_hist)):
                         self.log.info(' >> There is no histogram, computing %s ', matname_hist)
                         if os.path.isfile(matname_hist + '_lock'):
@@ -1538,7 +1545,7 @@ class EdgeFactory(SparseEdges):
             for feature_ in features:
                 X_[feature_] = []
                 for i_database, name_database in enumerate(databases):
-                    matname_hist = os.path.join(self.pe.matpath, exp + '_SVMhist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
+                    matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
                     try:
                         hists = np.load(matname_hist)
                         for i_image in range(hists.shape[0]):
@@ -1549,7 +1556,7 @@ class EdgeFactory(SparseEdges):
                         return None
             # TODO simplify the following
             for i_database, name_database in enumerate(databases):
-                matname_hist = os.path.join(self.pe.matpath, exp + '_SVMhist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
+                matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
                 try:
                     hists = np.load(matname_hist)
                     for i_image in range(hists.shape[0]):
