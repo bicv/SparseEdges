@@ -272,6 +272,21 @@ class SparseEdges(LogGabor):
             image_rec = self.reconstruct(edgeslist)
             image_rec /= image_rec.std()
             return image_rec
+    #  TODO : use MotionClouds strategy
+    # for i_sf, sf_0_ in enumerate(sf_0 * scaling ** np.linspace(-1, 1, n_sf)):
+    #     z = mc.envelope_gabor(fx, fy, ft, V_X=V_X, V_Y=V_Y, B_V=B_V, sf_0=sf_0_, B_sf=B_sf*sf_0_/sf_0, B_theta=B_theta)
+    #     texton = mc.random_cloud(z, impulse=True) # TODO : and the seed?
+    #     if verbose:
+    #         print(' ⇒ At scale ', sf_0_, ', the texton has energy ', np.sqrt((texton**2).mean()),
+    #               ', the number of components is ', int(mask.sum()))
+    #
+    #     Fz = np.fft.fftn(( events[:, :, :, i_sf] ))
+    #     Fz = np.fft.fftshift(Fz)
+    #     Fz *= z
+    #     Fz = np.fft.ifftshift(Fz)
+    #     Fz[0, 0, 0] = 0. # removing the DC component
+    #     droplets_mc += np.fft.ifftn((Fz)).real
+    # return events, droplets_mc
 
     def full_run(self, exp, name_database, imagelist, noise, N_do=2, time_sleep=.1):
         """
@@ -344,7 +359,7 @@ class SparseEdges(LogGabor):
                             image_rec = np.zeros_like(image_)
                             if self.pe.do_whitening: image_ = self.whitening(image_)
                             for i_N in range(self.pe.N):
-                                image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis])
+                                image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis], mask=self.pe.do_mask)
                                 RMSE[i_N] =  ((image_-image_rec)**2).sum()
                         np.save(matname, RMSE)
                         try:
@@ -778,7 +793,7 @@ class SparseEdges(LogGabor):
                 cbar = plt.colorbar(ax=a, mappable=p, shrink=0.6)
                 if dolog:
                     if cbar_label: cbar.set_label('probability ratio')
-                    ticks_cbar = 2**(np.floor(np.linspace(v_min, v_max, 5)))
+                    ticks_cbar = 2**(np.floor(np.linspace(v_min, v_max, 3)))
                     cbar.set_ticks(np.log2(ticks_cbar))
                     cbar.set_ticklabels([r'$%0.1f$' % r for r in ticks_cbar])
 #                     cbar.set_ticklabels([r'$2^{%d}$' % r for r in np.floor(np.log2(ticks_cbar))])
@@ -1470,7 +1485,7 @@ class EdgeFactory(SparseEdges):
         # Process all images to extract edges and plot relevant histograms
         n_databases = len(databases)
         for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
-            if edgeslist == None:
+            if edgeslist is None:
                 imagelist, edgeslist, RMSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
             else:
                 imagelist = 'ok'
@@ -1497,7 +1512,7 @@ class EdgeFactory(SparseEdges):
                             self.log.info(' XX The process computing the histogram in %s is locked by %s_lock', name_database, matname_hist)
                         else:
                             open(matname_hist + '_lock', 'w').close()
-                            if edgeslist == None:
+                            if edgeslist is None:
                                 imagelist, edgeslist, RMSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
                             else:
                                 imagelist = 'ok'
