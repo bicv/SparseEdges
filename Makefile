@@ -1,7 +1,7 @@
 default: index.html
 NAME = SparseEdges
-PYTHON = python
-PIP = /usr/bin/pip
+PYTHON = python3
+PIP = pip3
 edit:
 	mvim -p setup.py src/__init__.py src/$(NAME).py README.md Makefile requirements.txt
 

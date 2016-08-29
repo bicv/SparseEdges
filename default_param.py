@@ -6,7 +6,7 @@
 # INFO    20
 # DEBUG   10
 # NOTSET  0
-'verbose': 40,
+'verbose': 30,
 # Image
     'N_image': None, # use all images in the folder
 #'N_image': 100, # use 100 images in the folder
