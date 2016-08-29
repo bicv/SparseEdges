@@ -1119,7 +1119,6 @@ class SparseEdges(LogGabor):
                 try:
                     imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
                     # print(RMSE.shape, RMSE[:, 0])
-                    RMSE /= RMSE[:, 0][:, np.newaxis]
                     N = RMSE.shape[1] #number of edges
                     l0_max = max(l0_max, N*np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y)
                     if not(scale):
@@ -1127,18 +1126,26 @@ class SparseEdges(LogGabor):
                     else:
                         l0_axis = np.linspace(0, N*np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y, N)
                     errorevery_zoom = 1.4**(1.*eev/len(experiments))
-                    errorevery = np.max((int(RMSE.shape[1]/8*errorevery_zoom), 1))
-                    ax.errorbar(l0_axis, RMSE.mean(axis=0),
-                                yerr=RMSE.std(axis=0), label=label, errorevery=errorevery)
-                    inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
-                                yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=errorevery)
-                    ax.plot(l0_axis[::errorevery], RMSE.mean(axis=0)[::errorevery],
-                                linestyle='None', marker='o', ms=3)
-                    inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery],
-                                linestyle='None',  marker='o', ms=3)
+                    try:
+                        RMSE /= RMSE[:, 0][:, np.newaxis]
+                        errorevery = np.max((int(RMSE.shape[1]/8*errorevery_zoom), 1))
+                        ax.errorbar(l0_axis, RMSE.mean(axis=0),
+                                    yerr=RMSE.std(axis=0), label=label, errorevery=errorevery)
+                        ax.plot(l0_axis[::errorevery], RMSE.mean(axis=0)[::errorevery],
+                                    linestyle='None', marker='o', ms=3)
+                    except Exception as e:
+                        print('Failed to plot RMSE in experiment %s with error : %s ' % (experiment, e) )
+                    try:
+                        inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
+                                    yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=errorevery)
+                        inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery],
+                                    linestyle='None',  marker='o', ms=3)
+                        print('toto', edgeslist[4, 0, :])
+                    except Exception as e:
+                        print('Failed to plot coeffs in experiment %s with error : %s ' % (experiment, e) )
                     eev += 1
                 except Exception as e:
-                    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
+                    print('Failed to load data to plot experiment %s with error : %s ' % (experiment, e) )
             for a in [ax, inset]:
                 #a.set_yscale("log")#, nonposx = 'clip')
                 if not(scale):
