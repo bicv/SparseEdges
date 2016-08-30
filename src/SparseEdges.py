@@ -1180,7 +1180,7 @@ class SparseEdges(LogGabor):
             if revert:
                 ax.legend(loc='best', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
             else:
-                inset.legend(loc='best', frameon=False, bbox_to_anchor = (0.5, 0.5))
+                inset.legend(loc='best', frameon=False, bbox_to_anchor = (0.4, 0.4))
             plt.locator_params(tight=False, nbins=4)
             plt.tight_layout()
             return fig, ax, inset
