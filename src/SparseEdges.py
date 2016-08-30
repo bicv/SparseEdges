@@ -114,7 +114,7 @@ class SparseEdges(LogGabor):
         """
         if self.pe.MP_alpha == np.inf:
             # linear coding - no sparse coding
-            C[ind_edge_star] = 0
+            C[ind_edge_star] = 0.
         else:
             C_star = self.pe.MP_alpha * C[ind_edge_star]
             FT_lg_star = self.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
