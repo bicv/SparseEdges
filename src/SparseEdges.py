@@ -1087,7 +1087,7 @@ class SparseEdges(LogGabor):
         return out
 
     def plot(self, mps, experiments, databases, labels, fig=None, ax=None,
-            color=[1., 0., 0.], threshold=None, scale=False, ref=None):
+            color=[1., 0., 0.], threshold=None, scale=False, ref=None,  revert=False):
         import matplotlib.pyplot as plt
         import numpy as np
         import matplotlib
@@ -1105,9 +1105,14 @@ class SparseEdges(LogGabor):
         if ax==None: ax = fig.add_subplot(111, axisbg='w')
         # axes.edgecolor      : black   # axes edge color
         if (threshold==None) and (ref==None):
-            inset = fig.add_subplot(111, axisbg='w')
-            # this is another inset axes over the main axes
-            ax = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
+            if revert:
+                inset = fig.add_subplot(111, axisbg='w')
+                # this is another inset axes over the main axes
+                ax = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
+            else:
+                ax = fig.add_subplot(111, axisbg='w')
+                # this is another inset axes over the main axes
+                inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
             #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
             grad = np.linspace(0., 1., 2*len(experiments))
             grad[1::2] = grad[::2]
@@ -1136,11 +1141,11 @@ class SparseEdges(LogGabor):
                     except Exception as e:
                         print('Failed to plot RMSE in experiment %s with error : %s ' % (experiment, e) )
                     try:
-                        inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1),
-                                    yerr=edgeslist[4, :, :].std(axis=1), label=label, errorevery=errorevery)
-                        inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery],
+                        coeff0 = edgeslist[4, 0, :].mean()
+                        inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1)/coeff0,
+                                    yerr=edgeslist[4, :, :].std(axis=1)/coeff0, label=label, errorevery=errorevery)
+                        inset.plot(l0_axis[::errorevery], edgeslist[4, :, :].mean(axis=1)[::errorevery]/coeff0,
                                     linestyle='None',  marker='o', ms=3)
-                        print('toto', edgeslist[4, 0, :])
                     except Exception as e:
                         print('Failed to plot coeffs in experiment %s with error : %s ' % (experiment, e) )
                     eev += 1
@@ -1172,7 +1177,10 @@ class SparseEdges(LogGabor):
             ax.set_ylim(-.02, 1.02)
             ax.set_ylabel(r'Squared error')
             inset.set_ylabel(r'Coefficient')
-            ax.legend(loc='best', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+            if revert:
+                ax.legend(loc='best', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+            else:
+                inset.legend(loc='best', frameon=False, bbox_to_anchor = (0.5, 0.5))
             plt.locator_params(tight=False, nbins=4)
             plt.tight_layout()
             return fig, ax, inset
