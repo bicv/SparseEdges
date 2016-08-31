@@ -267,7 +267,7 @@ class SparseEdges(LogGabor):
             else:
                 #edgeslist[4, :] = 1 / np.random.power(a=a, size=N_edge)
                 edgeslist[3, :] =  self.sf_0.max() * powerlaw.rvs(a=4., size = N_edge) # HACK
-                edgeslist[4, :]  = 1 / powerlaw.rvs(a=a, size = N_edge)
+                edgeslist[4, :]  = np.random.pareto(a=a, size=(N_edge)) + 1
 
 
             edgeslist[5, :] = 2*np.pi*np.random.rand(N_edge)
