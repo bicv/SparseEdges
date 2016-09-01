@@ -1,3 +1,5 @@
+[![PyPI version](https://badge.fury.io/py/SparseEdges.svg)](https://badge.fury.io/py/SparseEdges)
+
 What is the SparseEdges package?
 ================================
 
