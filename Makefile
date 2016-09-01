@@ -1,27 +1,29 @@
-default: index.html
+default: pypi_docs
 NAME = SparseEdges
+version = 0.3 # << to change in setup.py
 PYTHON = python3
 PIP = pip3
+
 edit:
 	mvim -p setup.py src/__init__.py src/$(NAME).py README.md Makefile requirements.txt
 
-pypi_all: pypi_tags pypi_push pypi_upload pypi_docs
+pypi_all: pypi_tags pypi_push pypi_upload
 # https://docs.python.org/2/distutils/packageindex.html
 pypi_tags:
 	git commit -am' tagging for PyPI '
 	# in case you wish to delete tags, visit http://wptheming.com/2011/04/add-remove-github-tags/
-	git tag 0.2 -m "Adds a tag so that we can put this on PyPI."
+	git tag $(version) -m "Adds a tag so that we can put this on PyPI."
 	git push --tags origin master
 
 pypi_push:
-	$(PYTHON) setup.py register
+	python setup.py register
 
 pypi_upload:
-	$(PYTHON) setup.py sdist upload
+	python setup.py sdist upload
 
 pypi_docs:
-	#rm web.zip index.html
-	#i$(PYTHON) nbconvert --to html $(NAME).ipynb
+	#rm web.zip
+	#ipython nbconvert --to html $(NAME).ipynb
 	#mv $(NAME).html index.html
 	#runipy $(NAME).ipynb  --html  index.html
 	zip web.zip index.html
@@ -37,7 +39,7 @@ transfer_from_riou:
 		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/test/{mat,debug.log} ./test
 
 install_dev:
-	$(PIP) uninstall -y $(NAME) ; $(PIP) install --user -e .
+	pip3 uninstall -y $(NAME) ; pip3 install -e .
 todo:
 	grep -R * (^|#)[ ]*(TODO|FIXME|XXX|HINT|TIP)( |:)([^#]*)
 

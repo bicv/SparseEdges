@@ -103,5 +103,5 @@
     'line_width': 1.,
     'line_width_chevrons': .75,
     'edge_scale_chevrons': 180.,
-    'figsize_edges': 6.,
+    'figsize': 6.,
 }
