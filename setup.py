@@ -4,7 +4,7 @@
 from setuptools import setup, find_packages
 
 NAME = "SparseEdges"
-version = "0.3"
+version = "0.3.1"
 
 setup(
     name = NAME,

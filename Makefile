@@ -1,6 +1,6 @@
 default: pypi_docs
 NAME = SparseEdges
-version = 0.3 # << to change in setup.py
+version = 0.3.1 # << to change in setup.py
 PYTHON = python3
 PIP = pip3
 

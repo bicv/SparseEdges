@@ -30,4 +30,4 @@ This package gives a python implementation.
 
 Moreover, it gives additional tools to compute useful stistics in images; first- and second order statistics of co-occurences in images.
 More information is available @ http://nbviewer.ipython.org/github/bicv/SparseEdges/blob/master/SparseEdges.ipynb
-Tests for the packages are available @ http://nbviewer.ipython.org/github/bicv/SparseEdges/blob/master/test-SparseEdges.ipynb.
+Tests for the packages are available @ http://nbviewer.ipython.org/github/bicv/SparseEdges/blob/master/notebooks/test-SparseEdges.ipynb
