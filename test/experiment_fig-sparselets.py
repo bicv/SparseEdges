@@ -18,7 +18,7 @@ N_image = 32
 N = 1024
 
 for size, size_str in zip(sizes, ['_016', '_032', '_064',  '_128', '']):
-    mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+    mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
     mp.pe.seed = 42
     mp.pe.datapath = '../../SLIP/database/'
     mp.set_size((size, size))

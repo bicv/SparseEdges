@@ -15,9 +15,9 @@ FORMATS = ['pdf', 'eps']
 threshold = None # classical plots
 threshold = .3 # plot L0 sparseness obtained when reaching this threshold
  
-mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
 def init_mp():
-    mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+    mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
     mp.pe.seed = 42
     mp.pe.N_image = 60
     mp.pe.datapath = '../../SLIP/database/'

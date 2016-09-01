@@ -11,7 +11,7 @@ import numpy as np
 from SparseEdges import SparseEdges
 mps = []
 for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'laboratory']:
-    mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+    mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
     mp.pe.datapath = '../../SLIP/database/'
     mp.pe.N_image = 100
     mp.pe.do_mask = True

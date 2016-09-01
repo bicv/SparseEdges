@@ -14,7 +14,7 @@ import numpy as np
 from SparseEdges import SparseEdges
 
 for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'laboratory']:
-    mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+    mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
     mp.pe.datapath = '../../SLIP/database/'
     mp.pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
     mp.pe.N_image = 20
@@ -39,7 +39,7 @@ for name_database in ['serre07_distractors']:#, 'serre07_distractors_urban', 'la
         
         theta_prior = np.interp(z, P, np.hstack((v_theta_edges[0]-v_theta_bin/2, v_theta_edges[:-1], v_theta_edges[-1]-v_theta_bin/2)))
 
-        mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+        mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
         mp.pe.datapath = '../../SLIP/database/'
         mp.pe.seed = 21341353 # this ensures that all image lists are the same for the different experiments
         mp.pe.N_image = 20

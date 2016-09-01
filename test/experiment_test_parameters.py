@@ -24,7 +24,7 @@ FORMATS = ['pdf', 'eps']
 
 #! comparing databases
 #!--------------------
-mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
 mp.N = 128
 mp.pe.datapath = '../../SLIP/database/'
 mp.process('testing_vanilla')
@@ -36,7 +36,7 @@ mp.process('testing_vanilla', name_database='serre07_targets')
 mps, experiments = [], []
 v_alpha = np.linspace(0.3, 1., 9)
 for MP_alpha in v_alpha:
-    mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+    mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
     mp.N = 128
     mp.pe.datapath = '../../SLIP/database/'
     mp.pe.MP_alpha = MP_alpha

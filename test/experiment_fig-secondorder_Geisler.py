@@ -19,7 +19,7 @@ fig_width = fig_width_pt*inches_per_pt  # width in inches
 
 
 def init_mp():
-    mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+    mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
     mp.pe.datapath = '../../SLIP/database/'
     mp.pe.N = 60
     mp.pe.do_whitening = True

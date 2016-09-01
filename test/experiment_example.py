@@ -17,10 +17,10 @@ __author__ = "(c) Laurent Perrinet INT - CNRS"
 
 import numpy as np
 from SparseEdges import SparseEdges
-mp = SparseEdges('https://raw.githubusercontent.com/meduz/SparseEdges/master/default_param.py')
+mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
 mp.N = 128
 
-image = mp.imread('https://raw.githubusercontent.com/meduz/SparseEdges/master/database/lena256.png')
+image = mp.imread('https://raw.githubusercontent.com/bicv/SparseEdges/master/database/lena256.png')
 
 name = 'example'
 image = mp.normalize(image, center=True)

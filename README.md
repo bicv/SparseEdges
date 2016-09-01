@@ -1,4 +1,5 @@
 [![PyPI version](https://badge.fury.io/py/SparseEdges.svg)](https://badge.fury.io/py/SparseEdges)
+[![Research software impact](http://depsy.org/api/package/pypi/SparseEdges/badge.svg)](http://depsy.org/package/python/SparseEdges)
 
 What is the SparseEdges package?
 ================================
@@ -28,5 +29,5 @@ This algorithm was presented in the following paper:
 This package gives a python implementation.
 
 Moreover, it gives additional tools to compute useful stistics in images; first- and second order statistics of co-occurences in images.
-More information is available @ http://nbviewer.ipython.org/github/meduz/SparseEdges/blob/master/SparseEdges.ipynb
-Tests for the packages are available @ http://nbviewer.ipython.org/github/meduz/SparseEdges/blob/master/test-SparseEdges.ipynb.
+More information is available @ http://nbviewer.ipython.org/github/bicv/SparseEdges/blob/master/SparseEdges.ipynb
+Tests for the packages are available @ http://nbviewer.ipython.org/github/bicv/SparseEdges/blob/master/test-SparseEdges.ipynb.
