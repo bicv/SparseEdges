@@ -3,7 +3,7 @@
 from __future__ import division, print_function
 """
 
-$ python test/experiment_fig-sparselets.py ./figures
+$ python experiment_fig-sparselets.py ./figures
 
 $ rm -fr **/SparseLets* **/**/SparseLets* 
 

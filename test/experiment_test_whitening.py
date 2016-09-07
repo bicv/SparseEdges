@@ -8,8 +8,8 @@ image = mp.imread('https://raw.githubusercontent.com/bicv/SLIP/master/database/s
 #print image.mean(), image.std()
 image = mp.normalize(image, center=True)
 #print image.mean(), image.std()
-
-matname = 'mat/experiment_test_whitening.npy'
+import os
+matname = os.path.join(mp.pe.matpath, 'experiment_test_whitening.npy')
 try:
     edges = np.load(matname)
 except:
@@ -17,7 +17,7 @@ except:
     np.save(matname, edges)    
 
 
-matname_RMSE = 'mat/experiment_test_whitening_RMSE.npy'
+matname_RMSE = os.path.join(mp.pe.matpath, 'experiment_test_whitening_RMSE.npy')
 try:
     RMSE = np.load(matname_RMSE)
 except:

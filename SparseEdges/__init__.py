@@ -1,4 +1,4 @@
-from .SparseEdges import SparseEdges
+from .SparseEdges import SparseEdges, SparseEdgesWithDipole, EdgeFactory
 
 def adjust_spines(ax, spines):
     for loc, spine in ax.spines.iteritems():

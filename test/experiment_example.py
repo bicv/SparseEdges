@@ -6,7 +6,7 @@ from __future__ import division, print_function
 An example MP run.
 
 To run:
-$ python test/experiment_example.py 
+$ python experiment_example.py 
 
 To remove cache:
 $ rm -fr **/example*

@@ -45,16 +45,16 @@ else:
     edgeslist = np.zeros((6, N+N_circle, N_image))
     np.random.seed(seed=42)
     # random edges:
-    edgeslist[0, :N, :] = mp.N_X * np.random.rand(N, N_image)
-    edgeslist[1, :N, :] = mp.N_X * np.random.rand(N, N_image)
+    edgeslist[0, :N, :] = mp.pe.N_X * np.random.rand(N, N_image)
+    edgeslist[1, :N, :] = mp.pe.N_X * np.random.rand(N, N_image)
     edgeslist[2, :N, :] = (np.pi* np.random.rand(N, N_image) ) % np.pi
     edgeslist[3, :N, :] = 0.5 * (1- mp.pe.base_levels**(-mp.n_levels*(np.random.rand(N, N_image))))
     edgeslist[4, :N, :] = 1.25*np.random.rand(N, N_image) * np.sign(np.random.randn(N, N_image))
     edgeslist[5, :N, :] = 2*np.pi*np.random.rand(N, N_image)
     # cocircular edges:
     for i_N, angle in enumerate(np.linspace(0, 2*np.pi, N_circle)): #2*np.pi*np.random.rand(N_circle)):
-        edgeslist[0, N + i_N, :] = mp.N_X/2. - mp.N_X/4.*np.sin(angle) + .0 * np.random.randn(N_image)
-        edgeslist[1, N + i_N, :] = mp.N_X/2. + mp.N_X/4.*np.cos(angle) + .0 * np.random.randn(N_image)
+        edgeslist[0, N + i_N, :] = mp.pe.N_X/2. - mp.pe.N_X/4.*np.sin(angle) + .0 * np.random.randn(N_image)
+        edgeslist[1, N + i_N, :] = mp.pe.N_X/2. + mp.pe.N_X/4.*np.cos(angle) + .0 * np.random.randn(N_image)
         edgeslist[2, N + i_N, :] = (np.pi/2 + angle + .5*np.pi/180 * np.random.randn(N_image)) % np.pi
         edgeslist[3, N + i_N, :] = mp.sf_0[2] #0.03
         edgeslist[4, N + i_N, :] = 1.1 + .15*np.exp(np.cos(angle)/1.**2)
@@ -70,7 +70,7 @@ v_max = 1.*image.max()
 v_min = -v_max
 ##############################################################################################################
 print( ' without edges ')
-matname = 'mat/' + figname + '_secondorder_A.npy'
+matname = os.path.join(mp.pe.matpath, figname + '_secondorder_A.npy')
 try:
     fig, a = mp.show_edges(edges=np.zeros((6,0)), image=image, v_min=v_min, v_max=v_max, color='toto', show_phase=False) #
     if not(figpath==None): 
@@ -81,7 +81,7 @@ except:
     print ('File ', matname, ' is locked')
 ##############################################################################################################
 print (' without second-order ')
-matname = 'mat/' + figname + '_secondorder_B.npy'
+matname = os.path.join(mp.pe.matpath, figname + '_secondorder_B.npy')
 if not(os.path.isfile(matname)):
     if not(os.path.isfile(matname + '_lock')):
         file(matname + '_lock', 'w').close()
@@ -100,7 +100,7 @@ except:
     print ('File ', matname, ' is locked')
 ##############################################################################################################
 print (' with second-order ')
-matname = 'mat/' + figname + '_secondorder_C.npy'
+matname = os.path.join(mp.pe.matpath, figname + '_secondorder_C.npy')
 if not(os.path.isfile(matname)):
     if not(os.path.isfile(matname + '_lock')):
         file(matname + '_lock', 'w').close()
@@ -125,7 +125,7 @@ if True:
     ##############################################################################################################
     mp = init_mp()
     for mp.pe.eta_SO in np.logspace(-1., 1., N_explore, base=base)*eta_SO:
-        matname = 'mat/' + figname + '_secondorder_eta_SO_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy'
+        matname = os.path.join(mp.pe.matpath, figname + '_secondorder_eta_SO_' + str(mp.pe.eta_SO).replace('.', '_') + '.npy')
         if not(os.path.isfile(matname)):
             if not(os.path.isfile(matname + '_lock')):
                 file(matname + '_lock', 'w').close()
@@ -144,7 +144,7 @@ if True:
     mp = init_mp()
     mp.pe.eta_SO = eta_SO
     for mp.pe.dip_epsilon in np.linspace(0, 1., N_explore):
-        matname = 'mat/' + figname + '_secondorder_dip_epsilon_' + str(mp.pe.dip_epsilon).replace('.', '_') + '.npy'
+        matname = os.path.join(mp.pe.matpath, figname + '_secondorder_dip_epsilon_' + str(mp.pe.dip_epsilon).replace('.', '_') + '.npy')
         if not(os.path.isfile(matname)):
             if not(os.path.isfile(matname + '_lock')):
                 file(matname + '_lock', 'w').close()
@@ -165,7 +165,7 @@ if True:
     mp = init_mp()
     mp.pe.eta_SO = eta_SO
     for mp.pe.dip_w in np.logspace(-1., 1., N_explore, base=base)*mp.pe.dip_w:
-        matname = 'mat/' + figname + '_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy'
+        matname = os.path.join(mp.pe.matpath, figname + '_secondorder_dip_w_' + str(mp.pe.dip_w).replace('.', '_') + '.npy')
         if not(os.path.isfile(matname)):
             if not(os.path.isfile(matname + '_lock')):
                 file(matname + '_lock', 'w').close()
@@ -184,7 +184,7 @@ if True:
     mp = init_mp()
     mp.pe.eta_SO = eta_SO
     for mp.pe.dip_B_psi in np.logspace(-1., 1., N_explore, base=base)*mp.pe.dip_B_psi:
-        matname = 'mat/' + figname + '_secondorder_dip_B_psi_' + str(mp.pe.dip_B_psi).replace('.', '_') + '.npy'
+        matname = os.path.join(mp.pe.matpath, figname + '_secondorder_dip_B_psi_' + str(mp.pe.dip_B_psi).replace('.', '_') + '.npy')
         if not(os.path.isfile(matname)):
             if not(os.path.isfile(matname + '_lock')):
                 file(matname + '_lock', 'w').close()
@@ -203,7 +203,7 @@ if True:
     mp = init_mp()
     mp.pe.eta_SO = eta_SO
     for mp.pe.dip_B_theta in np.logspace(-1., 1., N_explore, base=base)*mp.pe.dip_B_theta:
-        matname = 'mat/' + figname + '_secondorder_dip_B_theta_' + str(mp.pe.dip_B_theta).replace('.', '_') + '.npy'
+        matname = os.path.join(mp.pe.matpath, figname + '_secondorder_dip_B_theta_' + str(mp.pe.dip_B_theta).replace('.', '_') + '.npy')
         if not(os.path.isfile(matname)):
             if not(os.path.isfile(matname + '_lock')):
                 file(matname + '_lock', 'w').close()
@@ -222,7 +222,7 @@ if True:
     mp = init_mp()
     mp.pe.eta_SO = eta_SO
     for mp.pe.dip_scale in np.logspace(-1., 1., N_explore, base=base)*mp.pe.dip_scale:
-        matname = 'mat/' + figname + '_secondorder_dip_scale_' + str(mp.pe.dip_scale).replace('.', '_') + '.npy'
+        matname = os.path.join(mp.pe.matpath, figname + '_secondorder_dip_scale_' + str(mp.pe.dip_scale).replace('.', '_') + '.npy')
         if not(os.path.isfile(matname)):
             if not(os.path.isfile(matname + '_lock')):
                 file(matname + '_lock', 'w').close()
