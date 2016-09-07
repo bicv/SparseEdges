@@ -5,7 +5,7 @@ from __future__ import division, print_function
 
 Testing some parameters of the SparseEdges framework on its efficiency.
 
-rm -fr cache/edges/testing_* cache/testing_* results/edges/testing_* results/testing_*
+rm -fr mat/edges/testing_* mat/testing_* figures/edges/testing_* figures/testing_*
 frioul_batch  -n "14,15,16"  -M 36 'python experiment_test_parameters.py'
 frioul_batch -M 200 'python experiment_test_parameters.py'
 

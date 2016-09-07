@@ -10,9 +10,8 @@ image = mp.normalize(image, center=True)
 #! trying now using no whitening of the image
 mp.pe.do_whitening = False
 
-import os
-matname = os.path.join(mp.pe.matpath, 'experiment_test_nowhitening.npy')
-matname_RMSE = os.path.join(mp.pe.matpath, 'experiment_test_nowhitening_RMSE.npy')
+matname = 'mat/experiment_test_nowhitening.npy'
+matname_RMSE = 'mat/experiment_test_nowhitening_RMSE.npy'
 try:
     edges = np.load(matname)
 except:

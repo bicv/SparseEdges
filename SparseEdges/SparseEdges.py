@@ -158,7 +158,7 @@ class SparseEdges(LogGabor):
         import matplotlib.cm as cm
         if fig==None:
             #  Figure :                      height         ----------           width
-            fig = plt.figure(figsize=(self.pe.figsize*self.pe.N_Y/self.pe.N_X, self.pe.figsize))
+            fig = plt.figure(figsize=(self.pe.figsize_edges*self.pe.N_Y/self.pe.N_X, self.pe.figsize_edges))
         if a==None:
             border = 0.0
             a = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
@@ -1213,7 +1213,7 @@ class SparseEdges(LogGabor):
                     l0_std.append(l0_results.std())
                     ind += 1
                 except Exception as e:
-                    print('Failed to plot experiments %s with error : %s ' % (experiments, e) )
+                    print('Failed to plot experiment %s with error : %s ' % (experiment, e) )
 
 
 #  subplots_adjust(left=None, bottom=None, right=None, top=None,
@@ -1289,7 +1289,7 @@ class SparseEdges(LogGabor):
                 imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
                 RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
                 L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1. +1
-                if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].pe.N_X/mps[ref].pe.N_Y
+                if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].N_X/mps[ref].N_Y
 #             print("ref-thr - L0_ref=", L0_ref)
 
                 for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):

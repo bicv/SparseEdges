@@ -2,8 +2,8 @@
 .ipynb_checkpoints/
 database/.AppleDouble/
 database/Yelmo/
-cache
-results
+figures/
+mat/
 web.zip
 frioul*
 white*

@@ -52,9 +52,8 @@
     'N_phi': 12, #
     'N_scale': 5, #
     'loglevel_max': 7, # used for the statistics
-    'figsize': 8.,
-    'figsize_hist': 8, # width of a column in inches
-    'figsize_cohist': 8, #
+    'figsize_hist': 3.41, # width of a column in inches
+    'figsize_cohist': 3.41, #
 # doing the computation on a circular mask
     'edge_mask': True, # should we use a circular mask to exclude some edges when computing statistics (first- and second-order). True in Geisler et al, 2001.
     'do_rank': False,
@@ -104,4 +103,5 @@
     'line_width': 1.,
     'line_width_chevrons': .75,
     'edge_scale_chevrons': 180.,
+    'figsize': 6.,
 }
