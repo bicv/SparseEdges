@@ -92,11 +92,11 @@
     'dip_scale': 1.5,
     'dip_epsilon': .5,
 # PATHS
-    'figpath': 'results/',
-    'edgefigpath': 'results/edges/',
-    'matpath': 'cache/',
-    'edgematpath': 'cache/edges/',
-    'datapath': 'database/',
+    'figpath': 'results',
+    'edgefigpath': 'results/edges',
+    'matpath': 'data_cache',
+    'edgematpath': 'data_cache/edges',
+    'datapath': 'database',
     'ext': '.pdf',
     'scale': .8,
     'scale_circle': 0.08, # relativesize of segments and pivot
