@@ -7,7 +7,6 @@ See http://pythonhosted.org/SparseEdges
 
 """
 __author__ = "(c) Laurent Perrinet INT - CNRS"
-__docformat__ = "restructuredtext"
 import numpy as np
 import os
 PID, HOST = os.getpid(), os.uname()[1]

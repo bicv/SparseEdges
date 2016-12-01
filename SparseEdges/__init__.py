@@ -1,3 +1,9 @@
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import division, print_function, absolute_import
+__author__ = "Laurent Perrinet INT - CNRS"
+__version__ = '0.3.2'
+__licence__ = 'GPLv2'
 from .SparseEdges import SparseEdges, SparseEdgesWithDipole, EdgeFactory
 
 def adjust_spines(ax, spines):

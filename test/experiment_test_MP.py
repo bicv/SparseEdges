@@ -16,5 +16,9 @@ try:
     edges = np.load(matname)
 except:
     edges, C_res = mp.run_mp(image, verbose=False)
+    try:
+        os.mkdir(mp.pe.matpath)
+    except:
+        pass
     np.save(matname, edges)   
 fig, a = mp.show_edges(edges, image=mp.whitening(image))

@@ -1,6 +1,6 @@
 default: pypi_docs
 NAME = SparseEdges
-version = 0.3.1 # << to change in setup.py
+VERSION=`python3 -c'import SparseEdges; print(SparseEdges.__version__)'`
 PYTHON = python3
 PIP = pip3
 
@@ -12,7 +12,7 @@ pypi_all: pypi_tags pypi_push pypi_upload
 pypi_tags:
 	git commit -am' tagging for PyPI '
 	# in case you wish to delete tags, visit http://wptheming.com/2011/04/add-remove-github-tags/
-	git tag $(version) -m "Adds a tag so that we can put this on PyPI."
+	git tag $(VERSION) -m "Adds a tag so that we can put this on PyPI."
 	git push --tags origin master
 
 pypi_push:
