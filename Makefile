@@ -1,8 +1,8 @@
-default: pypi_docs
 NAME = SparseEdges
 VERSION=`python3 -c'import SparseEdges; print(SparseEdges.__version__)'`
 PYTHON = python3
 PIP = pip3
+default: $(NAME).pdf index.html
 
 edit:
 	mvim -p setup.py src/__init__.py src/$(NAME).py README.md Makefile requirements.txt
@@ -16,10 +16,10 @@ pypi_tags:
 	git push --tags origin master
 
 pypi_push:
-	python setup.py register
+	$(PYTHON) setup.py register
 
 pypi_upload:
-	python setup.py sdist upload
+	$(PYTHON) setup.py sdist upload
 
 pypi_docs:
 	#rm web.zip
@@ -62,15 +62,14 @@ console:
 	open -a /Applications/Utilities/Console.app/ log-sparseedges-debug.log
 
 # macros for tests
-index.pdf: $(NAME).ipynb
-	runipy $(NAME).ipynb -o
-	i$(PYTHON) nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to pdf index.pdf $(NAME).ipynb
+index.html: $(NAME).ipynb
+	jupyter nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to html index.html $(NAME).ipynb
 
 run_all:
 	for i in *.py; do echo $i; i$(PYTHON) $i ; done
 
 %.pdf: %.ipynb
-	i$(PYTHON) nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to latex --post PDF $<
+	jupyter nbconvert --SphinxTransformer.author='Laurent Perrinet (INT, UMR7289)' --to pdf $<
 
 # cleaning macros
 clean_tmp:
