@@ -16,7 +16,6 @@ import matplotlib
 matplotlib.use("Agg") # agg-backend, so we can create figures without x-server (no PDF, just PNG etc.)
 
 from SparseEdges import SparseEdges
-FORMATS = ['pdf', 'eps']
 
 # TODO: here, we are more interested in the processing of the database, not the comparison - use the correct function
 # TODO : annotate the efficiency of different LogGabor bases (RMSE?)
@@ -35,13 +34,13 @@ mp.process('testing_vanilla', name_database='serre07_targets')
 # TODO : make an experiment showing that using scale does not bring much
 mps, experiments = [], []
 v_alpha = np.linspace(0.3, 1., 9)
-for alpha in v_alpha:
+for MP_alpha in v_alpha:
     mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
     mp.N = 128
     mp.pe.datapath = '../../SLIP/database/'
-    mp.pe.alpha = alpha
+    mp.pe.MP_alpha = MP_alpha
     mp.init()
-    exp = 'testing_alpha_' + str(alpha).replace('.', '_')
+    exp = 'testing_MP_alpha_' + str(MP_alpha).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
     mps.append(mp)
@@ -59,7 +58,9 @@ fig = plt.figure(figsize=(fig_width, fig_width/1.618))
 fig, a, ax = mp.plot(mps=mps,
                   experiments=experiments, databases=databases, labels=labels, 
                   fig=fig, color=[0., 1., 0.], threshold=threshold, scale=True)    
-a.set_xlabel(r' $\alpha$')
+a.set_xlabel(r' $MP_{alpha}$')
 
 import os
-mp.savefig(fig, os.path.join(mp.pe.figpath, 'testing_alpha'), display=True)
+mp.savefig(fig, os.path.join(mp.pe.figpath, 'testing_MP_alpha'), display=True)
+        
+## TODO:  would be interesting to see how that changes with number of image patches used, i.e. whether it settles down to that particular pattern or just jumps around.
