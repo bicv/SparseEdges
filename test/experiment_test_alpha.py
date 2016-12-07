@@ -35,13 +35,13 @@ mp.process('testing_vanilla', name_database='serre07_targets')
 # TODO : make an experiment showing that using scale does not bring much
 mps, experiments = [], []
 v_alpha = np.linspace(0.3, 1., 9)
-for MP_alpha in v_alpha:
+for alpha in v_alpha:
     mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
     mp.N = 128
     mp.pe.datapath = '../../SLIP/database/'
-    mp.pe.MP_alpha = MP_alpha
+    mp.pe.alpha = alpha
     mp.init()
-    exp = 'testing_MP_alpha_' + str(MP_alpha).replace('.', '_')
+    exp = 'testing_alpha_' + str(alpha).replace('.', '_')
     mp.process(exp)
     experiments.append(exp)
     mps.append(mp)
@@ -63,7 +63,3 @@ a.set_xlabel(r' $\alpha$')
 
 import os
 for ext in FORMATS: fig.savefig(os.path.join(mp.pe.figpath, 'testing_alpha.' + ext))
-        
-## TODO:  would be interesting to see how that changes with number of image patches used, i.e. whether it settles down to that particular pattern or just jumps around.
-
-fig

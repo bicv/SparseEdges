@@ -1273,7 +1273,7 @@ class SparseEdges(LogGabor):
 #             ax.set_ylabel(r'absative $\ell_0$ pseudo-norm')# (bits / pixel)')#absative $\ell_0$-norm')
                 ax.set_ylabel(r'abs. SE')# (bits / pixel)')#absative $\ell_0$-norm')
 
-            ax.set_xticks(np.arange(ind)+.5*width)
+            ax.set_xticks(np.arange(ind))
             ax.set_xticklabels(labels)
 
             plt.tight_layout()
@@ -1311,11 +1311,11 @@ class SparseEdges(LogGabor):
                 rects = ax.bar(np.arange(ind), relL0, yerr=relL0_std, alpha=.8, error_kw={'ecolor':'k'})
                 rects[ref].set_color('w')
                 rects[ref].set_edgecolor('k')
-                ax.set_xlim([-width/4, ind+.0*width])
+                # ax.set_xlim([-width/2, ind+.0*width])
 
                 ax.set_ylabel(r'relative coding cost wrt default')# (bits / pixel)')#relative $\ell_0$-norm')
 
-                ax.set_xticks(np.arange(ind)+.5*width)
+                ax.set_xticks(np.arange(ind))
                 ax.set_xticklabels(labels)
 
                 ax.grid(b=False, which="both")
