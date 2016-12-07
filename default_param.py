@@ -90,6 +90,7 @@
     'dip_epsilon': .5,
 # PATHS
     'figpath': 'results',
+    'do_edgedir': False,
     'edgefigpath': 'results/edges',
     'matpath': 'data_cache',
     'edgematpath': 'data_cache/edges',

@@ -890,48 +890,49 @@ class SparseEdges(LogGabor):
                     self.log.error('Failed to remove lock file %s_lock, error : %s ', txtname, e)
 
         # 4- Doing the edge figures to check the edge extraction process
-        edgedir = os.path.join(self.pe.edgefigpath, exp + '_' + name_database)
-        if not(os.path.isdir(edgedir)): os.mkdir(edgedir)
+        if self.pe.do_edgedir:
+            edgedir = os.path.join(self.pe.edgefigpath, exp + '_' + name_database)
+            if not(os.path.isdir(edgedir)): os.mkdir(edgedir)
 
-        if not(locked):
-            N_image = edgeslist.shape[2]
-            for index in np.random.permutation(np.arange(len(imagelist))):
-                filename, croparea = imagelist[index]
+            if not(locked):
+                N_image = edgeslist.shape[2]
+                for index in np.random.permutation(np.arange(len(imagelist))):
+                    filename, croparea = imagelist[index]
 
-                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '.png')
-                if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                    try:
-                        open(figname + '_lock', 'w').close()
-                        self.log.info('> redoing figure %s ', figname)
-                        image, filename_, croparea_ = self.patch(name_database=name_database, filename=filename, croparea=croparea)
-                        if noise >0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
-                        if self.pe.do_whitening: image = self.whitening(image)
-                        fig, a = self.show_edges(edgeslist[:, :, index], image=image*1.)
-                        plt.savefig(figname)
-                        plt.close('all')
+                    figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '.png')
+                    if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                         try:
-                            os.remove(figname + '_lock')
+                            open(figname + '_lock', 'w').close()
+                            self.log.info('> redoing figure %s ', figname)
+                            image, filename_, croparea_ = self.patch(name_database=name_database, filename=filename, croparea=croparea)
+                            if noise >0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
+                            if self.pe.do_whitening: image = self.whitening(image)
+                            fig, a = self.show_edges(edgeslist[:, :, index], image=image*1.)
+                            plt.savefig(figname)
+                            plt.close('all')
+                            try:
+                                os.remove(figname + '_lock')
+                            except Exception as e:
+                                self.log.info('Failed to remove lock file %s_lock , error : %s ', figname , e)
                         except Exception as e:
-                            self.log.info('Failed to remove lock file %s_lock , error : %s ', figname , e)
-                    except Exception as e:
-                        self.log.info('Failed to make edge image  %s, error : %s ', figname , traceback.print_tb(sys.exc_info()[2]))
+                            self.log.info('Failed to make edge image  %s, error : %s ', figname , traceback.print_tb(sys.exc_info()[2]))
 
-                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct.png')
-                if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                    try:
-                        open(figname + '_lock', 'w').close()
-                        self.log.info('> reconstructing figure %s ', figname)
-                        image_ = self.reconstruct(edgeslist[:, :, index])
-#                         if self.pe.do_whitening: image_ = self.dewhitening(image_)
-                        fig, a = self.show_edges(edgeslist[:, :, index], image=image_*1.)
-                        plt.savefig(figname)
-                        plt.close('all')
+                    figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct.png')
+                    if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                         try:
-                            os.remove(figname + '_lock')
+                            open(figname + '_lock', 'w').close()
+                            self.log.info('> reconstructing figure %s ', figname)
+                            image_ = self.reconstruct(edgeslist[:, :, index])
+    #                         if self.pe.do_whitening: image_ = self.dewhitening(image_)
+                            fig, a = self.show_edges(edgeslist[:, :, index], image=image_*1.)
+                            plt.savefig(figname)
+                            plt.close('all')
+                            try:
+                                os.remove(figname + '_lock')
+                            except Exception as e:
+                                self.log.error('Failed to remove lock file %s_lock, error : %s ', figname, traceback.print_tb(sys.exc_info()[2]))
                         except Exception as e:
-                            self.log.error('Failed to remove lock file %s_lock, error : %s ', figname, traceback.print_tb(sys.exc_info()[2]))
-                    except Exception as e:
-                        self.log.error('Failed to make reconstruct image  %s , error : %s  ', figname, traceback.print_tb(sys.exc_info()[2]))
+                            self.log.error('Failed to make reconstruct image  %s , error : %s  ', figname, traceback.print_tb(sys.exc_info()[2]))
 
             # 5- Computing RMSE to check the edge extraction process
             try:
