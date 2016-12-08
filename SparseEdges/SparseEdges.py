@@ -38,12 +38,6 @@ class SparseEdges(LogGabor):
     def init(self):
         LogGabor.init(self)
 
-        self.n_levels = int(np.log(np.max((self.pe.N_X, self.pe.N_Y)))/np.log(self.pe.base_levels))
-        self.sf_0 = 1. / np.logspace(1, self.n_levels, self.n_levels, base=self.pe.base_levels)
-        self.theta = np.linspace(-np.pi/2, np.pi/2, self.pe.n_theta+1)[1:]
-
-        self.oc = (self.pe.N_X * self.pe.N_Y * self.pe.n_theta * self.n_levels) #(1 - self.pe.base_levels**-2)**-1)
-
     def run_mp(self, image, verbose=False, progress=False):
         """
         runs the MatchingPursuit algorithm on image
@@ -54,7 +48,7 @@ class SparseEdges(LogGabor):
 #         residual = image.copy()
 #         RMSE = np.ones(self.pe.N)
         if self.pe.do_whitening: image_ = self.whitening(image_)
-        C = self.init_C(image_)
+        C = self.linear_pyramid(image_)
         if progress:
             import pyprind
             my_prbar = pyprind.ProgPercent(self.pe.N)   # 1) initialization with number of iterations
@@ -83,15 +77,6 @@ class SparseEdges(LogGabor):
             # PURSUIT
             C = self.backprop(C, ind_edge_star)
         return edges, C
-
-    def init_C(self, image):
-        C = np.empty((self.pe.N_X, self.pe.N_Y, self.pe.n_theta, self.n_levels), dtype=np.complex)
-        for i_sf_0, sf_0 in enumerate(self.sf_0):
-            for i_theta, theta in enumerate(self.theta):
-                FT_lg = self.loggabor(0, 0, sf_0=sf_0, B_sf=self.pe.B_sf,
-                                    theta=theta, B_theta=self.pe.B_theta)
-                C[:, :, i_theta, i_sf_0] = self.FTfilter(image, FT_lg, full=True)
-        return C
 
     def argmax(self, C):
         """
@@ -386,14 +371,14 @@ class SparseEdges(LogGabor):
                 self.log.error(' some locked RMSE extractions %s, error ', e)
                 return 'locked'
 
-    def init_edges(self):
+    def init_binedges(self):
         # configuring histograms
         # sequence of scalars,it defines the bin edges, including the rightmost edge.
-        self.edges_d = np.linspace(self.pe.d_min, self.pe.d_max, self.pe.N_r+1)
-        self.edges_phi = np.linspace(-np.pi/2, np.pi/2, self.pe.N_phi+1) + np.pi/self.pe.N_phi/2
-        self.edges_theta = np.linspace(-np.pi/2, np.pi/2, self.pe.N_Dtheta+1) + np.pi/self.pe.N_Dtheta/2
-        self.edges_sf_0 = 2**np.arange(np.ceil(np.log2(self.pe.N_X)))
-        self.edges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
+        self.binedges_d = np.linspace(self.pe.d_min, self.pe.d_max, self.pe.N_r+1)
+        self.binedges_phi = np.linspace(-np.pi/2, np.pi/2, self.pe.N_phi+1) + np.pi/self.pe.N_phi/2
+        self.binedges_theta = np.linspace(-np.pi/2, np.pi/2, self.pe.N_Dtheta+1) + np.pi/self.pe.N_Dtheta/2
+        self.binedges_sf_0 = 2**np.arange(np.ceil(np.log2(self.pe.N_X)))
+        self.binedges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
     def histedges_theta(self, edgeslist, fig=None, a=None, display=True):
         """
@@ -402,7 +387,7 @@ class SparseEdges(LogGabor):
         p(theta | I )
 
         """
-        self.init_edges()
+        self.init_binedges()
 
         theta = (edgeslist[2, ...].ravel())
         theta = ((theta + np.pi/2 - np.pi/self.pe.N_Dtheta/2)  % np.pi ) - np.pi/2  + np.pi/self.pe.N_Dtheta/2
@@ -417,7 +402,7 @@ class SparseEdges(LogGabor):
 
 #         print theta.min(), theta.max(),
         weights = np.absolute(value)/(np.absolute(value)).sum()
-        theta_bin = self.edges_theta # np.hstack((self.theta, self.theta[0]+np.pi))  + np.pi/self.pe.N_Dtheta/2
+        theta_bin = self.binedges_theta # np.hstack((self.theta, self.theta[0]+np.pi))  + np.pi/self.pe.N_Dtheta/2
 #         print theta_bin.min(), theta_bin.max()
         v_hist, v_theta_edges_ = np.histogram(theta, bins=theta_bin, density=True, weights=weights)
         v_hist /= v_hist.sum()
@@ -439,7 +424,7 @@ class SparseEdges(LogGabor):
         p(scale | I )
 
         """
-        self.init_edges()
+        self.init_binedges()
 
         sf_0 = (edgeslist[3, ...].ravel())
         value = edgeslist[4, ...].ravel()
@@ -451,7 +436,7 @@ class SparseEdges(LogGabor):
             value = value[mask]
 
         weights = np.absolute(value)/(np.absolute(value)).sum()
-        v_hist, v_sf_0_edges_ = np.histogram(sf_0, self.edges_sf_0, density=True, weights=weights)
+        v_hist, v_sf_0_edges_ = np.histogram(sf_0, self.binedges_sf_0, density=True, weights=weights)
         v_hist /= v_hist.sum()
         if display:
             if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
@@ -474,7 +459,7 @@ class SparseEdges(LogGabor):
         p(x-x_, y-y_, theta-theta_ | I, x_, y_, theta_)
 
         """
-        self.init_edges()
+        self.init_binedges()
 
         if not(edgeslist is None):
             v_hist = None
@@ -536,19 +521,19 @@ class SparseEdges(LogGabor):
                     weights = weights.ravel()
                 else:
                     weights = np.ones_like(weights)
-#                 print 'd', d.min(), self.edges_d.min(), ' / ', d.max(), self.edges_d.max(), ' / ', d.std(), ' / ', np.median(d), ' / ', (d*weights).sum(), ' / ', weights.sum()
+#                 print 'd', d.min(), self.binedges_d.min(), ' / ', d.max(), self.binedges_d.max(), ' / ', d.std(), ' / ', np.median(d), ' / ', (d*weights).sum(), ' / ', weights.sum()
 
 #                 print (np.sin(theta + theta.T)).std()
 #                 print (np.sin(phi - phi.T)).std()
-#                 print 'phi', phi.min(), self.edges_phi.min(), ' / ', phi.max(), self.edges_phi.max()
-#                 print 'theta', theta.min(), self.edges_theta.min(), ' / ', theta.max(), self.edges_theta.max()
+#                 print 'phi', phi.min(), self.binedges_phi.min(), ' / ', phi.max(), self.binedges_phi.max()
+#                 print 'theta', theta.min(), self.binedges_theta.min(), ' / ', theta.max(), self.binedges_theta.max()
                 # putting everything in the right range:
                 phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
                 theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
-#                 print 'phi', phi.min() - self.edges_phi.min(), ' / ', phi.max() - self.edges_phi.max()
-#                 print 'theta', theta.min() - self.edges_theta.min(), ' / ', theta.max() - self.edges_theta.max()
+#                 print 'phi', phi.min() - self.binedges_phi.min(), ' / ', phi.max() - self.binedges_phi.max()
+#                 print 'theta', theta.min() - self.binedges_theta.min(), ' / ', theta.max() - self.binedges_theta.max()
                 v_hist_, edges_ = np.histogramdd([d.ravel(), phi.ravel(), theta.ravel(), loglevel.ravel()], #data,
-                                                 bins=(self.edges_d, self.edges_phi, self.edges_theta, self.edges_loglevel),
+                                                 bins=(self.binedges_d, self.binedges_phi, self.binedges_theta, self.binedges_loglevel),
                                                  normed=False, # TODO check if correct True,
                                                  weights = weights
                                                 )
@@ -577,20 +562,20 @@ class SparseEdges(LogGabor):
                 a1.set_xlabel('psi')
             else:
                 a1.set_xlabel('phi')
-            a1.set_xticks([0., self.edges_phi.size/2. -1.5, self.edges_phi.size-2.])
+            a1.set_xticks([0., self.binedges_phi.size/2. -1.5, self.binedges_phi.size-2.])
             a1.set_xticklabels(['-pi/2 + bw ', '0', 'pi/2'])
             a1.set_ylabel('d')
-            edges_d_half = .5*(self.edges_d[1:] + self.edges_d[:-1])
-            a1.set_yticks([0., self.edges_d.size-2.])
+            edges_d_half = .5*(self.binedges_d[1:] + self.binedges_d[:-1])
+            a1.set_yticks([0., self.binedges_d.size-2.])
             a1.set_yticklabels([str(edges_d_half[0]), str(edges_d_half[-1])])
             a1.axis('tight')
             a2 = fig.add_subplot(222, axisbg='w')#edges_[0], edges_[2],
             a2.imshow((v_hist.sum(axis=3).sum(axis=1)), **options)
             a2.set_xlabel('theta')
-            a2.set_xticks([0., self.edges_theta.size/2.-1.5, self.edges_theta.size-2.])
+            a2.set_xticks([0., self.binedges_theta.size/2.-1.5, self.binedges_theta.size-2.])
             a2.set_xticklabels(['-pi/2 + bw', '0', 'pi/2'])
             a2.set_ylabel('d')
-            a2.set_yticks([0., self.edges_d.size-2.])
+            a2.set_yticks([0., self.binedges_d.size-2.])
             a2.set_yticklabels([str(edges_d_half[0]), str(edges_d_half[-1])])
             a2.axis('tight')
             a3 = fig.add_subplot(223, axisbg='w')#edges_[1], edges_[2],
@@ -599,10 +584,10 @@ class SparseEdges(LogGabor):
                 a3.set_xlabel('psi')
             else:
                 a3.set_xlabel('phi')
-            a3.set_xticks([0., self.edges_phi.size/2. - 1.5, self.edges_phi.size-2.])
+            a3.set_xticks([0., self.binedges_phi.size/2. - 1.5, self.binedges_phi.size-2.])
             a3.set_xticklabels(['-pi/2 + bw', '0', 'pi/2'])
             a3.set_ylabel('theta')
-            a3.set_yticks([0., self.edges_theta.size/2. - 1.5, self.edges_theta.size-2.])
+            a3.set_yticks([0., self.binedges_theta.size/2. - 1.5, self.binedges_theta.size-2.])
             a3.set_yticklabels(['-pi/2 + bw', '0', 'pi/2'])
             a3.axis('tight')
             a4 = fig.add_subplot(224, axisbg='w')#, polar = True)
@@ -611,7 +596,7 @@ class SparseEdges(LogGabor):
             a4.set_xticks([0., self.pe.N_scale/2. -.5, self.pe.N_scale -1.])
             a4.set_xticklabels(['smaller', '0', 'bigger'])
             a4.set_ylabel('d')
-            a4.set_yticks([0., self.edges_d.size-2.])
+            a4.set_yticks([0., self.binedges_d.size-2.])
             a4.set_yticklabels([str(edges_d_half[0]), str(edges_d_half[-1])])
             a4.axis('tight')
 #             plt.tight_layout()
@@ -627,12 +612,12 @@ class SparseEdges(LogGabor):
                 v_hist_noscale = v_hist.sum(axis=3)
                 colin_edgelist = np.zeros((6, self.pe.N_r * self.pe.N_phi * 2 + 1 ))
                 colin_argmax = np.argmax(v_hist_noscale, axis=2)
-                for i_r, d_r in enumerate(self.edges_d[:-1]):
-                    for i_phi, phi in enumerate(self.edges_phi[:-1]):
+                for i_r, d_r in enumerate(self.binedges_d[:-1]):
+                    for i_phi, phi in enumerate(self.binedges_phi[:-1]):
                         rad = d_r / self.pe.d_max * max(self.pe.N_X, self.pe.N_Y) /2
                         ii_phi = i_r * self.pe.N_phi
                         colin_edgelist[0:2, ii_phi + i_phi] =  self.pe.N_X /2 - rad * np.sin(phi + np.pi/self.pe.N_phi/2), self.pe.N_Y /2 + rad * np.cos(phi + np.pi/self.pe.N_phi/2)
-                        colin_edgelist[2, ii_phi + i_phi] = self.edges_theta[colin_argmax[i_r, i_phi]] + np.pi/self.pe.N_Dtheta/2
+                        colin_edgelist[2, ii_phi + i_phi] = self.binedges_theta[colin_argmax[i_r, i_phi]] + np.pi/self.pe.N_Dtheta/2
                         colin_edgelist[3, ii_phi + i_phi] = edge_scale
                         colin_edgelist[4, ii_phi + i_phi] = v_hist_noscale[i_r, i_phi, colin_argmax[i_r, i_phi]]
                         # symmetric
@@ -655,11 +640,11 @@ class SparseEdges(LogGabor):
                 v_hist_noscale = v_hist.sum(axis=3)
                 cocir_edgelist = np.zeros((6, self.pe.N_r * self.pe.N_Dtheta * 2 + 1 ))
                 cocir_proba = np.argmax(v_hist_noscale, axis=1)
-                for i_r, d_r in enumerate(self.edges_d[:-1]):
-                    for i_theta, theta in enumerate(self.edges_theta[:-1]):
+                for i_r, d_r in enumerate(self.binedges_d[:-1]):
+                    for i_theta, theta in enumerate(self.binedges_theta[:-1]):
                         rad = d_r / self.pe.d_max * max(self.pe.N_X, self.pe.N_Y) /2
                         ii_theta = i_r * self.pe.N_Dtheta
-                        cocir_edgelist[0:2, ii_theta + i_theta] =  self.pe.N_X /2 - rad * np.sin( self.edges_phi[cocir_proba[i_r, i_theta]] + np.pi/self.pe.N_phi/2), self.pe.N_Y /2 + rad * np.cos( self.edges_phi[cocir_proba[i_r, i_theta]] + np.pi/self.pe.N_phi/2)
+                        cocir_edgelist[0:2, ii_theta + i_theta] =  self.pe.N_X /2 - rad * np.sin( self.binedges_phi[cocir_proba[i_r, i_theta]] + np.pi/self.pe.N_phi/2), self.pe.N_Y /2 + rad * np.cos( self.binedges_phi[cocir_proba[i_r, i_theta]] + np.pi/self.pe.N_phi/2)
                         cocir_edgelist[2, ii_theta + i_theta] = theta + np.pi/self.pe.N_Dtheta/2
                         cocir_edgelist[3, ii_theta + i_theta] = edge_scale
                         cocir_edgelist[4, ii_theta + i_theta] = v_hist_noscale[i_r, cocir_proba[i_r, i_theta], i_theta]
@@ -678,7 +663,7 @@ class SparseEdges(LogGabor):
                     fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
                     if a==None:
                         a = fig.add_subplot(111)
-                a.bar(self.edges_loglevel[:-1], v_hist.sum(axis=(0, 1, 2)))
+                a.bar(self.binedges_loglevel[:-1], v_hist.sum(axis=(0, 1, 2)))
                 plt.setp(a, yticks=[])
                 a.set_xlabel('log2 of scale ratio')
                 a.set_ylabel('probability')
@@ -708,10 +693,10 @@ class SparseEdges(LogGabor):
 
             # Computes the centers of the bins
             if half:
-                v_phi, v_theta = self.edges_phi[(self.pe.N_phi/2-1):-1] + np.pi/self.pe.N_phi/2, self.edges_theta[(self.pe.N_Dtheta/2-1):-1] + np.pi/self.pe.N_Dtheta/2
+                v_phi, v_theta = self.binedges_phi[(self.pe.N_phi/2-1):-1] + np.pi/self.pe.N_phi/2, self.binedges_theta[(self.pe.N_Dtheta/2-1):-1] + np.pi/self.pe.N_Dtheta/2
                 i_phi_shift, i_theta_shift = self.pe.N_phi/2+1, self.pe.N_Dtheta/2-1
             else:
-                v_phi, v_theta = self.edges_phi - np.pi/self.pe.N_phi/2, self.edges_theta - np.pi/self.pe.N_Dtheta/2
+                v_phi, v_theta = self.binedges_phi - np.pi/self.pe.N_phi/2, self.binedges_theta - np.pi/self.pe.N_Dtheta/2
                 i_phi_shift, i_theta_shift = 2, -1
             s_phi, s_theta = len(v_phi), len(v_theta)
             #print 'DEBUG: s_phi, s_theta, self.pe.N_phi, self.pe.N_Dtheta', s_phi, s_theta, self.pe.N_phi, self.pe.N_Dtheta
@@ -1323,46 +1308,6 @@ class SparseEdges(LogGabor):
             except Exception as e:
                 print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
 
-    def golden_pyramid(self, z):
-        """
-        TODO : put in LogGabor
-
-        """
-
-        phi = (np.sqrt(5) +1.)/2. # golden ratio
-        opts= {'vmin':0., 'vmax':1., 'interpolation':'nearest', 'origin':'upper'}
-        fig_width = 13
-        fig = plt.figure(figsize=(fig_width, fig_width/phi))
-        xmin, ymin, size = 0, 0, 1.
-        for i_sf_0, sf_0_ in enumerate(self.sf_0):
-            a = fig.add_axes((xmin/phi, ymin, size/phi, size), axisbg='w')
-            a.axis(c='b', lw=0)
-            plt.setp(a, xticks=[])
-            plt.setp(a, yticks=[])
-            im_RGB = np.zeros((self.pe.N_X, self.pe.N_Y, 3))
-            for i_theta, theta_ in enumerate(self.theta):
-                im_abs = np.absolute(z[:, :, i_theta, i_sf_0])
-                RGB = np.array([.5*np.sin(2*theta_ + 2*i*np.pi/3)+.5 for i in range(3)])
-                im_RGB += im_abs[:,:, np.newaxis] * RGB[np.newaxis, np.newaxis, :]
-
-            im_RGB /= im_RGB.max()
-            a.imshow(im_RGB, **opts)
-            #a.grid(False)
-            a.grid(b=False, which="both")
-            i_orientation = np.mod(i_sf_0, 4)
-            if i_orientation==0:
-                xmin += size
-                ymin += size/phi**2
-            elif i_orientation==1:
-                xmin += size/phi**2
-                ymin += -size/phi
-            elif i_orientation==2:
-                xmin += -size/phi
-            elif i_orientation==3:
-                ymin += size
-            size /= phi
-        return fig
-
 
 class SparseEdgesWithDipole(SparseEdges):
     def __init__(self, pe):
@@ -1393,7 +1338,7 @@ class SparseEdgesWithDipole(SparseEdges):
 #         residual = image.copy()
 #         RMSE = np.ones(self.pe.N)
         if self.pe.do_whitening: image_ = self.whitening(image_)
-        C = self.init_C(image_)
+        C = self.linear_pyramid(image_)
         logD = np.zeros((self.pe.N_X, self.pe.N_Y, self.pe.n_theta, self.n_levels), dtype=np.complex)
         if verbose:
             import pyprind
