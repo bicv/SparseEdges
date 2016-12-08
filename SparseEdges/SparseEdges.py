@@ -389,7 +389,7 @@ class SparseEdges(LogGabor):
         """
         self.init_binedges()
 
-        theta = (edgeslist[2, ...].ravel())
+        theta = edgeslist[2, ...].ravel()
         theta = ((theta + np.pi/2 - np.pi/self.pe.N_Dtheta/2)  % np.pi ) - np.pi/2  + np.pi/self.pe.N_Dtheta/2
         value = edgeslist[4, ...].ravel()
 
@@ -855,6 +855,10 @@ class SparseEdges(LogGabor):
                     locked = True
                 else:
                     np.save(matname + '_edges.npy', edgeslist)
+                    # clean-up sub-folder
+                    path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+                    import shutil
+                    shutil.rmtree(path)                    
         else:
             return 'locked imagelist', 'not done', 'not done'
 
