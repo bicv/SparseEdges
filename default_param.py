@@ -98,7 +98,7 @@
     'figsize': 14.,
     'figsize_hist': 8, # width of a column in inches
     'figsize_cohist': 8, #
-    'formats': ['pdf', 'svg', 'jpg'],
+    'formats': ['png', 'pdf', 'svg', 'jpg'],
     'dpi': 450,
     'scale': .8,
     'scale_circle': 0.08, # relativesize of segments and pivot

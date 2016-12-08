@@ -294,8 +294,8 @@ class SparseEdges(LogGabor):
         runs the edge extraction for a list of images
 
         """
-
-        for path in self.pe.figpath, self.pe.matpath, self.pe.edgefigpath, self.pe.edgematpath:
+        self.mkdir()
+        for path in self.pe.edgefigpath, self.pe.edgematpath:
             if not(os.path.isdir(path)): os.mkdir(path)
         for _ in range(N_do): # repeat this loop to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
@@ -953,55 +953,50 @@ class SparseEdges(LogGabor):
                 self.log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
             except Exception as e:
                 self.log.error('Failed to display RMSE %s ', e)
-            # 6- Plotting the histogram
+            # 6- Plotting the histogram and al
             try:
-#            figname = os.path.join(self.pe.figpath, exp + '_proba-scale_' + name_database + note + self.pe.ext)
-#            if not(os.path.isfile(figname)):
-#                fig, a = self.histedges_scale(edgeslist, display=True)
-#                plt.savefig(figname)
-#                plt.close('all')
-#
-                figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note + self.pe.ext)
+
+                figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
                     fig, a = self.histedges_theta(edgeslist, display=True)
-                    plt.savefig(figname)
+                    self.savefig(figname, formats=self.pe.formats[0])
                     plt.close('all')
                     os.remove(figname + '_lock')
+                #
+                # figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note)
+                # if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
+                #     open(figname + '_lock', 'w').close()
+                #     fig, a = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
+                #     plt.savefig(figname)
+                #     plt.close('all')
+                #     os.remove(figname + '_lock')
+                #
+                # figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_cocir_' + name_database + note)
+                # if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
+                #     open(figname + '_lock', 'w').close()
+                #     fig, a = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
+                #     plt.savefig(figname)
+                #     plt.close('all')
+                #     os.remove(figname + '_lock')
 
-                figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note + self.pe.ext)
-                if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                    open(figname + '_lock', 'w').close()
-                    fig, a = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
-                    plt.savefig(figname)
-                    plt.close('all')
-                    os.remove(figname + '_lock')
-
-                figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_cocir_' + name_database + note + self.pe.ext)
-                if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
-                    open(figname + '_lock', 'w').close()
-                    fig, a = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
-                    plt.savefig(figname)
-                    plt.close('all')
-                    os.remove(figname + '_lock')
-
-                figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note + self.pe.ext)
+                figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
                     fig, a = self.cohistedges(edgeslist, display='chevrons')
-                    plt.savefig(figname)
+                    self.savefig(figname, formats=self.pe.formats[0])
                     plt.close('all')
                     os.remove(figname + '_lock')
 
                 if 'targets' in name_database or 'laboratory' in name_database:
-                    figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_priordistractors_' + name_database + '_' + note + self.pe.ext)
+                    figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_priordistractors_' + name_database + '_' + note)
                     if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                         open(figname + '_lock', 'w').close()
                         imagelist_prior = self.get_imagelist(exp, name_database=name_database.replace('targets', 'distractors'))
                         edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist_prior, noise=noise)
                         v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
                         fig, a = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior)
-                        plt.savefig(figname)
+                        self.savefig(figname, formats=self.pe.formats[0])
                         plt.close('all')
                         os.remove(figname + '_lock')
             except Exception as e:
@@ -1768,8 +1763,7 @@ class EdgeFactory(SparseEdges):
 
                 if i_cv==0:  # TODO: draw for all CV
                     try:
-                        ext = '.pdf'
-                        figname = txtname.replace('.txt', '_grid' + ext)
+                        figname = txtname.replace('.txt', '_grid.' + self.pe.formats[0])
                         # plot the scores of the grid
                         # grid_scores_ contains parameter settings and scores
                         score_dict = grid.grid_scores_
@@ -1879,7 +1873,8 @@ class EdgeFactory(SparseEdges):
 
         return fone_score
 
-    def compare(self, exp, databases=['serre07_distractors', 'serre07_targets'], noise=0., geometric=False, rho_quant=128, do_scale=True):
+    def compare(self, exp, databases=['serre07_distractors', 'serre07_targets'],
+                noise=0., geometric=False, rho_quant=128, do_scale=True):
         """
         Here, we compare 2 sets of images thanks to their respective histograms
         of edge co-occurences using a 2-means classification algorithm
