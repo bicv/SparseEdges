@@ -855,10 +855,10 @@ class SparseEdges(LogGabor):
                     locked = True
                 else:
                     np.save(matname + '_edges.npy', edgeslist)
-                    # clean-up sub-folder
+                    # clean-up edges sub-folder
                     path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
                     import shutil
-                    shutil.rmtree(path)                    
+                    shutil.rmtree(path)
         else:
             return 'locked imagelist', 'not done', 'not done'
 
