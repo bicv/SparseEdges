@@ -2,7 +2,10 @@ default: pypi_docs
 NAME = SparseEdges
 VERSION=`python3 -c'import SparseEdges; print(SparseEdges.__version__)'`
 PYTHON = python3
+PYTHON = python
 PIP = pip3
+PIP = pip-3.2
+PIP = pip
 
 edit:
 	mvim -p setup.py src/__init__.py src/$(NAME).py README.md Makefile requirements.txt
