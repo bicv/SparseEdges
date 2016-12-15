@@ -845,6 +845,7 @@ class SparseEdges(LogGabor):
         if not(locked):
             try:
                 edgeslist = np.load(matname + '_edges.npy')
+
             except Exception as e:
                 self.log.info(' >> There is no edgeslist: %s ', e)
 #                 self.log.info('>> Doing the edge extraction')
@@ -861,6 +862,28 @@ class SparseEdges(LogGabor):
                     shutil.rmtree(path)
         else:
             return 'locked imagelist', 'not done', 'not done'
+
+        # 5- Computing RMSE to check the edge extraction process
+        if not(locked):
+            try:
+                RMSE = np.load(matname + '_RMSE.npy')
+            except Exception as e:
+                self.log.info(' >> There is no RMSE: %s ', e)
+                try:
+                    RMSE = self.full_RMSE(exp, name_database, imagelist)
+                    if RMSE is 'locked':
+                        self.log.info('>> RMSE extraction %s is locked', matname)
+                        locked = True
+                    else:
+                        np.save(matname + '_RMSE.npy', RMSE)
+                except Exception as e:
+                    self.log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
+
+            try:
+                self.log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
+            except Exception as e:
+                self.log.error('Failed to display RMSE %s ', e)
+
 
         # 3- Doing the independence check for this set
         if not(locked):
@@ -923,25 +946,6 @@ class SparseEdges(LogGabor):
                         except Exception as e:
                             self.log.error('Failed to make reconstruct image  %s , error : %s  ', figname, traceback.print_tb(sys.exc_info()[2]))
 
-            # 5- Computing RMSE to check the edge extraction process
-            try:
-                RMSE = np.load(matname + '_RMSE.npy')
-            except Exception as e:
-                self.log.info(' >> There is no RMSE: %s ', e)
-                try:
-                    RMSE = self.full_RMSE(exp, name_database, imagelist)
-                    if RMSE is 'locked':
-                        self.log.info('>> RMSE extraction %s is locked', matname)
-                        locked = True
-                    else:
-                        np.save(matname + '_RMSE.npy', RMSE)
-                except Exception as e:
-                    self.log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
-
-            try:
-                self.log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
-            except Exception as e:
-                self.log.error('Failed to display RMSE %s ', e)
             # 6- Plotting the histogram and al
             try:
 
@@ -991,6 +995,7 @@ class SparseEdges(LogGabor):
             except Exception as e:
                 self.log.error('Failed to create figures, error : %s ', e)
 
+        if not(locked):
             return imagelist, edgeslist, RMSE
         else:
             return 'locked', 'locked edgeslist', ' locked RMSE '
@@ -1197,7 +1202,7 @@ class SparseEdges(LogGabor):
                     l0_std.append(l0_results.std())
                     ind += 1
                 except Exception as e:
-                    print('Failed to plot experiments %s with error : %s ' % (experiments, e) )
+                    print('Failed to plot (no threshold) experiments %s with error : %s ' % (experiments, e) )
 
 
 #  subplots_adjust(left=None, bottom=None, right=None, top=None,
