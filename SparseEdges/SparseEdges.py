@@ -315,27 +315,27 @@ class SparseEdges(LogGabor):
             try:
                 N_image = len(imagelist)
                 edgeslist = np.zeros((6, self.pe.N, N_image))
-                i_image = 0
-                for filename, croparea in imagelist:
+                for i_image, (filename, croparea) in enumerate(imagelist):
                     matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
                     edgeslist[:, :, i_image] = np.load(matname)
-                    i_image += 1
                 return edgeslist
             except Exception as e:
                 self.log.error(' some locked edge extractions %s, error on file %s', e, matname)
                 return 'locked'
 
     def full_RMSE(self, exp, name_database, imagelist):
+        matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+        edgeslist = np.load(matname + '_edges.npy')
         N_do = 2
         for _ in range(N_do): # repeat this loop to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
-            for filename, croparea in imagelist:
+            for i_image, (filename, croparea) in enumerate(imagelist):
                 matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
                 if not(os.path.isfile(matname)):
                     if not(os.path.isfile(matname + '_lock')):
                         open(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
-                        edges = np.load(os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy'))
+                        edges = edgeslist[:, :, i_image]
                         # computing RMSE
                         RMSE = np.ones(self.pe.N)
                         if self.pe.MP_alpha == np.inf:

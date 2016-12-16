@@ -56,7 +56,7 @@ update:
 update_dev:
 	cd ../SLIP; git pull; $(PIP) uninstall -y SLIP; $(PIP) install --user -e . ; cd ../SparseEdges/
 	cd ../LogGabor; git pull; $(PIP) uninstall -y LogGabor; $(PIP) install --user -e . ; cd ../SparseEdges/
-	$(PIP) uninstall -y $(NAME) ; $(PIP) install --user -e .
+	git pull; $(PIP) uninstall -y $(NAME) ; $(PIP) install --user -e .
 
 console:
 	open -a /Applications/Utilities/Console.app/ log-sparseedges-debug.log
