@@ -52,9 +52,6 @@
     'N_phi': 12, #
     'N_scale': 5, #
     'loglevel_max': 7, # used for the statistics
-    'figsize': 8.,
-    'figsize_hist': 8, # width of a column in inches
-    'figsize_cohist': 8, #
 # doing the computation on a circular mask
     'edge_mask': True, # should we use a circular mask to exclude some edges when computing statistics (first- and second-order). True in Geisler et al, 2001.
     'do_rank': False,
@@ -93,11 +90,16 @@
     'dip_epsilon': .5,
 # PATHS
     'figpath': 'results',
+    'do_edgedir': False,
     'edgefigpath': 'results/edges',
     'matpath': 'data_cache',
     'edgematpath': 'data_cache/edges',
     'datapath': 'database',
-    'ext': '.pdf',
+    'figsize': 14.,
+    'figsize_hist': 8, # width of a column in inches
+    'figsize_cohist': 8, #
+    'formats': ['png', 'pdf', 'svg', 'jpg'],
+    'dpi': 450,
     'scale': .8,
     'scale_circle': 0.08, # relativesize of segments and pivot
     'scale_chevrons': 2.5,

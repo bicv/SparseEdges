@@ -4,11 +4,12 @@
 from setuptools import setup, find_packages
 
 NAME = "SparseEdges"
-version = "0.3.1"
+import SparseEdges
+VERSION = SparseEdges.__version__ # << to change in __init__.py
 
 setup(
     name = NAME,
-    version = version,
+    version = VERSION,
     packages = find_packages(exclude=['contrib', 'docs', 'tests']),
      author = "Laurent Perrinet INT - CNRS",
     author_email = "Laurent.Perrinet@univ-amu.fr",
@@ -16,9 +17,15 @@ setup(
     long_description=open("README.md").read(),
     license = "GPLv2",
     install_requires=['LogGabor'],
+    extras_require={
+                'html' : [
+                         'vispy',
+                         'matplotlib'
+                         'jupyter>=1.0']
+    },
     keywords = ('computational neuroscience', 'simulation', 'analysis', 'visualization', 'biologically-inspired', 'computer vision'),
     url = 'https://github.com/bicv/' + NAME, # use the URL to the github repo
-    download_url = 'https://github.com/bicv/' + NAME + '/tarball/' + version,
+    download_url = 'https://github.com/bicv/' + NAME + '/tarball/' + VERSION,
     classifiers = ['Development Status :: 3 - Alpha',
                    'Environment :: Console',
                    'License :: OSI Approved :: GNU General Public License (GPL)',
@@ -28,6 +35,6 @@ setup(
                    'Programming Language :: Python :: 2',
                    'Programming Language :: Python :: 2.7',
                    'Programming Language :: Python :: 3',
-                   'Programming Language :: Python :: 3.5',
+                   'Programming Language :: Python :: 3.5'
                   ],
      )

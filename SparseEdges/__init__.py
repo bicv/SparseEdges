@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, absolute_import
 __author__ = "Laurent Perrinet INT - CNRS"
-__version__ = '0.3.2'
+__version__ = '2016-12-05'
 __licence__ = 'GPLv2'
 from .SparseEdges import SparseEdges, SparseEdgesWithDipole, EdgeFactory
 
