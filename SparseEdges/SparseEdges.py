@@ -315,27 +315,27 @@ class SparseEdges(LogGabor):
             try:
                 N_image = len(imagelist)
                 edgeslist = np.zeros((6, self.pe.N, N_image))
-                i_image = 0
-                for filename, croparea in imagelist:
+                for i_image, (filename, croparea) in enumerate(imagelist):
                     matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
                     edgeslist[:, :, i_image] = np.load(matname)
-                    i_image += 1
                 return edgeslist
             except Exception as e:
                 self.log.error(' some locked edge extractions %s, error on file %s', e, matname)
                 return 'locked'
 
     def full_RMSE(self, exp, name_database, imagelist):
+        matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+        edgeslist = np.load(matname + '_edges.npy')
         N_do = 2
         for _ in range(N_do): # repeat this loop to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
-            for filename, croparea in imagelist:
+            for i_image, (filename, croparea) in enumerate(imagelist):
                 matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
                 if not(os.path.isfile(matname)):
                     if not(os.path.isfile(matname + '_lock')):
                         open(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
-                        edges = np.load(os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy'))
+                        edges = edgeslist[:, :, i_image]
                         # computing RMSE
                         RMSE = np.ones(self.pe.N)
                         if self.pe.MP_alpha == np.inf:
@@ -842,13 +842,40 @@ class SparseEdges(LogGabor):
         locked = (imagelist=='locked')
 #         print 'DEBUG: theta used in this experiment: ', self.theta*180/np.pi
         # 2- Doing the edge extraction for each image in this list
-        if not(locked):
+        if locked:
+            return 'locked imagelist', 'not done', 'not done'
+        else:
             try:
                 edgeslist = np.load(matname + '_edges.npy')
+                # Computing RMSE to check the edge extraction process
+                try:
+                    RMSE = np.load(matname + '_RMSE.npy')
+                except Exception as e:
+                    self.log.info(' >> There is no RMSE: %s ', e)
+                    try:
+                        RMSE = self.full_RMSE(exp, name_database, imagelist)
+                        if RMSE is 'locked':
+                            self.log.info('>> RMSE extraction %s is locked', matname)
+                            locked = True
+                        else:
+                            np.save(matname + '_RMSE.npy', RMSE)
+                            # clean-up edges sub-folder
+                            path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+                            import shutil
+                            shutil.rmtree(path)
+                    except Exception as e:
+                        self.log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
+                        return 'imagelist ok', 'edgelist ok', 'locked RMSE'
+
+                try:
+                    self.log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
+                except Exception as e:
+                    locked = True
+                    self.log.error('Failed to compute average RMSE %s ', e)
+                    return 'imagelist ok', 'edgelist ok', 'locked RMSE'
 
             except Exception as e:
                 self.log.info(' >> There is no edgeslist: %s ', e)
-#                 self.log.info('>> Doing the edge extraction')
                 time.sleep(1.*np.random.rand())
                 edgeslist = self.full_run(exp, name_database, imagelist, noise=noise)
                 if edgeslist == 'locked':
@@ -856,33 +883,7 @@ class SparseEdges(LogGabor):
                     locked = True
                 else:
                     np.save(matname + '_edges.npy', edgeslist)
-                    # clean-up edges sub-folder
-                    path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
-                    import shutil
-                    shutil.rmtree(path)
-        else:
-            return 'locked imagelist', 'not done', 'not done'
 
-        # 5- Computing RMSE to check the edge extraction process
-        if not(locked):
-            try:
-                RMSE = np.load(matname + '_RMSE.npy')
-            except Exception as e:
-                self.log.info(' >> There is no RMSE: %s ', e)
-                try:
-                    RMSE = self.full_RMSE(exp, name_database, imagelist)
-                    if RMSE is 'locked':
-                        self.log.info('>> RMSE extraction %s is locked', matname)
-                        locked = True
-                    else:
-                        np.save(matname + '_RMSE.npy', RMSE)
-                except Exception as e:
-                    self.log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
-
-            try:
-                self.log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
-            except Exception as e:
-                self.log.error('Failed to display RMSE %s ', e)
 
 
         # 3- Doing the independence check for this set
