@@ -842,7 +842,9 @@ class SparseEdges(LogGabor):
         locked = (imagelist=='locked')
 #         print 'DEBUG: theta used in this experiment: ', self.theta*180/np.pi
         # 2- Doing the edge extraction for each image in this list
-        if not(locked):
+        if locked:
+            return 'locked imagelist', 'not done', 'not done'
+        else:
             try:
                 edgeslist = np.load(matname + '_edges.npy')
                 # Computing RMSE to check the edge extraction process
@@ -863,11 +865,14 @@ class SparseEdges(LogGabor):
                             shutil.rmtree(path)
                     except Exception as e:
                         self.log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
+                        return 'imagelist ok', 'edgelist ok', 'locked RMSE'
 
                 try:
                     self.log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
                 except Exception as e:
-                    self.log.error('Failed to display RMSE %s ', e)
+                    locked = True
+                    self.log.error('Failed to compute average RMSE %s ', e)
+                    return 'imagelist ok', 'edgelist ok', 'locked RMSE'
 
             except Exception as e:
                 self.log.info(' >> There is no edgeslist: %s ', e)
@@ -878,8 +883,6 @@ class SparseEdges(LogGabor):
                     locked = True
                 else:
                     np.save(matname + '_edges.npy', edgeslist)
-        else:
-            return 'locked imagelist', 'not done', 'not done'
 
 
 
