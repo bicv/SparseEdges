@@ -1683,7 +1683,7 @@ class EdgeFactory(SparseEdges):
                                         ),
                                     param_grid,
                                     verbose=1,
-                                    scoring='f1',
+                                    scoring='f1_weighted',
                                     cv=5,
                                     n_jobs=self.pe.svm_n_jobs, # http://scikit-learn.org/0.13/modules/generated/sklearn.grid_search.GridSearchCV.html
                                     #pre_dispatch=2*self.pe.svm_n_jobs,
