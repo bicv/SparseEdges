@@ -325,6 +325,8 @@ class SparseEdges(LogGabor):
 
     def full_RMSE(self, exp, name_database, imagelist):
         matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+        self.mkdir()
+        if not(os.path.isdir(matname)): os.mkdir(matname)
         edgeslist = np.load(matname + '_edges.npy')
         N_do = 2
         for _ in range(N_do): # repeat this loop to make sure to scan everything
@@ -380,7 +382,7 @@ class SparseEdges(LogGabor):
         self.binedges_sf_0 = 2**np.arange(np.ceil(np.log2(self.pe.N_X)))
         self.binedges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
-    def histedges_theta(self, edgeslist, fig=None, a=None, display=True):
+    def histedges_theta(self, edgeslist, fig=None, a=None, figsize=None, display=True):
         """
         First-order stats
 
@@ -404,14 +406,16 @@ class SparseEdges(LogGabor):
         weights = np.absolute(value)/(np.absolute(value)).sum()
         theta_bin = self.binedges_theta # np.hstack((self.theta, self.theta[0]+np.pi))  + np.pi/self.pe.N_Dtheta/2
 #         print theta_bin.min(), theta_bin.max()
+        v_theta_middles  = (theta_bin[1:]+theta_bin[:-1])/2
         v_hist, v_theta_edges_ = np.histogram(theta, bins=theta_bin, density=True, weights=weights)
         v_hist /= v_hist.sum()
         if display:
-            if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
-            if a==None: a = plt.axes(polar=True, axisbg='w')
+            if figsize is None: figsize = (self.pe.figsize_hist, self.pe.figsize_hist)
+            if fig is None: fig = plt.figure(figsize=figsize)
+            if a is None: a = plt.axes(polar=True, axisbg='w')
 #             see http://blog.invibe.net/posts/14-12-09-polar-bar-plots.html
-            a.bar(theta_bin[1:], np.sqrt(v_hist), width=theta_bin[:-1] - theta_bin[1:], color='#66c0b7')# edgecolor="none")
-            a.bar(theta_bin[1:]+np.pi, np.sqrt(v_hist), width=theta_bin[:-1] - theta_bin[1:], color='#32ab9f')
+            a.bar(v_theta_middles, np.sqrt(v_hist), width=theta_bin[:-1] - theta_bin[1:], color='#66c0b7')# edgecolor="none")
+            a.bar(v_theta_middles+np.pi, np.sqrt(v_hist), width=theta_bin[:-1] - theta_bin[1:], color='#32ab9f')
             plt.setp(a, yticks=[])
             return fig, a
         else:
@@ -860,9 +864,9 @@ class SparseEdges(LogGabor):
                         else:
                             np.save(matname + '_RMSE.npy', RMSE)
                             # clean-up edges sub-folder
-                            path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+                            matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
                             import shutil
-                            shutil.rmtree(path)
+                            shutil.rmtree(matname)
                     except Exception as e:
                         self.log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
                         return 'imagelist ok', 'edgelist ok', 'locked RMSE'
