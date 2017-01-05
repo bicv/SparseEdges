@@ -1,10 +1,10 @@
 NAME = SparseEdges
 VERSION=`python3 -c'import SparseEdges; print(SparseEdges.__version__)'`
-PYTHON = python3
 PYTHON = python
-PIP = pip3
+PYTHON = python3
 PIP = pip-3.2
 PIP = pip
+PIP = pip3
 default: $(NAME).pdf index.html
 
 edit:

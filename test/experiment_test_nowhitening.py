@@ -3,7 +3,10 @@ from SparseEdges import SparseEdges
 mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
 mp.N = 128
 
-image = mp.imread('https://raw.githubusercontent.com/bicv/SLIP/master/database/serre07_targets/B_N107001.jpg')
+#image = mp.imread('https://raw.githubusercontent.com/bicv/SLIP/master/database/serre07_targets/B_N107001.jpg')
+image = mp.imread('../../SLIP/database/serre07_targets/B_N107001.jpg')
+
+
 mp.pe.figsize_edges = 9
 image = mp.normalize(image, center=True)
 
