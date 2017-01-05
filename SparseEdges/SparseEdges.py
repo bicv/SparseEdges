@@ -1337,7 +1337,6 @@ class SparseEdgesWithDipole(SparseEdges):
 
         """
         SparseEdges.__init__(self, pe=pe)
-#         self.init()
         self.init_logging(name='SparseEdgesWithDipole')
 
         self.pe.eta_SO =  0.
