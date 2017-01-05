@@ -378,7 +378,9 @@ class SparseEdges(LogGabor):
         # sequence of scalars,it defines the bin edges, including the rightmost edge.
         self.binedges_d = np.linspace(self.pe.d_min, self.pe.d_max, self.pe.N_r+1)
         self.binedges_phi = np.linspace(-np.pi/2, np.pi/2, self.pe.N_phi+1) + np.pi/self.pe.N_phi/2
-        self.binedges_theta = np.linspace(-np.pi/2, np.pi/2, self.pe.N_Dtheta+1) + np.pi/self.pe.N_Dtheta/2
+        theta_bin = (self.theta + np.hstack((self.theta[-1]-np.pi, self.theta[:-1]))) /2
+        #self.theta[:-1] + self.theta[1:]) / 2. # middles
+        self.binedges_theta = np.hstack((theta_bin, theta_bin[0]+np.pi))
         self.binedges_sf_0 = 2**np.arange(np.ceil(np.log2(self.pe.N_X)))
         self.binedges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
@@ -392,8 +394,9 @@ class SparseEdges(LogGabor):
         self.init_binedges()
 
         theta = edgeslist[2, ...].ravel()
-        theta = ((theta + np.pi/2 - np.pi/self.pe.N_Dtheta/2)  % np.pi ) - np.pi/2  + np.pi/self.pe.N_Dtheta/2
+        #theta = ((theta + np.pi/2 - np.pi/self.pe.N_Dtheta/2)  % np.pi ) - np.pi/2  + np.pi/self.pe.N_Dtheta/2
         value = edgeslist[4, ...].ravel()
+
 
         if self.pe.edge_mask:
             # remove edges whose center position is not on the central disk
@@ -402,20 +405,22 @@ class SparseEdges(LogGabor):
             theta = theta[mask]
             value = value[mask]
 
-#         print theta.min(), theta.max(),
         weights = np.absolute(value)/(np.absolute(value)).sum()
-        theta_bin = self.binedges_theta # np.hstack((self.theta, self.theta[0]+np.pi))  + np.pi/self.pe.N_Dtheta/2
-#         print theta_bin.min(), theta_bin.max()
-        v_theta_middles  = (theta_bin[1:]+theta_bin[:-1])/2
-        v_hist, v_theta_edges_ = np.histogram(theta, bins=theta_bin, density=True, weights=weights)
+        v_hist, v_theta_edges_ = np.histogram(theta, bins=self.binedges_theta, density=False, weights=weights)
         v_hist /= v_hist.sum()
         if display:
             if figsize is None: figsize = (self.pe.figsize_hist, self.pe.figsize_hist)
             if fig is None: fig = plt.figure(figsize=figsize)
             if a is None: a = plt.axes(polar=True, axisbg='w')
 #             see http://blog.invibe.net/posts/14-12-09-polar-bar-plots.html
-            a.bar(v_theta_middles, np.sqrt(v_hist), width=theta_bin[:-1] - theta_bin[1:], color='#66c0b7')# edgecolor="none")
-            a.bar(v_theta_middles+np.pi, np.sqrt(v_hist), width=theta_bin[:-1] - theta_bin[1:], color='#32ab9f')
+            #width=np.hstack((self.theta[1:], self.theta[0]+np.pi)) - self.theta
+            width = self.binedges_theta[1:] - self.binedges_theta[:-1]
+            a.bar(self.binedges_theta[:-1], np.sqrt(v_hist), width=width, color='#66c0b7', align='edge')# edgecolor="none")
+
+            a.bar(self.binedges_theta[:-1]+np.pi, np.sqrt(v_hist), width=width, color='#32ab9f', align='edge')
+            a.plot(self.binedges_theta, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
+            a.plot(self.binedges_theta+np.pi, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
+
             plt.setp(a, yticks=[])
             return fig, a
         else:
