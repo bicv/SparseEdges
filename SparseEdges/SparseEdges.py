@@ -379,7 +379,6 @@ class SparseEdges(LogGabor):
         self.binedges_d = np.linspace(self.pe.d_min, self.pe.d_max, self.pe.N_r+1)
         self.binedges_phi = np.linspace(-np.pi/2, np.pi/2, self.pe.N_phi+1) + np.pi/self.pe.N_phi/2
         theta_bin = (self.theta + np.hstack((self.theta[-1]-np.pi, self.theta[:-1]))) /2
-        #self.theta[:-1] + self.theta[1:]) / 2. # middles
         self.binedges_theta = np.hstack((theta_bin, theta_bin[0]+np.pi))
         self.binedges_sf_0 = 2**np.arange(np.ceil(np.log2(self.pe.N_X)))
         self.binedges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
