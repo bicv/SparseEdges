@@ -1,11 +1,23 @@
 NAME = SparseEdges
 VERSION=`python3 -c'import SparseEdges; print(SparseEdges.__version__)'`
-PYTHON = python
+
 PYTHON = python3
-PIP = pip-3.2
-PIP = pip
-PIP = pip3
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	PIP = pip
+else
+	PIP = pip3
+endif
+
 default: $(NAME).pdf index.html
+
+test2:
+	echo `uname`
+	if [ `uname` = Darwin ]; then \
+	    echo "This is a system under evolution"; \
+	else \
+	    echo "This is not such a system."; \
+	fi
 
 edit:
 	mvim -p setup.py src/__init__.py src/$(NAME).py README.md Makefile requirements.txt
@@ -52,6 +64,11 @@ pull:
 	git pull
 
 update:
+	if [ `uname` = Darwin ]; then \
+		PIP = pip3
+	else \
+		PIP = pip
+	fi
 	cd ../SLIP; git pull; $(PIP) install -U --user . ; cd ../SparseEdges/
 	cd ../LogGabor; git pull; $(PIP) install -U --user . ; cd ../SparseEdges/
 	git pull; $(PIP) install -U --user .
