@@ -1474,19 +1474,6 @@ class EdgeFactory(SparseEdges):
             else:
                 imagelist = 'ok'
 
-        # HACK for old names
-        for feature_ in features:
-            for name_database in databases:
-                matname_oldhist = os.path.join(self.pe.matpath, exp + '_SVMhist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
-                if os.path.isfile(matname_oldhist):
-                    print ('removing old ', matname_oldhist)
-                    matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
-                    if os.path.isfile(matname_hist):
-                        os.remove(matname_oldhist)
-                    else:
-                        import shutil
-                        shutil.move(matname_oldhist, matname_hist)
-
         if os.path.isfile(matname_score):
             fone_score = np.load(matname_score)
             self.log.warn("=> Accuracy = %0.2f +/- %0.2f in %s ", fone_score.mean(), fone_score.std(), txtname)
