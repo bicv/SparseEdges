@@ -855,6 +855,8 @@ class SparseEdges(LogGabor):
         else:
             try:
                 edgeslist = np.load(matname + '_edges.npy')
+
+
                 # Computing RMSE to check the edge extraction process
                 try:
                     RMSE = np.load(matname + '_RMSE.npy')
@@ -867,10 +869,6 @@ class SparseEdges(LogGabor):
                             locked = True
                         else:
                             np.save(matname + '_RMSE.npy', RMSE)
-                            # clean-up edges sub-folder
-                            matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
-                            import shutil
-                            shutil.rmtree(matname)
                     except Exception as e:
                         self.log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
                         return 'imagelist ok', 'edgelist ok', 'locked RMSE'
@@ -893,6 +891,15 @@ class SparseEdges(LogGabor):
                     np.save(matname + '_edges.npy', edgeslist)
 
 
+        # clean-up edges sub-folder
+        if not(locked):
+            try:
+                ## cleaning up if there is an existing edge dir
+                matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+                import shutil
+                shutil.rmtree(matname)
+            except:
+                pass
 
         # 3- Doing the independence check for this set
         if not(locked):
@@ -1467,6 +1474,19 @@ class EdgeFactory(SparseEdges):
             else:
                 imagelist = 'ok'
 
+        # HACK for old names
+        for feature_ in features:
+            for name_database in databases:
+                matname_oldhist = os.path.join(self.pe.matpath, exp + '_SVMhist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
+                if os.path.isfile(matname_oldhist):
+                    print ('removing old ', matname_oldhist)
+                    matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
+                    if os.path.isfile(matname_hist):
+                        os.remove(matname_oldhist)
+                    else:
+                        import shutil
+                        shutil.move(matname_oldhist, matname_hist)
+
         if os.path.isfile(matname_score):
             fone_score = np.load(matname_score)
             self.log.warn("=> Accuracy = %0.2f +/- %0.2f in %s ", fone_score.mean(), fone_score.std(), txtname)
@@ -1482,6 +1502,7 @@ class EdgeFactory(SparseEdges):
                 # Download the data, if not already on disk and load it as numpy arrays
                 n_databases = len(databases)
                 for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
+
                     matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
                     if not(os.path.isfile(matname_hist)):
                         self.log.info(' >> There is no histogram, computing %s ', matname_hist)
