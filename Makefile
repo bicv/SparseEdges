@@ -10,7 +10,7 @@ else
 endif
 
 default: $(NAME).pdf index.html
-
+# check out http://stackoverflow.com/questions/714100/os-detecting-makefile#12099167
 test2:
 	echo `uname`
 	if [ `uname` = Darwin ]; then \
