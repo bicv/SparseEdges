@@ -134,7 +134,7 @@ class SparseEdges(LogGabor):
 
     def show_edges(self, edges, fig=None, a=None, image=None, norm=True,
                    color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1.,
-                   pedestal=0., mask=False, mappable=False):
+                   pedestal=0., mask=False, mappable=False, scale=None):
         """
         Shows the quiver plot of a set of edges, optionally associated to an image.
 
@@ -151,10 +151,10 @@ class SparseEdges(LogGabor):
         # HACK
         if color == 'black' or color == 'redblue' or color in['brown', 'green', 'blue']: #cocir or chevrons
             linewidth = self.pe.line_width_chevrons
-            scale = self.pe.scale_chevrons
+            if scale is None: scale = self.pe.scale_chevrons
         else:
             linewidth = self.pe.line_width
-            scale = self.pe.scale
+            if scale is None: scale = self.pe.scale
 
         opts= {'extent': (0, self.pe.N_Y, self.pe.N_X, 0), # None, #
                'cmap': cm.gray,
@@ -611,7 +611,7 @@ class SparseEdges(LogGabor):
             return fig, a1, a2, a3, a4
 
         elif display=='colin_geisler':
-            edge_scale = 64.
+            edge_scale = 8.
             try:
                 if fig==None:
                     fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
@@ -633,13 +633,13 @@ class SparseEdges(LogGabor):
                         colin_edgelist[0:2, ii_phi + i_phi +  self.pe.N_r * self.pe.N_phi] = self.pe.N_X - colin_edgelist[0, ii_phi + i_phi], self.pe.N_Y - colin_edgelist[1, ii_phi + i_phi]
                 # reference angle
                 colin_edgelist[:, -1] = [self.pe.N_X /2, self.pe.N_Y /2, 0, edge_scale, colin_edgelist[4,:].max() *1.2, 0.]
-                return self.show_edges(colin_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
+                return self.show_edges(colin_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color, scale=40.)
             except Exception as e:
                 self.log.error(' failed to generate colin_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
                 return e, None # HACK to return something instead of None
 
         elif display=='cocir_geisler':
-            edge_scale = 64.
+            edge_scale = 8.
             try:
                 if fig==None:
                     fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
@@ -660,7 +660,7 @@ class SparseEdges(LogGabor):
                         cocir_edgelist[:, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = cocir_edgelist[:,  ii_theta + i_theta]
                         cocir_edgelist[0:2, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = self.pe.N_X - cocir_edgelist[0,  ii_theta + i_theta], self.pe.N_Y - cocir_edgelist[1, ii_theta + i_theta]
                 cocir_edgelist[:, -1] = [self.pe.N_X /2, self.pe.N_Y /2, 0, edge_scale, cocir_edgelist[4,:].max() *1.2, 0.]
-                return self.show_edges(cocir_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color)
+                return self.show_edges(cocir_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color, scale=40.)
             except Exception as e:
                 self.log.error(' failed to generate cocir_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
                 return e, None # HACK to retrun something instead of None
