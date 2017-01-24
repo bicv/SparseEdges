@@ -14,11 +14,11 @@ import os
 matname = os.path.join(mp.pe.matpath, 'experiment_test_MP.npy')
 try:
     edges = np.load(matname)
-except:
+except Exception:
     edges, C_res = mp.run_mp(image, verbose=False)
     try:
         os.mkdir(mp.pe.matpath)
-    except:
+    except Exception:
         pass
     np.save(matname, edges)   
 fig, a = mp.show_edges(edges, image=mp.whitening(image))

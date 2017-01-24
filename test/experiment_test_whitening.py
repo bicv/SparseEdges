@@ -12,7 +12,7 @@ import os
 matname = os.path.join(mp.pe.matpath, 'experiment_test_whitening.npy')
 try:
     edges = np.load(matname)
-except:
+except Exception:
     edges, C_res = mp.run_mp(image, verbose=True)
     np.save(matname, edges)    
 
@@ -20,7 +20,7 @@ except:
 matname_RMSE = os.path.join(mp.pe.matpath, 'experiment_test_whitening_RMSE.npy')
 try:
     RMSE = np.load(matname_RMSE)
-except:
+except Exception:
     RMSE = np.ones(mp.N)
     image_ = image.copy()
     image_rec = np.zeros_like(image_)

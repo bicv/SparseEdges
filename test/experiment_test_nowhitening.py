@@ -18,7 +18,7 @@ matname = os.path.join(mp.pe.matpath, 'experiment_test_nowhitening.npy')
 matname_RMSE = os.path.join(mp.pe.matpath, 'experiment_test_nowhitening_RMSE.npy')
 try:
     edges = np.load(matname)
-except:
+except Exception:
     edges, C_res = mp.run_mp(image, verbose=True)
     np.save(matname, edges)    
     
