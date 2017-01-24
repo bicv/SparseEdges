@@ -383,7 +383,7 @@ class SparseEdges(LogGabor):
         self.binedges_sf_0 = 2**np.arange(np.ceil(np.log2(self.pe.N_X)))
         self.binedges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
-    def histedges_theta(self, edgeslist, fig=None, a=None, figsize=None, display=True):
+    def histedges_theta(self, edgeslist, fig=None, ax=None, figsize=None, display=True):
         """
         First-order stats
 
@@ -410,18 +410,18 @@ class SparseEdges(LogGabor):
         if display:
             if figsize is None: figsize = (self.pe.figsize_hist, self.pe.figsize_hist)
             if fig is None: fig = plt.figure(figsize=figsize)
-            if a is None: a = plt.axes(polar=True, axisbg='w')
+            if ax is None: ax = plt.axes(polar=True, axisbg='w')
 #             see http://blog.invibe.net/posts/14-12-09-polar-bar-plots.html
             #width=np.hstack((self.theta[1:], self.theta[0]+np.pi)) - self.theta
             width = self.binedges_theta[1:] - self.binedges_theta[:-1]
-            a.bar(self.binedges_theta[:-1], np.sqrt(v_hist), width=width, color='#66c0b7', align='edge')# edgecolor="none")
+            ax.bar(self.binedges_theta[:-1], np.sqrt(v_hist), width=width, color='#66c0b7', align='edge')# edgecolor="none")
 
-            a.bar(self.binedges_theta[:-1]+np.pi, np.sqrt(v_hist), width=width, color='#32ab9f', align='edge')
-            a.plot(self.binedges_theta, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
-            a.plot(self.binedges_theta+np.pi, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
+            ax.bar(self.binedges_theta[:-1]+np.pi, np.sqrt(v_hist), width=width, color='#32ab9f', align='edge')
+            ax.plot(self.binedges_theta, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
+            ax.plot(self.binedges_theta+np.pi, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
 
-            plt.setp(a, yticks=[])
-            return fig, a
+            plt.setp(ax, yticks=[])
+            return fig, ax
         else:
             return v_hist, v_theta_edges_
 
@@ -676,7 +676,7 @@ class SparseEdges(LogGabor):
                 a.set_xlabel('log2 of scale ratio')
                 a.set_ylabel('probability')
                 return fig, a
-            except:
+            except Exception:
                 self.log.error(' failed to generate cohist_scale, %s', e)
                 return e, None # HACK to retrun something instead of None
 
@@ -855,8 +855,6 @@ class SparseEdges(LogGabor):
         else:
             try:
                 edgeslist = np.load(matname + '_edges.npy')
-
-
                 # Computing RMSE to check the edge extraction process
                 try:
                     RMSE = np.load(matname + '_RMSE.npy')
@@ -898,7 +896,7 @@ class SparseEdges(LogGabor):
                 matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
                 import shutil
                 shutil.rmtree(matname)
-            except:
+            except Exception:
                 pass
 
         # 3- Doing the independence check for this set
@@ -1210,7 +1208,7 @@ class SparseEdges(LogGabor):
                             #print rho, eps_inf, np.log((threshold-eps_inf)/(1-eps_inf))/np.log(rho)
 
                             l0_results[i_image] = np.log((threshold-eps_inf)/(1-eps_inf))/np.log(rho)
-                    except:
+                    except Exception:
                         l0_results = np.argmax(RMSE<threshold, axis=1)*1.
                     if (scale):
                         l0_results *= np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y
@@ -1536,7 +1534,7 @@ class EdgeFactory(SparseEdges):
                                 self.log.error(' Raised exection %s  ', e)
                             try:
                                 os.remove(matname_hist + '_lock')
-                            except:
+                            except Exception:
                                 self.log.error(' xxx when trying to remove it, I found no lock file named %s_lock', matname_hist)
 
             # gather data
@@ -1787,7 +1785,7 @@ class EdgeFactory(SparseEdges):
                 # see https://en.wikipedia.org/wiki/F1_score
                 try:
                     fone_score[i_cv] = np.array(metrics.f1_score(y_test, y_pred, labels=[0, 1], average=None)).mean()#'weighted')
-                except:
+                except Exception:
                     self.log.error(' something bad happened for the fone score ')
                 results = "=> Accuracy @ %d = %0.2f" % (i_cv+1, fone_score[i_cv])
                 results += " in " + txtname
@@ -1812,7 +1810,7 @@ class EdgeFactory(SparseEdges):
                     try:
                         with open(matname_score_dic, "wb" ) as f:
                             results = pickle.load(f)
-                    except:
+                    except Exception:
                         results = {}
                         # setting up dictionary counting for each file how many times (integer) it is tested in total, how many times it is a target
                         for i_database in range(2):
@@ -1838,7 +1836,7 @@ class EdgeFactory(SparseEdges):
 
         try:
             os.remove(matname_score + '_lock')
-        except:
+        except Exception:
             self.log.error(' no matname_score lock file named %s_lock ', matname_score)
 
         return fone_score
