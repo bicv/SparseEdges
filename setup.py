@@ -10,7 +10,7 @@ VERSION = SparseEdges.__version__ # << to change in __init__.py
 setup(
     name = NAME,
     version = VERSION,
-    packages = find_packages(exclude=['contrib', 'docs', 'tests']),
+    packages = find_packages(exclude=['contrib', 'docs', 'probe']),
      author = "Laurent Perrinet INT - CNRS",
     author_email = "Laurent.Perrinet@univ-amu.fr",
     description = "SparseEdges: A bio-inspired sparse representation of edges in natural images.",

@@ -49,9 +49,9 @@ FRIOUL = perrinet.l@frioul.int.univ-amu.fr
 OPTIONS = -av --delete --progress --exclude .AppleDouble --exclude .git
 
 transfer_to_riou:
-		rsync $(OPTIONS) test $(FRIOUL):$(RIOU)/
+		rsync $(OPTIONS) probe $(FRIOUL):$(RIOU)/
 transfer_from_riou:
-		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/test/{mat,debug.log} ./test
+		rsync $(OPTIONS) $(FRIOUL):$(RIOU)/probe/{mat,debug.log} ./probe
 
 install_dev:
 	pip3 uninstall -y $(NAME) ; pip3 install -e .
