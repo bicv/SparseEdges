@@ -132,7 +132,7 @@ class SparseEdges(LogGabor):
         # TODO : implement a COMP adaptation of the thetas and scales tesselation of Fourier space
         pass
 
-    def show_edges(self, edges, fig=None, a=None, image=None, norm=True,
+    def show_edges(self, edges, fig=None, ax=None, image=None, norm=True,
                    color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1.,
                    pedestal=0., mask=False, mappable=False, scale=None):
         """
@@ -143,10 +143,10 @@ class SparseEdges(LogGabor):
         if fig==None:
             #  Figure :                      height         ----------           width
             fig = plt.figure(figsize=(self.pe.figsize*self.pe.N_Y/self.pe.N_X, self.pe.figsize))
-        if a==None:
+        if ax==None:
             border = 0.0
-            a = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
-        a.axis(c='b', lw=0, frame_on=False)
+            ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
+        ax.axis(c='b', lw=0, frame_on=False)
 
         # HACK
         if color == 'black' or color == 'redblue' or color in['brown', 'green', 'blue']: #cocir or chevrons
@@ -166,9 +166,9 @@ class SparseEdges(LogGabor):
         if type(image)==np.ndarray:
 #             if image.ndim==2: opts['cmap'] = cm.gray
             if norm: image = self.normalize(image, center=True, use_max=True)
-            a.imshow(image, **opts)
+            ax.imshow(image, **opts)
         else:
-            a.imshow([[v_max]], **opts)
+            ax.imshow([[v_max]], **opts)
         if edges.shape[1] > 0:
             from matplotlib.collections import LineCollection, PatchCollection
             import matplotlib.patches as patches
@@ -209,17 +209,17 @@ class SparseEdges(LogGabor):
                     else:
                         fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
                     colors.append(fc)
-                    linewidths.append(linewidth) # *weight thinning byalpha...
+                    linewidths.append(linewidth) # *weight thinning byalphax...
                     patch_circles.append(patches.Circle((x,y), self.pe.scale_circle*scale/sf_0, lw=0., facecolor=fc, edgecolor='none'))
 
             line_segments = LineCollection(segments, linewidths=linewidths, colors=colors, linestyles='solid')
-            a.add_collection(line_segments)
+            ax.add_collection(line_segments)
             circles = PatchCollection(patch_circles, match_original=True)
-            a.add_collection(circles)
+            ax.add_collection(circles)
 
         if True: # HACK not(color=='auto'):# chevrons maps etc...
-            plt.setp(a, xticks=[])
-            plt.setp(a, yticks=[])
+            plt.setp(ax, xticks=[])
+            plt.setp(ax, yticks=[])
 
         if mask:
             linewidth_mask = 1 #
@@ -227,9 +227,9 @@ class SparseEdges(LogGabor):
             circ = Ellipse((.5*self.pe.N_Y, .5*self.pe.N_X),
                             self.pe.N_Y-linewidth_mask, self.pe.N_X-linewidth_mask,
                             fill=False, facecolor='none', edgecolor = 'black', alpha = 0.5, ls='dashed', lw=linewidth_mask)
-            a.add_patch(circ)
-        a.axis([0, self.pe.N_Y, self.pe.N_X, 0])
-        a.grid(b=False, which="both")
+            ax.add_patch(circ)
+        ax.axis([0, self.pe.N_Y, self.pe.N_X, 0])
+        ax.grid(b=False, which="both")
         plt.draw()
         if mappable:
             return fig, a, line_segments
@@ -428,7 +428,7 @@ class SparseEdges(LogGabor):
         else:
             return v_hist, v_theta_edges_
 
-    def histedges_scale(self, edgeslist, fig=None, a=None, display=True):
+    def histedges_scale(self, edgeslist, fig=None, ax=None, display=True):
         """
         First-order stats for the scale
 
@@ -451,9 +451,9 @@ class SparseEdges(LogGabor):
         v_hist /= v_hist.sum()
         if display:
             if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
-            if a==None: a = fig.add_subplot(111, axisbg='w')
-            a.bar(v_sf_0_edges_[:-1], v_hist)
-            plt.setp(a, yticks=[])
+            if ax==None: ax = fig.add_subplot(111, axisbg='w')
+            ax.bar(v_sf_0_edges_[:-1], v_hist)
+            plt.setp(ax, yticks=[])
             plt.xlabel(r'$sf_0$')
             plt.ylabel('probability')
             return fig,a
@@ -461,7 +461,7 @@ class SparseEdges(LogGabor):
             return v_hist, v_theta_edges_
 
     def cohistedges(self, edgeslist, v_hist=None, prior=None,
-                    fig=None, a=None, symmetry=True,
+                    fig=None, ax=None, symmetry=True,
                     display='chevrons', v_min=None, v_max=None, labels=True, mappable=False, radius=None,
                     xticks=False, half=False, dolog=True, color='redblue', colorbar=True, cbar_label=True):
         """
@@ -618,8 +618,8 @@ class SparseEdges(LogGabor):
             try:
                 if fig==None:
                     fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
-                    if a==None:
-                        a = fig.add_subplot(111)
+                    if ax==None:
+                        ax = fig.add_subplot(111)
                 v_hist_noscale = v_hist.sum(axis=3)
                 colin_edgelist = np.zeros((6, self.pe.N_r * self.pe.N_phi * 2 + 1 ))
                 colin_argmax = np.argmax(v_hist_noscale, axis=2)
@@ -646,8 +646,8 @@ class SparseEdges(LogGabor):
             try:
                 if fig==None:
                     fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
-                    if a==None:
-                        a = fig.add_subplot(111)
+                    if ax==None:
+                        ax = fig.add_subplot(111)
                 v_hist_noscale = v_hist.sum(axis=3)
                 cocir_edgelist = np.zeros((6, self.pe.N_r * self.pe.N_Dtheta * 2 + 1 ))
                 cocir_proba = np.argmax(v_hist_noscale, axis=1)
@@ -672,12 +672,12 @@ class SparseEdges(LogGabor):
             try:
                 if fig==None:
                     fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
-                    if a==None:
-                        a = fig.add_subplot(111)
-                a.bar(self.binedges_loglevel[:-1], v_hist.sum(axis=(0, 1, 2)))
-                plt.setp(a, yticks=[])
-                a.set_xlabel('log2 of scale ratio')
-                a.set_ylabel('probability')
+                    if ax==None:
+                        ax = fig.add_subplot(111)
+                ax.bar(self.binedges_loglevel[:-1], v_hist.sum(axis=(0, 1, 2)))
+                plt.setp(ax, yticks=[])
+                ax.set_xlabel('log2 of scale ratio')
+                ax.set_ylabel('probability')
                 return fig, a
             except Exception:
                 self.log.error(' failed to generate cohist_scale, %s', e)
@@ -717,10 +717,10 @@ class SparseEdges(LogGabor):
 
             if fig==None:
                 fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
-                if a==None:
+                if ax==None:
                     border = 0.005
-                    a = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
-                    a.axis(c='b', lw=0)
+                    ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
+                    ax.axis(c='b', lw=0)
 
             # make circles around each couple of edges
             import matplotlib.patches as patches
@@ -780,11 +780,11 @@ class SparseEdges(LogGabor):
                 p.set_clim([v_min, v_max])
             else:
                 p.set_clim([v_min, v_max])
-            a.add_collection(p)
+            ax.add_collection(p)
 
 #            print rad/s_theta, rad/s_phi
             fig, a = self.show_edges(angle_edgelist, fig=fig, a=a, image=None, color='black')
-            a.axis([0, self.pe.N_Y+1, self.pe.N_X+1, 0])
+            ax.axis([0, self.pe.N_Y+1, self.pe.N_X+1, 0])
 
             if colorbar:
                 cbar = plt.colorbar(ax=a, mappable=p, shrink=0.6)
@@ -800,34 +800,34 @@ class SparseEdges(LogGabor):
                 cbar.update_ticks()
 
             if not(labels==False):
-                if not(xticks=='left'): a.set_xlabel(r'azimuth difference $\psi$')
-                if not(xticks=='bottom'): a.set_ylabel(r'orientation difference $\theta$')
+                if not(xticks=='left'): ax.set_xlabel(r'azimuth difference $\psi$')
+                if not(xticks=='bottom'): ax.set_ylabel(r'orientation difference $\theta$')
             if not(xticks==False):
                 eps = 0.5 # HACK to center grid. dunnon what's happening here
                 if half:
-                    plt.setp(a, xticks=[(1./self.pe.N_phi/1.25)*self.pe.N_X, (1. - 1./self.pe.N_phi/1.25)*self.pe.N_X])
+                    plt.setp(ax, xticks=[(1./self.pe.N_phi/1.25)*self.pe.N_X, (1. - 1./self.pe.N_phi/1.25)*self.pe.N_X])
                     if not(xticks=='left'):
-                        plt.setp(a, xticklabels=[r'$0$', r'$\frac{\pi}{2}$'])
+                        plt.setp(ax, xticklabels=[r'$0$', r'$\frac{\pi}{2}$'])
                     else:
-                        plt.setp(a, xticklabels=[r'', r''])
+                        plt.setp(ax, xticklabels=[r'', r''])
                 else:
-                    plt.setp(a, xticks=[(1./(self.pe.N_phi+1)/2)*self.pe.N_X+eps, .5*self.pe.N_X+eps, (1. - 1./(self.pe.N_phi+1)/2)*self.pe.N_X+eps])
+                    plt.setp(ax, xticks=[(1./(self.pe.N_phi+1)/2)*self.pe.N_X+eps, .5*self.pe.N_X+eps, (1. - 1./(self.pe.N_phi+1)/2)*self.pe.N_X+eps])
                     if not(xticks=='left'):
-                        plt.setp(a, xticklabels=[r'$-\frac{\pi}{2}$', r'$0$', r'$\frac{\pi}{2}$'])
+                        plt.setp(ax, xticklabels=[r'$-\frac{\pi}{2}$', r'$0$', r'$\frac{\pi}{2}$'])
                     else:
-                        plt.setp(a, xticklabels=[r'', r''])
+                        plt.setp(ax, xticklabels=[r'', r''])
                 if half:
-                    plt.setp(a, yticks=[(1./self.pe.N_Dtheta)*self.pe.N_Y, (1. - 1./(self.pe.N_Dtheta+.45))*self.pe.N_Y])
+                    plt.setp(ax, yticks=[(1./self.pe.N_Dtheta)*self.pe.N_Y, (1. - 1./(self.pe.N_Dtheta+.45))*self.pe.N_Y])
                     if not(xticks=='bottom'):
-                        plt.setp(a, yticklabels=[r'$0$', r'$\frac{\pi}{2}$'])
+                        plt.setp(ax, yticklabels=[r'$0$', r'$\frac{\pi}{2}$'])
                     else:
-                        plt.setp(a, yticklabels=[r'', r''])
+                        plt.setp(ax, yticklabels=[r'', r''])
                 else:
-                    plt.setp(a, yticks=[1./(self.pe.N_Dtheta+1)/2*self.pe.N_X+eps, .5*self.pe.N_Y+eps, (1. - 1./(self.pe.N_Dtheta+1)/2)*self.pe.N_Y+eps])
+                    plt.setp(ax, yticks=[1./(self.pe.N_Dtheta+1)/2*self.pe.N_X+eps, .5*self.pe.N_Y+eps, (1. - 1./(self.pe.N_Dtheta+1)/2)*self.pe.N_Y+eps])
                     if not(xticks=='bottom'):
-                        plt.setp(a, yticklabels=[r'$-\frac{\pi}{2}$', r'$0$', r'$\frac{\pi}{2}$'])
+                        plt.setp(ax, yticklabels=[r'$-\frac{\pi}{2}$', r'$0$', r'$\frac{\pi}{2}$'])
                     else:
-                        plt.setp(a, yticklabels=['', '', ''])
+                        plt.setp(ax, yticklabels=['', '', ''])
                 plt.grid('off')
             plt.draw()
 
@@ -1161,27 +1161,27 @@ class SparseEdges(LogGabor):
                 except Exception as e:
                     print('Failed to load data to plot experiment %s with error : %s ' % (experiment, e) )
             for a in [ax, inset]:
-                #a.set_yscale("log")#, nonposx = 'clip')
+                #ax.set_yscale("log")#, nonposx = 'clip')
                 if not(scale):
-                    a.set_xlim([-0.05*N, 1.05*N])
+                    ax.set_xlim([-0.05*N, 1.05*N])
                 else:
-                    a.set_xlim([-0.05*l0_max, 1.05*l0_max])
-                    a.ticklabel_format(axis='x', style='sci', scilimits=(0, 1))#, useOffset=False)
-                #a.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-                a.spines['left'].set_position('zero')#('outward', -10))
-                a.spines['right'].set_visible(False)
-                a.spines['bottom'].set_position('zero')#(('outward', -10))
-                a.spines['top'].set_visible(False)
-                #a.spines['left'].set_smart_bounds(True)
-                a.spines['bottom'].set_smart_bounds(True)
-                a.xaxis.set_ticks_position('bottom')
-                a.yaxis.set_ticks_position('left')
+                    ax.set_xlim([-0.05*l0_max, 1.05*l0_max])
+                    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 1))#, useOffset=False)
+                #ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+                ax.spines['left'].set_position('zero')#('outward', -10))
+                ax.spines['right'].set_visible(False)
+                ax.spines['bottom'].set_position('zero')#(('outward', -10))
+                ax.spines['top'].set_visible(False)
+                #ax.spines['left'].set_smart_bounds(True)
+                ax.spines['bottom'].set_smart_bounds(True)
+                ax.xaxis.set_ticks_position('bottom')
+                ax.yaxis.set_ticks_position('left')
                 if not(scale):#False and a==ax:
-                    a.set_xlabel(r'$\ell_0$-norm')
+                    ax.set_xlabel(r'$\ell_0$-norm')
                 else:
                     ax.set_xlabel(r'relative $\ell_0$ pseudo-norm (bits / pixel)')#relative $\ell_0$-norm')
 
-                a.grid(b=False, which="both")
+                ax.grid(b=False, which="both")
 
             ax.set_ylim(-.02, 1.02)
             ax.set_ylabel(r'Squared error')
@@ -1908,8 +1908,8 @@ class EdgeFactory(SparseEdges):
             # plots
             fig = pylab.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
             a = fig.add_subplot(111)#, polar = True)
-            a.plot(cdfb, cdfa, color='r', lw=2)
-            a.plot(np.linspace(0, 1, 2), np.linspace(0, 1, 2), 'k--', lw=2)
+            ax.plot(cdfb, cdfa, color='r', lw=2)
+            ax.plot(np.linspace(0, 1, 2), np.linspace(0, 1, 2), 'k--', lw=2)
             print(" >> AUC for experiment ", exp, " classifiying between databases ", databases, " = ", AUC(cdfb, cdfa))
             pylab.xlabel('false positive rate = 1 - Specificity')
             pylab.ylabel('false negative rate = Sensitivity')
