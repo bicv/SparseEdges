@@ -118,7 +118,7 @@ class SparseEdges(LogGabor):
 #        print edges.shape, edges[:, 0]
         for i_edge in range(edges.shape[1]):#self.pe.N):
             # TODO : check that it is correct when we remove alpha when making new MP
-            if not mask or ((edges[0, i_edge]/self.pe.N_X -.5)**2+(edges[1, i_edge]/self.pe.N_Y -.5)**2) < .5**2:
+            if not mask or ((edges[1, i_edge]/self.pe.N_X -.5)**2+(edges[0, i_edge]/self.pe.N_Y -.5)**2) < .5**2:
                 image += self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
                                     self.loggabor(
                                                     edges[0, i_edge], edges[1, i_edge],
@@ -232,9 +232,9 @@ class SparseEdges(LogGabor):
         ax.grid(b=False, which="both")
         plt.draw()
         if mappable:
-            return fig, a, line_segments
+            return fig, ax, line_segments
         else:
-            return fig, a
+            return fig, ax
 
     def texture(self, N_edge=256, a=None, filename='', croparea='', randn=True):
         # a way to get always the same seed for each image
@@ -403,7 +403,7 @@ class SparseEdges(LogGabor):
         if self.pe.edge_mask:
             # remove edges whose center position is not on the central disk
             x , y = edgeslist[0, ...].ravel().real, edgeslist[1, ...].ravel().real
-            mask = ((x/self.pe.N_X -.5)**2+(y/self.pe.N_Y -.5)**2) < .5**2
+            mask = ((y/self.pe.N_X -.5)**2+(x/self.pe.N_Y -.5)**2) < .5**2
             theta = theta[mask]
             value = value[mask]
 
@@ -442,7 +442,7 @@ class SparseEdges(LogGabor):
         if self.pe.edge_mask:
             # remove edges whose center position is not on the central disk
             x , y = edgeslist[0, ...].ravel().real, edgeslist[1, ...].ravel().real
-            mask = ((x/self.pe.N_X -.5)**2+(y/self.pe.N_Y -.5)**2) < .5**2
+            mask = ((y/self.pe.N_X -.5)**2+(x/self.pe.N_Y -.5)**2) < .5**2
             sf_0 = sf_0[mask]
             value = value[mask]
 
@@ -484,7 +484,7 @@ class SparseEdges(LogGabor):
                 phase = edgeslist[5, :, i_image]
                 if self.pe.edge_mask:
                     # remove edges whose center position is not on the central disk
-                    mask = ((X/self.pe.N_X -.5)**2+(Y/self.pe.N_Y -.5)**2) < .5**2
+                    mask = ((Y/self.pe.N_X -.5)**2+(X/self.pe.N_Y -.5)**2) < .5**2
                     X = X[mask]
                     Y = Y[mask]
                     Theta = Theta[mask]
@@ -636,7 +636,7 @@ class SparseEdges(LogGabor):
                         colin_edgelist[0:2, ii_phi + i_phi +  self.pe.N_r * self.pe.N_phi] = self.pe.N_X - colin_edgelist[0, ii_phi + i_phi], self.pe.N_Y - colin_edgelist[1, ii_phi + i_phi]
                 # reference angle
                 colin_edgelist[:, -1] = [self.pe.N_X /2, self.pe.N_Y /2, 0, edge_scale, colin_edgelist[4,:].max() *1.2, 0.]
-                return self.show_edges(colin_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color, scale=40.)
+                return self.show_edges(colin_edgelist, fig=fig, ax=ax, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color, scale=40.)
             except Exception as e:
                 self.log.error(' failed to generate colin_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
                 return e, None # HACK to return something instead of None
@@ -663,7 +663,7 @@ class SparseEdges(LogGabor):
                         cocir_edgelist[:, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = cocir_edgelist[:,  ii_theta + i_theta]
                         cocir_edgelist[0:2, ii_theta + i_theta +  self.pe.N_r * self.pe.N_Dtheta] = self.pe.N_X - cocir_edgelist[0,  ii_theta + i_theta], self.pe.N_Y - cocir_edgelist[1, ii_theta + i_theta]
                 cocir_edgelist[:, -1] = [self.pe.N_X /2, self.pe.N_Y /2, 0, edge_scale, cocir_edgelist[4,:].max() *1.2, 0.]
-                return self.show_edges(cocir_edgelist, fig=fig, a=a, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color, scale=40.)
+                return self.show_edges(cocir_edgelist, fig=fig, ax=ax, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color, scale=40.)
             except Exception as e:
                 self.log.error(' failed to generate cocir_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
                 return e, None # HACK to retrun something instead of None
@@ -678,7 +678,7 @@ class SparseEdges(LogGabor):
                 plt.setp(ax, yticks=[])
                 ax.set_xlabel('log2 of scale ratio')
                 ax.set_ylabel('probability')
-                return fig, a
+                return fig, ax
             except Exception:
                 self.log.error(' failed to generate cohist_scale, %s', e)
                 return e, None # HACK to retrun something instead of None
@@ -783,7 +783,7 @@ class SparseEdges(LogGabor):
             ax.add_collection(p)
 
 #            print rad/s_theta, rad/s_phi
-            fig, a = self.show_edges(angle_edgelist, fig=fig, a=a, image=None, color='black')
+            fig, ax = self.show_edges(angle_edgelist, fig=fig, ax=ax, image=None, color='black')
             ax.axis([0, self.pe.N_Y+1, self.pe.N_X+1, 0])
 
             if colorbar:
@@ -831,7 +831,7 @@ class SparseEdges(LogGabor):
                 plt.grid('off')
             plt.draw()
 
-            return fig, a
+            return fig, ax
         else:
             return v_hist
 
@@ -938,7 +938,7 @@ class SparseEdges(LogGabor):
                         image, filename_, croparea_ = self.patch(name_database=name_database, filename=filename, croparea=croparea)
                         if noise >0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         if self.pe.do_whitening: image = self.whitening(image)
-                        fig, a = self.show_edges(edgeslist[:, :, index], image=image*1.)
+                        fig, ax = self.show_edges(edgeslist[:, :, index], image=image*1.)
                         plt.savefig(figname)
                         plt.close('all')
                         try:
@@ -955,7 +955,7 @@ class SparseEdges(LogGabor):
                         self.log.info('> reconstructing figure %s ', figname)
                         image_ = self.reconstruct(edgeslist[:, :, index])
 #                         if self.pe.do_whitening: image_ = self.dewhitening(image_)
-                        fig, a = self.show_edges(edgeslist[:, :, index], image=image_*1.)
+                        fig, ax = self.show_edges(edgeslist[:, :, index], image=image_*1.)
                         plt.savefig(figname)
                         plt.close('all')
                         try:
@@ -972,7 +972,7 @@ class SparseEdges(LogGabor):
                 figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
-                    fig, a = self.histedges_theta(edgeslist, display=True)
+                    fig, ax = self.histedges_theta(edgeslist, display=True)
                     self.savefig(figname, formats=self.pe.formats[0])
                     plt.close('all')
                     os.remove(figname + '_lock')
@@ -980,7 +980,7 @@ class SparseEdges(LogGabor):
                 # figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_colin_' + name_database + note)
                 # if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                 #     open(figname + '_lock', 'w').close()
-                #     fig, a = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
+                #     fig, ax = self.cohistedges(edgeslist, symmetry=False, display='colin_geisler')
                 #     plt.savefig(figname)
                 #     plt.close('all')
                 #     os.remove(figname + '_lock')
@@ -988,7 +988,7 @@ class SparseEdges(LogGabor):
                 # figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_cocir_' + name_database + note)
                 # if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                 #     open(figname + '_lock', 'w').close()
-                #     fig, a = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
+                #     fig, ax = self.cohistedges(edgeslist, symmetry=False, display='cocir_geisler')
                 #     plt.savefig(figname)
                 #     plt.close('all')
                 #     os.remove(figname + '_lock')
@@ -996,7 +996,7 @@ class SparseEdges(LogGabor):
                 figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
-                    fig, a = self.cohistedges(edgeslist, display='chevrons')
+                    fig, ax = self.cohistedges(edgeslist, display='chevrons')
                     self.savefig(figname, formats=self.pe.formats[0])
                     plt.close('all')
                     os.remove(figname + '_lock')
@@ -1008,7 +1008,7 @@ class SparseEdges(LogGabor):
                         imagelist_prior = self.get_imagelist(exp, name_database=name_database.replace('targets', 'distractors'))
                         edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist_prior, noise=noise)
                         v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
-                        fig, a = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior)
+                        fig, ax = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior)
                         self.savefig(figname, formats=self.pe.formats[0])
                         plt.close('all')
                         os.remove(figname + '_lock')
