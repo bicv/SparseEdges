@@ -492,26 +492,31 @@ class SparseEdges(LogGabor):
                     value = value[mask]
                     phase = phase[mask]
 
-                # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
-                Weights = value # np.absolute(value)#/(np.absolute(value)).sum()
-                if self.pe.do_rank: Weights[Weights.argsort()] = np.linspace(1./Weights.size, 1., Weights.size)
                 # TODO: include phases or use that to modify center of the edge
                 # TODO: or at least on the value (ON or OFF) of the edge
                 # TODO: normalize weights by their relative order to be independent of the texture
+                # TODO : make an histogram on log-radial coordinates and theta versus scale
+                # TODO: check that we correctly normalize position by the scale of the current edge
 
-                # to raise on numerical error, issue
+                # to control if we raise an error on numerical error, we use
                 np.seterr(all='ignore')
                 dx = X[:, np.newaxis] - X[np.newaxis, :]
                 dy = Y[:, np.newaxis] - Y[np.newaxis, :]
-                # TODO : make an histogram on log-radial coordinates and theta versus scale
                 d = np.sqrt(dx**2 + dy**2) / self.pe.N_X  # distance normalized by the image size
-                # TODO: check that we correctly normalize position by the scale of the current edge
                 if self.pe.scale_invariant: d *= np.sqrt(Sf_0[:, np.newaxis]*Sf_0[np.newaxis, :])#*np.sqrt(self.pe.N_X)
                 d *= self.pe.d_width # distance in visual angle
                 theta = Theta[:, np.newaxis] - Theta[np.newaxis, :]
                 phi = np.arctan2(dy, dx) - np.pi/2 - Theta[np.newaxis, :]
                 if symmetry: phi -= theta/2
                 loglevel = np.log2(Sf_0[:, np.newaxis]) - np.log2(Sf_0[np.newaxis, :])
+                # putting everything in the right range:
+                phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
+                theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
+
+                #computing weights
+                # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
+                Weights = value # np.absolute(value)#/(np.absolute(value)).sum()
+                if self.pe.do_rank: Weights[Weights.argsort()] = np.linspace(1./Weights.size, 1., Weights.size)
                 weights = Weights[:, np.newaxis] * Weights[np.newaxis, :]
                 if self.pe.weight_by_distance:
                     # normalize weights by the relative distance (bin areas increase with radius)
@@ -532,17 +537,8 @@ class SparseEdges(LogGabor):
                     weights = weights.ravel()
                 else:
                     weights = np.ones_like(weights)
-#                 print 'd', d.min(), self.binedges_d.min(), ' / ', d.max(), self.binedges_d.max(), ' / ', d.std(), ' / ', np.median(d), ' / ', (d*weights).sum(), ' / ', weights.sum()
 
-#                 print (np.sin(theta + theta.T)).std()
-#                 print (np.sin(phi - phi.T)).std()
-#                 print 'phi', phi.min(), self.binedges_phi.min(), ' / ', phi.max(), self.binedges_phi.max()
-#                 print 'theta', theta.min(), self.binedges_theta.min(), ' / ', theta.max(), self.binedges_theta.max()
-                # putting everything in the right range:
-                phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
-                theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
-#                 print 'phi', phi.min() - self.binedges_phi.min(), ' / ', phi.max() - self.binedges_phi.max()
-#                 print 'theta', theta.min() - self.binedges_theta.min(), ' / ', theta.max() - self.binedges_theta.max()
+                #computing histogram
                 v_hist_, edges_ = np.histogramdd([d.ravel(), phi.ravel(), theta.ravel(), loglevel.ravel()], #data,
                                                  bins=(self.binedges_d, self.binedges_phi, self.binedges_theta, self.binedges_loglevel),
                                                  normed=False, # TODO check if correct True,
