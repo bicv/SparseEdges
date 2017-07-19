@@ -460,6 +460,27 @@ class SparseEdges(LogGabor):
         else:
             return v_hist, v_theta_edges_
 
+
+    def cooccurence(self, X, Y, Theta, Sf_0, value, phase):
+        # to control if we raise an error on numerical error, we use
+        np.seterr(all='ignore')
+        dx = X[:, np.newaxis] - X[np.newaxis, :]
+        dy = Y[:, np.newaxis] - Y[np.newaxis, :]
+        d = np.sqrt(dx**2 + dy**2) / self.pe.N_X  # distance normalized by the image size
+        if self.pe.scale_invariant: d *= np.sqrt(Sf_0[:, np.newaxis]*Sf_0[np.newaxis, :])#*np.sqrt(self.pe.N_X)
+        d *= self.pe.d_width # distance in visual angle
+        theta = Theta[:, np.newaxis] - Theta[np.newaxis, :]
+        phi = np.arctan2(dy, dx) - np.pi/2 - Theta[np.newaxis, :]
+        if symmetry: phi -= theta/2
+        loglevel = np.log2(Sf_0[:, np.newaxis]) - np.log2(Sf_0[np.newaxis, :])
+        # putting everything in the right range:
+        phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
+        theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
+        dphase = phase[:, np.newaxis], phase[np.newaxis, :]
+        logvalue = np.log2(value[:, np.newaxis]) - np.log2(value[np.newaxis, :])
+
+        return d, phi, theta, loglevel, dphase, logvalue
+
     def cohistedges(self, edgeslist, v_hist=None, prior=None,
                     fig=None, ax=None, symmetry=True,
                     display='chevrons', v_min=None, v_max=None, labels=True, mappable=False, radius=None,
@@ -498,20 +519,8 @@ class SparseEdges(LogGabor):
                 # TODO : make an histogram on log-radial coordinates and theta versus scale
                 # TODO: check that we correctly normalize position by the scale of the current edge
 
-                # to control if we raise an error on numerical error, we use
-                np.seterr(all='ignore')
-                dx = X[:, np.newaxis] - X[np.newaxis, :]
-                dy = Y[:, np.newaxis] - Y[np.newaxis, :]
-                d = np.sqrt(dx**2 + dy**2) / self.pe.N_X  # distance normalized by the image size
-                if self.pe.scale_invariant: d *= np.sqrt(Sf_0[:, np.newaxis]*Sf_0[np.newaxis, :])#*np.sqrt(self.pe.N_X)
-                d *= self.pe.d_width # distance in visual angle
-                theta = Theta[:, np.newaxis] - Theta[np.newaxis, :]
-                phi = np.arctan2(dy, dx) - np.pi/2 - Theta[np.newaxis, :]
-                if symmetry: phi -= theta/2
-                loglevel = np.log2(Sf_0[:, np.newaxis]) - np.log2(Sf_0[np.newaxis, :])
-                # putting everything in the right range:
-                phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
-                theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
+
+                d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(X, Y, Theta, Sf_0, value, phase)
 
                 #computing weights
                 # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
@@ -530,7 +539,7 @@ class SparseEdges(LogGabor):
                 if self.pe.kappa_phase>0:
                     # TODO: should we use the phase information to refine position?
                     # https://en.wikipedia.org/wiki/Atan2
-                    weights *= np.exp(self.pe.kappa_phase*np.cos(np.arctan2(phase[:, np.newaxis], phase[np.newaxis, :])))
+                    weights *= np.exp(self.pe.kappa_phase*np.cos(np.arctan2(dphase)))
 
                 if weights.sum()>0:
                     weights /= weights.sum()
