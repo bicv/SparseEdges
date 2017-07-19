@@ -183,7 +183,7 @@ class SparseEdges(LogGabor):
             phases = edges[5, :]
 
             for x, y, theta, sf_0, weight, phase in zip(X, Y, Theta, Sf_0, weights, phases):
-                if not mask or ((x/self.pe.N_X -.5)**2+(y/self.pe.N_Y -.5)**2) < .5**2:
+                if (not mask) or ((y/self.pe.N_X -.5)**2+(x/self.pe.N_Y -.5)**2) < .5**2:
                     u_, v_ = np.cos(theta)*scale/sf_0, np.sin(theta)*scale/sf_0
                     segment = [(x - u_, y - v_), (x + u_, y + v_)]
                     segments.append(segment)
@@ -222,8 +222,11 @@ class SparseEdges(LogGabor):
             plt.setp(a, yticks=[])
 
         if mask:
-            linewidth_mask = 1 # HACK
-            circ = plt.Circle((.5*self.pe.N_Y, .5*self.pe.N_Y), radius=0.5*self.pe.N_Y-linewidth_mask/2., fill=False, facecolor='none', edgecolor = 'black', alpha = 0.5, ls='dashed', lw=linewidth_mask)
+            linewidth_mask = 1 #
+            from matplotlib.patches import Ellipse
+            circ = Ellipse((.5*self.pe.N_Y, .5*self.pe.N_X),
+                            self.pe.N_Y-linewidth_mask, self.pe.N_X-linewidth_mask,
+                            fill=False, facecolor='none', edgecolor = 'black', alpha = 0.5, ls='dashed', lw=linewidth_mask)
             a.add_patch(circ)
         a.axis([0, self.pe.N_Y, self.pe.N_X, 0])
         a.grid(b=False, which="both")
