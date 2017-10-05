@@ -115,10 +115,9 @@ class SparseEdges(LogGabor):
 
     def reconstruct(self, edges, mask=False):
         image = np.zeros((self.pe.N_X, self.pe.N_Y))
-#        print edges.shape, edges[:, 0]
         for i_edge in range(edges.shape[1]):#self.pe.N):
             # TODO : check that it is correct when we remove alpha when making new MP
-            if not mask or ((edges[1, i_edge]/self.pe.N_X -.5)**2+(edges[0, i_edge]/self.pe.N_Y -.5)**2) < .5**2:
+            if not mask or ((edges[0, i_edge]/self.pe.N_X -.5)**2+(edges[1, i_edge]/self.pe.N_Y -.5)**2) < .5**2:
                 image += self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
                                     self.loggabor(
                                                     edges[0, i_edge], edges[1, i_edge],
@@ -126,7 +125,7 @@ class SparseEdges(LogGabor):
                                                     sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
                                                     ),
                                     full=False)
-        return image
+        return np.flipud(image)
 
     def adapt(self, edges):
         # TODO : implement a COMP adaptation of the thetas and scales tesselation of Fourier space
@@ -142,6 +141,7 @@ class SparseEdges(LogGabor):
         import matplotlib.cm as cm
         if fig==None:
             #  Figure :                      height         ----------           width
+            # figsize = w, h tuple in inches
             fig = plt.figure(figsize=(self.pe.figsize*self.pe.N_Y/self.pe.N_X, self.pe.figsize))
         if ax==None:
             border = 0.0
@@ -176,8 +176,8 @@ class SparseEdges(LogGabor):
             segments, colors, linewidths = list(), list(), list()
             patch_circles = []
 
-            X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :] # HACK in orientation
-#             X, Y, Theta, Sf_0 = edges[1, :]+.5, self.pe.N_X - edges[0, :]-.5, edges[2, :], edges[3, :] # HACK in orientation
+            X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :]
+            
             weights = edges[4, :]
             weights = weights/(np.abs(weights)).max()
             phases = edges[5, :]
@@ -461,7 +461,13 @@ class SparseEdges(LogGabor):
             return v_hist, v_theta_edges_
 
 
-    def cooccurence(self, X, Y, Theta, Sf_0, value, phase):
+    def cooccurence(self, edgeslist):
+        # retrieve individual positions, orientations, scales and coefficients
+        X, Y = edgeslist[0, :], edgeslist[1, :]
+        Theta = edgeslist[2, :]
+        Sf_0 = edgeslist[3, :]
+        value = edgeslist[4, :]
+        phase = edgeslist[5, :]
         # to control if we raise an error on numerical error, we use
         np.seterr(all='ignore')
         dx = X[:, np.newaxis] - X[np.newaxis, :]
@@ -497,21 +503,17 @@ class SparseEdges(LogGabor):
             v_hist = None
             six, N_edge, N_image = edgeslist.shape
             for i_image in range(N_image):
-                # retrieve individual positions, orientations, scales and coefficients
-                X, Y = edgeslist[0, :, i_image], edgeslist[1, :, i_image]
-                Theta = edgeslist[2, :, i_image]
-                Sf_0 = edgeslist[3, :, i_image]
-                value = edgeslist[4, :, i_image]
-                phase = edgeslist[5, :, i_image]
+
                 if self.pe.edge_mask:
                     # remove edges whose center position is not on the central disk
                     mask = ((Y/self.pe.N_X -.5)**2+(X/self.pe.N_Y -.5)**2) < .5**2
-                    X = X[mask]
-                    Y = Y[mask]
-                    Theta = Theta[mask]
-                    Sf_0 = Sf_0[mask]
-                    value = value[mask]
-                    phase = phase[mask]
+                    edgeslist_mask = edgeslist[:, mask, i_image]
+                    # X = X[mask]
+                    # Y = Y[mask]
+                    # Theta = Theta[mask]
+                    # Sf_0 = Sf_0[mask]
+                    # value = value[mask]
+                    # phase = phase[mask]
 
                 # TODO: include phases or use that to modify center of the edge
                 # TODO: or at least on the value (ON or OFF) of the edge
@@ -520,11 +522,11 @@ class SparseEdges(LogGabor):
                 # TODO: check that we correctly normalize position by the scale of the current edge
 
 
-                d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(X, Y, Theta, Sf_0, value, phase)
+                d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(edgeslist_mask)
 
                 #computing weights
                 # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
-                Weights = value # np.absolute(value)#/(np.absolute(value)).sum()
+                Weights = edgeslist[4, :, i_image]
                 if self.pe.do_rank: Weights[Weights.argsort()] = np.linspace(1./Weights.size, 1., Weights.size)
                 weights = Weights[:, np.newaxis] * Weights[np.newaxis, :]
                 if self.pe.weight_by_distance:
