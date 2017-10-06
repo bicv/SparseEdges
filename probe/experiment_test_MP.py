@@ -2,7 +2,7 @@ import numpy as np
 from SparseEdges import SparseEdges
 
 mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
-mp.N = 128 # number of edges
+mp.pe.N =32 # 128 # number of edges
 mp.pe.figsize_edges = 9
 
 #! defining a reference test image (see test_Image)
@@ -15,10 +15,9 @@ matname = os.path.join(mp.pe.matpath, 'experiment_test_MP.npy')
 try:
     edges = np.load(matname)
 except Exception:
-    edges, C_res = mp.run_mp(image, verbose=False)
+    edges, C_res = mp.run_mp(image, verbose=True)
     try:
         os.mkdir(mp.pe.matpath)
     except Exception:
         pass
     np.save(matname, edges)   
-fig, a = mp.show_edges(edges, image=mp.whitening(image))

@@ -125,7 +125,7 @@ class SparseEdges(LogGabor):
                                                     sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
                                                     ),
                                     full=False)
-        return np.flipud(image)
+        return image
 
     def adapt(self, edges):
         # TODO : implement a COMP adaptation of the thetas and scales tesselation of Fourier space
@@ -148,7 +148,6 @@ class SparseEdges(LogGabor):
             ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
         ax.axis(c='b', lw=0, frame_on=False)
 
-        # HACK
         if color == 'black' or color == 'redblue' or color in['brown', 'green', 'blue']: #cocir or chevrons
             linewidth = self.pe.line_width_chevrons
             if scale is None: scale = self.pe.scale_chevrons
@@ -158,7 +157,7 @@ class SparseEdges(LogGabor):
 
         opts= {'extent': (0, self.pe.N_Y, self.pe.N_X, 0), # None, #
                'cmap': cm.gray,
-               'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest', 'origin':'upper'}
+               'vmin':v_min, 'vmax':v_max, 'interpolation':'nearest'}#, 'origin':'upper'}
 #         origin : [‘upper’ | ‘lower’], optional, default: None
 #         Place the [0,0] index of the array in the upper left or lower left corner of the axes. If None, default to rc image.origin.
 #         extent : scalars (left, right, bottom, top), optional, default: None
@@ -176,8 +175,8 @@ class SparseEdges(LogGabor):
             segments, colors, linewidths = list(), list(), list()
             patch_circles = []
 
-            X, Y, Theta, Sf_0 = edges[1, :]+.5, edges[0, :]+.5, np.pi -  edges[2, :], edges[3, :]
-            
+            Y, X, Theta, Sf_0 = edges[0, :]+.5, edges[1, :]+.5, np.pi -  edges[2, :], edges[3, :]
+
             weights = edges[4, :]
             weights = weights/(np.abs(weights)).max()
             phases = edges[5, :]
@@ -210,16 +209,15 @@ class SparseEdges(LogGabor):
                         fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
                     colors.append(fc)
                     linewidths.append(linewidth) # *weight thinning byalphax...
-                    patch_circles.append(patches.Circle((x,y), self.pe.scale_circle*scale/sf_0, lw=0., facecolor=fc, edgecolor='none'))
+                    patch_circles.append(patches.Circle((x, y), self.pe.scale_circle*scale/sf_0, lw=0., facecolor=fc, edgecolor='none'))
 
             line_segments = LineCollection(segments, linewidths=linewidths, colors=colors, linestyles='solid')
             ax.add_collection(line_segments)
             circles = PatchCollection(patch_circles, match_original=True)
             ax.add_collection(circles)
 
-        if True: # HACK not(color=='auto'):# chevrons maps etc...
-            plt.setp(ax, xticks=[])
-            plt.setp(ax, yticks=[])
+        plt.setp(ax, xticks=[])
+        plt.setp(ax, yticks=[])
 
         if mask:
             linewidth_mask = 1 #
@@ -253,7 +251,7 @@ class SparseEdges(LogGabor):
                 edgeslist[4, :] = np.random.randn(N_edge)
             else:
                 #edgeslist[4, :] = 1 / np.random.power(a=a, size=N_edge)
-                edgeslist[3, :] =  self.sf_0.max() * powerlaw.rvs(a=4., size = N_edge) # HACK
+                edgeslist[3, :] =  self.sf_0.max() * powerlaw.rvs(a=4., size = N_edge)
                 edgeslist[4, :]  = np.random.pareto(a=a, size=(N_edge)) + 1
 
 
@@ -646,7 +644,7 @@ class SparseEdges(LogGabor):
                 return self.show_edges(colin_edgelist, fig=fig, ax=ax, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color, scale=40.)
             except Exception as e:
                 self.log.error(' failed to generate colin_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
-                return e, None # HACK to return something instead of None
+                return e, None # used to return something instead of None
 
         elif display=='cocir_geisler':
             edge_scale = 8.
@@ -673,7 +671,7 @@ class SparseEdges(LogGabor):
                 return self.show_edges(cocir_edgelist, fig=fig, ax=ax, image=None, v_min=0., v_max=v_hist_noscale.max(), color=color, scale=40.)
             except Exception as e:
                 self.log.error(' failed to generate cocir_geisler plot, %s', traceback.print_tb(sys.exc_info()[2]))
-                return e, None # HACK to retrun something instead of None
+                return e, None # used to retrun something instead of None
 
         elif display=='cohist_scale':
             try:
@@ -688,7 +686,7 @@ class SparseEdges(LogGabor):
                 return fig, ax
             except Exception:
                 self.log.error(' failed to generate cohist_scale, %s', e)
-                return e, None # HACK to retrun something instead of None
+                return e, None # used to retrun something instead of None
 
 
         elif display=='chevrons':
@@ -810,7 +808,7 @@ class SparseEdges(LogGabor):
                 if not(xticks=='left'): ax.set_xlabel(r'azimuth difference $\psi$')
                 if not(xticks=='bottom'): ax.set_ylabel(r'orientation difference $\theta$')
             if not(xticks==False):
-                eps = 0.5 # HACK to center grid. dunnon what's happening here
+                eps = 0.5 # used to center grid.
                 if half:
                     plt.setp(ax, xticks=[(1./self.pe.N_phi/1.25)*self.pe.N_X, (1. - 1./self.pe.N_phi/1.25)*self.pe.N_X])
                     if not(xticks=='left'):
@@ -1404,7 +1402,7 @@ class SparseEdgesWithDipole(SparseEdges):
 
     def dipole(self, edge):
 
-        y, x, theta_edge, sf_0, C, phase = edge # HACK
+        y, x, theta_edge, sf_0, C, phase = edge # get edge coordinates
         theta_edge = np.pi/2 - theta_edge
 
         D = np.ones((self.pe.N_X, self.pe.N_Y, self.pe.n_theta, self.n_levels))
@@ -1412,7 +1410,7 @@ class SparseEdgesWithDipole(SparseEdges):
         neighborhood = np.exp(-distance**2)
         for i_sf_0, sf_0_ in enumerate(self.sf_0):
             for i_theta, theta_layer in enumerate(self.theta):
-                theta_layer = np.pi/2 - theta_layer # HACK - to correct in +LogGabor
+                theta_layer = np.pi/2 - theta_layer
                 theta_layer = ((theta_layer + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
                 theta = theta_layer - theta_edge # angle between edge's orientation and the layer's one
                 psi = np.arctan2(self.Y-y, self.X-x) - theta_edge -np.pi/2 - theta/2 #- np.pi/4

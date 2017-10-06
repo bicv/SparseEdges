@@ -35,7 +35,6 @@
     'n_theta': 24, # number of (unoriented) angles between 0. radians (included) and np.pi radians (excluded)
     'B_sf': .4, # 1.5 in Geisler
     'B_theta': 3.14159/18.,
-    'use_cache' : True,
 # Matching Pursuit
 # 'N': 32, # number of edges extracted
     'N': 2**11,
@@ -101,6 +100,8 @@
     'figsize_cohist': 8, #
     'formats': ['png', 'pdf', 'svg', 'jpg'],
     'dpi': 450,
+    'use_cache' : True,
+    'verbose': 0,
     'scale': .8,
     'scale_circle': 0.08, # relativesize of segments and pivot
     'scale_chevrons': 2.5,
