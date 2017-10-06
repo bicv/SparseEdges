@@ -1,7 +1,7 @@
 import numpy as np
 from SparseEdges import SparseEdges
 mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
-mp.pe.N = 128
+mp.pe.N = 256
 
 image = mp.imread('https://raw.githubusercontent.com/bicv/SLIP/master/database/serre07_targets/B_N107001.jpg')
 

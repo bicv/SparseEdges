@@ -2,7 +2,7 @@ import numpy as np
 from SparseEdges import SparseEdges
 
 mp = SparseEdges('https://raw.githubusercontent.com/bicv/SparseEdges/master/default_param.py')
-mp.pe.N =32 # 128 # number of edges
+mp.pe.N = 128 # number of edges
 mp.pe.figsize_edges = 9
 
 #! defining a reference test image (see test_Image)

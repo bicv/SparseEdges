@@ -48,6 +48,7 @@ class SparseEdges(LogGabor):
 #         residual = image.copy()
 #         RMSE = np.ones(self.pe.N)
         if self.pe.do_whitening: image_ = self.whitening(image_)
+        if self.pe.do_mask: image_ *= self.mask
         C = self.linear_pyramid(image_)
         if progress:
             import pyprind
@@ -109,7 +110,7 @@ class SparseEdges(LogGabor):
             lg_star = self.invert(C_star*FT_lg_star, full=False)
             for i_sf_0, sf_0 in enumerate(self.sf_0):
                 for i_theta, theta in enumerate(self.theta):
-                    FT_lg = self.loggabor(0, 0, sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
+                    FT_lg = self.loggabor(0., 0., sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
                     C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
         return C
 
