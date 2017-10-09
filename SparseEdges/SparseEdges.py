@@ -382,7 +382,9 @@ class SparseEdges(LogGabor):
         self.binedges_phi = np.linspace(-np.pi/2, np.pi/2, self.pe.N_phi+1) + np.pi/self.pe.N_phi/2
         theta_bin = (self.theta + np.hstack((self.theta[-1]-np.pi, self.theta[:-1]))) /2
         self.binedges_theta = np.hstack((theta_bin, theta_bin[0]+np.pi))
-        self.binedges_sf_0 = 2**np.arange(np.ceil(np.log2(self.pe.N_X)))
+        # self.binedges_sf_0 = 2**np.arange(np.ceil(np.log2(self.pe.N_X)))
+        self.binedges_sf_0 = 1. / np.logspace(.5, self.n_levels+.5, self.n_levels+1, base=self.pe.base_levels)
+        self.binedges_sf_0 = self.binedges_sf_0[::-1]
         self.binedges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
     def histedges_theta(self, edgeslist, fig=None, ax=None, figsize=None, display=True):
@@ -444,20 +446,19 @@ class SparseEdges(LogGabor):
             mask = ((y/self.pe.N_X -.5)**2+(x/self.pe.N_Y -.5)**2) < .5**2
             sf_0 = sf_0[mask]
             value = value[mask]
-
         weights = np.absolute(value)/(np.absolute(value)).sum()
-        v_hist, v_sf_0_edges_ = np.histogram(sf_0, self.binedges_sf_0, density=True, weights=weights)
+        v_hist, v_sf_0_edges_ = np.histogram(sf_0, self.binedges_sf_0, density=False, weights=weights)
         v_hist /= v_hist.sum()
         if display:
             if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
             if ax==None: ax = fig.add_subplot(111, axisbg='w')
-            ax.bar(v_sf_0_edges_[:-1], v_hist)
-            plt.setp(ax, yticks=[])
+            ax.step(v_sf_0_edges_[:-1], v_hist, c='k')
+            #plt.setp(ax, yticks=[])
             plt.xlabel(r'$sf_0$')
             plt.ylabel('probability')
-            return fig,a
+            return fig, ax
         else:
-            return v_hist, v_theta_edges_
+            return v_hist, v_sf_0_edges_
 
 
     def cooccurence(self, edgeslist):
