@@ -461,13 +461,30 @@ class SparseEdges(LogGabor):
             return v_hist, v_sf_0_edges_
 
 
-    def cooccurence(self, edgeslist):
+    def cooccurence(self, edgeslist, symmetry=True):
         # retrieve individual positions, orientations, scales and coefficients
         X, Y = edgeslist[0, :], edgeslist[1, :]
         Theta = edgeslist[2, :]
         Sf_0 = edgeslist[3, :]
         value = edgeslist[4, :]
         phase = edgeslist[5, :]
+        if self.pe.edge_mask:
+            # remove edges whose center position is not on the central disk
+            mask = ((Y/self.pe.N_X -.5)**2+(X/self.pe.N_Y -.5)**2) < .5**2
+            edgeslist = edgeslist[:, mask]
+            # X = X[mask]
+            # Y = Y[mask]
+            # Theta = Theta[mask]
+            # Sf_0 = Sf_0[mask]
+            # value = value[mask]
+            # phase = phase[mask]
+
+        # TODO: include phases or use that to modify center of the edge
+        # TODO: or at least on the value (ON or OFF) of the edge
+        # TODO: normalize weights by their relative order to be independent of the texture
+        # TODO : make an histogram on log-radial coordinates and theta versus scale
+        # TODO: check that we correctly normalize position by the scale of the current edge
+
         # to control if we raise an error on numerical error, we use
         np.seterr(all='ignore')
         dx = X[:, np.newaxis] - X[np.newaxis, :]
@@ -504,25 +521,7 @@ class SparseEdges(LogGabor):
             six, N_edge, N_image = edgeslist.shape
             for i_image in range(N_image):
 
-                if self.pe.edge_mask:
-                    # remove edges whose center position is not on the central disk
-                    mask = ((Y/self.pe.N_X -.5)**2+(X/self.pe.N_Y -.5)**2) < .5**2
-                    edgeslist_mask = edgeslist[:, mask, i_image]
-                    # X = X[mask]
-                    # Y = Y[mask]
-                    # Theta = Theta[mask]
-                    # Sf_0 = Sf_0[mask]
-                    # value = value[mask]
-                    # phase = phase[mask]
-
-                # TODO: include phases or use that to modify center of the edge
-                # TODO: or at least on the value (ON or OFF) of the edge
-                # TODO: normalize weights by their relative order to be independent of the texture
-                # TODO : make an histogram on log-radial coordinates and theta versus scale
-                # TODO: check that we correctly normalize position by the scale of the current edge
-
-
-                d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(edgeslist_mask)
+                d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(edgeslist[:, :, i_image], symmetry=symmetry)
 
                 #computing weights
                 # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
@@ -794,7 +793,7 @@ class SparseEdges(LogGabor):
             ax.axis([0, self.pe.N_Y+1, self.pe.N_X+1, 0])
 
             if colorbar:
-                cbar = plt.colorbar(ax=a, mappable=p, shrink=0.6)
+                cbar = plt.colorbar(ax=ax, mappable=p, shrink=0.6)
                 if dolog:
                     if cbar_label: cbar.set_label('probability ratio')
                     ticks_cbar = 2**(np.floor(np.linspace(v_min, v_max, 3)))

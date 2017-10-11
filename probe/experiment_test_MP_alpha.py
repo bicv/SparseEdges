@@ -31,7 +31,6 @@ mp.process('testing_vanilla')
 mp.process('testing_noise', noise=mp.pe.noise)
 mp.process('testing_vanilla', name_database='serre07_targets')
 
-# TODO : make an experiment showing that using scale does not bring much
 mps, experiments = [], []
 v_alpha = np.linspace(0.3, 1., 9)
 for MP_alpha in v_alpha:
