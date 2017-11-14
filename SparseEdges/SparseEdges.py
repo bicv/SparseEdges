@@ -1269,6 +1269,9 @@ class SparseEdges(LogGabor):
 
             for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
                 imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
+                if isinstance(RMSE, str):
+                    print ('not finished in ', experiment, name_database)
+                    return None
                 RMSE /= RMSE[:, 0][:, np.newaxis]
                 N = RMSE.shape[1] #number of edges
                 l0 = np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y
