@@ -1,8 +1,8 @@
 NAME = SparseEdges
 VERSION=`python3 -c'import SparseEdges; print(SparseEdges.__version__)'`
-
 PYTHON = python3
 UNAME_S := $(shell uname -s)
+
 ifeq ($(UNAME_S),Linux)
 	PIP = pip
 else

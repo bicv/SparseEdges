@@ -49,14 +49,14 @@ class SparseEdges(LogGabor):
 #         RMSE = np.ones(self.pe.N)
         if self.pe.do_whitening: image_ = self.whitening(image_)
         if self.pe.do_mask: image_ *= self.mask
-        C = self.linear_pyramid(image_)
+        C = self.linear_pyramid(image_) # check LogGabor package
         if progress:
             import pyprind
             my_prbar = pyprind.ProgPercent(self.pe.N)   # 1) initialization with number of iterations
         for i_edge in range(self.pe.N):
 #             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
-            ind_edge_star = self.argmax(C)
+            ind_edge_star = self.argmax(C) # check LogGabor package
             if not (self.pe.MP_rho is None):
                 print('dooh!')
                 if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
@@ -78,19 +78,6 @@ class SparseEdges(LogGabor):
             # PURSUIT
             C = self.backprop(C, ind_edge_star)
         return edges, C
-
-    def argmax(self, C):
-        """
-        Returns the ArgMax from C by returning the
-        (x_pos, y_pos, theta, scale)  tuple
-
-        >>> C = np.random.randn(10, 10, 5, 4)
-        >>> x_pos, y_pos, theta, scale = mp.argmax(C)
-        >>> C[x_pos][y_pos][theta][scale] = C.max()
-
-        """
-        ind = np.absolute(C).argmax()
-        return np.unravel_index(ind, C.shape)
 
     def backprop(self, C, ind_edge_star):
         """
