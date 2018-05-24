@@ -51,8 +51,8 @@ def init_pylab():
                   'text.usetex': False,
         #          'mathtext.fontset': 'stix', #http://matplotlib.sourceforge.net/users/mathtext.html
                   'axes.labelsize': fontsize,
-                  'text.fontsize': fontsize,
-                  'legend.fontsize': fontsize,
+                  #'text.fontsize': fontsize,
+                  #'legend.fontsize': fontsize,
                   'figure.subplot.bottom': 0.17,
                   'figure.subplot.left': 0.15,
                   'ytick.labelsize': fontsize,
