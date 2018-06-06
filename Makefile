@@ -22,27 +22,23 @@ test2:
 edit:
 	mvim -p setup.py src/__init__.py src/$(NAME).py README.md Makefile requirements.txt
 
-pypi_all: pypi_tags pypi_push pypi_upload
-# https://docs.python.org/2/distutils/packageindex.html
+# https://docs.python.org/3/distutils/packageindex.html
+pypi_all: pypi_tags pypi_upload
 pypi_tags:
 	git commit -am' tagging for PyPI '
 	# in case you wish to delete tags, visit http://wptheming.com/2011/04/add-remove-github-tags/
 	git tag $(VERSION) -m "Adds a tag so that we can put this on PyPI."
 	git push --tags origin master
 
-pypi_push:
-	$(PYTHON) setup.py register
-
 pypi_upload:
-	$(PYTHON) setup.py sdist upload
+	$(PYTHON) setup.py sdist #upload
+	twine upload dist/*
 
 pypi_docs:
-	#rm web.zip
-	#ipython nbconvert --to html $(NAME).ipynb
-	#mv $(NAME).html index.html
-	#runipy $(NAME).ipynb  --html  index.html
+	rm web.zip
 	zip web.zip index.html
 	open https://pypi.python.org/pypi?action=pkg_edit&name=$NAME
+
 
 RIOU = /hpc/invibe/perrineti.l/science/$(NAME)
 FRIOUL = perrinet.l@frioul.int.univ-amu.fr

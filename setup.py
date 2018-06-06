@@ -30,11 +30,13 @@ setup(
                    'Environment :: Console',
                    'License :: OSI Approved :: GNU General Public License (GPL)',
                    'Operating System :: POSIX',
+                   'Intended Audience :: Science/Research',
+                   'Topic :: Scientific/Engineering :: Visualization',
+                   'Topic :: Scientific/Engineering :: Medical Science Apps.',
+                   'Topic :: Scientific/Engineering :: Image Recognition',
                    'Topic :: Scientific/Engineering',
                    'Topic :: Utilities',
-                   'Programming Language :: Python :: 2',
-                   'Programming Language :: Python :: 2.7',
                    'Programming Language :: Python :: 3',
-                   'Programming Language :: Python :: 3.5'
+                   'Programming Language :: Python :: 3.6',
                   ],
      )

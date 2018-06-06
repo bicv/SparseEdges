@@ -1,12 +1,12 @@
-# -*- coding: utf8 -*-
-from __future__ import division, print_function
 """
 SparseEdges
 
 See http://pythonhosted.org/SparseEdges
 
 """
-__author__ = "(c) Laurent Perrinet INT - CNRS"
+__author__ = "Laurent Perrinet INT - CNRS"
+__version__ = '20180606'
+__licence__ = 'GPLv2'
 import numpy as np
 import os
 PID, HOST = os.getpid(), os.uname()[1]
