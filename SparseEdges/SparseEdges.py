@@ -9,7 +9,8 @@ __version__ = '20180606'
 __licence__ = 'GPLv2'
 import numpy as np
 import os
-PID, HOST = os.getpid(), os.uname()[1]
+import socket
+PID, HOST = os.getpid(), socket.gethostname()
 TAG = 'host-' + HOST + '_pid-' + str(PID)
 # -------------------------------------------
 import warnings
