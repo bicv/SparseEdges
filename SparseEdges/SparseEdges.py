@@ -134,7 +134,7 @@ class SparseEdges(LogGabor):
             fig = plt.figure(figsize=(self.pe.figsize*self.pe.N_Y/self.pe.N_X, self.pe.figsize))
         if ax==None:
             border = 0.0
-            ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
+            ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), facecolor='w')
         ax.axis(c='b', lw=0, frame_on=False)
 
         if color == 'black' or color == 'redblue' or color in['brown', 'green', 'blue']: #cocir or chevrons
@@ -385,9 +385,7 @@ class SparseEdges(LogGabor):
         self.init_binedges()
 
         theta = edgeslist[2, ...].ravel()
-        #theta = ((theta + np.pi/2 - np.pi/self.pe.N_Dtheta/2)  % np.pi ) - np.pi/2  + np.pi/self.pe.N_Dtheta/2
         value = edgeslist[4, ...].ravel()
-
 
         if self.pe.edge_mask:
             # remove edges whose center position is not on the central disk
@@ -402,7 +400,7 @@ class SparseEdges(LogGabor):
         if display:
             if figsize is None: figsize = (self.pe.figsize_hist, self.pe.figsize_hist)
             if fig is None: fig = plt.figure(figsize=figsize)
-            if ax is None: ax = plt.axes(polar=True, axisbg='w')
+            if ax is None: ax = plt.axes(polar=True, facecolor='w')
 #             see http://blog.invibe.net/posts/14-12-09-polar-bar-plots.html
             #width=np.hstack((self.theta[1:], self.theta[0]+np.pi)) - self.theta
             width = self.binedges_theta[1:] - self.binedges_theta[:-1]
@@ -439,7 +437,7 @@ class SparseEdges(LogGabor):
         v_hist /= v_hist.sum()
         if display:
             if fig==None: fig = plt.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
-            if ax==None: ax = fig.add_subplot(111, axisbg='w')
+            if ax==None: ax = fig.add_subplot(111, facecolor='w')
             ax.step(v_sf_0_edges_[:-1], v_hist, c='k')
             #plt.setp(ax, yticks=[])
             plt.xlabel(r'$sf_0$')
@@ -487,7 +485,7 @@ class SparseEdges(LogGabor):
         # putting everything in the right range:
         phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
         theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
-        dphase = phase[:, np.newaxis], phase[np.newaxis, :]
+        dphase = phase[:, np.newaxis] - phase[np.newaxis, :]
         logvalue = np.log2(value[:, np.newaxis]) - np.log2(value[np.newaxis, :])
 
         return d, phi, theta, loglevel, dphase, logvalue
@@ -561,7 +559,7 @@ class SparseEdges(LogGabor):
             if fig==None:
                 fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
             options = {'cmap': cm.jet, 'interpolation':'nearest', 'vmin':0., 'origin': 'lower'}
-            a1 = fig.add_subplot(221, axisbg='w')#, polar = True)
+            a1 = fig.add_subplot(221, facecolor='w')#, polar = True)
             a1.imshow((v_hist.sum(axis=3).sum(axis=2)), **options)
             if symmetry:
                 a1.set_xlabel('psi')
@@ -574,7 +572,7 @@ class SparseEdges(LogGabor):
             a1.set_yticks([0., self.binedges_d.size-2.])
             a1.set_yticklabels([str(edges_d_half[0]), str(edges_d_half[-1])])
             a1.axis('tight')
-            a2 = fig.add_subplot(222, axisbg='w')#edges_[0], edges_[2],
+            a2 = fig.add_subplot(222, facecolor='w')#edges_[0], edges_[2],
             a2.imshow((v_hist.sum(axis=3).sum(axis=1)), **options)
             a2.set_xlabel('theta')
             a2.set_xticks([0., self.binedges_theta.size/2.-1.5, self.binedges_theta.size-2.])
@@ -583,7 +581,7 @@ class SparseEdges(LogGabor):
             a2.set_yticks([0., self.binedges_d.size-2.])
             a2.set_yticklabels([str(edges_d_half[0]), str(edges_d_half[-1])])
             a2.axis('tight')
-            a3 = fig.add_subplot(223, axisbg='w')#edges_[1], edges_[2],
+            a3 = fig.add_subplot(223, facecolor='w')#edges_[1], edges_[2],
             a3.imshow((v_hist.sum(axis=3).sum(axis=0)).T, **options)
             if symmetry:
                 a3.set_xlabel('psi')
@@ -595,7 +593,7 @@ class SparseEdges(LogGabor):
             a3.set_yticks([0., self.binedges_theta.size/2. - 1.5, self.binedges_theta.size-2.])
             a3.set_yticklabels(['-pi/2 + bw', '0', 'pi/2'])
             a3.axis('tight')
-            a4 = fig.add_subplot(224, axisbg='w')#, polar = True)
+            a4 = fig.add_subplot(224, facecolor='w')#, polar = True)
             a4.imshow((v_hist.sum(axis=1).sum(axis=1)), **options)
             a4.set_xlabel('levels')
             a4.set_xticks([0., self.pe.N_scale/2. -.5, self.pe.N_scale -1.])
@@ -713,7 +711,7 @@ class SparseEdges(LogGabor):
                 fig = plt.figure(figsize=(self.pe.figsize_cohist, self.pe.figsize_cohist))
                 if ax==None:
                     border = 0.005
-                    ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), axisbg='w')
+                    ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), facecolor='w')
                     ax.axis(c='b', lw=0)
 
             # make circles around each couple of edges
@@ -1105,17 +1103,17 @@ class SparseEdges(LogGabor):
 
             fig = plt.figure(figsize=(fig_width, fig_width/1.618))
         # main axis
-        if ax==None: ax = fig.add_subplot(111, axisbg='w')
+        if ax==None: ax = fig.add_subplot(111, facecolor='w')
         # axes.edgecolor      : black   # axes edge color
         if (threshold==None) and (ref==None):
             if revert:
-                inset = fig.add_subplot(111, axisbg='w')
+                inset = fig.add_subplot(111, facecolor='w')
                 # this is another inset axes over the main axes
-                ax = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
+                ax = fig.add_axes([0.48, 0.55, .4, .4], facecolor='w')
             else:
-                ax = fig.add_subplot(111, axisbg='w')
+                ax = fig.add_subplot(111, facecolor='w')
                 # this is another inset axes over the main axes
-                inset = fig.add_axes([0.48, 0.55, .4, .4], axisbg='w')
+                inset = fig.add_axes([0.48, 0.55, .4, .4], facecolor='w')
             #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
             grad = np.linspace(0., 1., 2*len(experiments))
             grad[1::2] = grad[::2]
@@ -1188,7 +1186,7 @@ class SparseEdges(LogGabor):
             plt.tight_layout()
             return fig, ax, inset
         elif (threshold==None):
-            if ax==None: ax = fig.add_axes([0.15, 0.25, .75, .75], axisbg='w')
+            if ax==None: ax = fig.add_axes([0.15, 0.25, .75, .75], facecolor='w')
             ind, l0, l0_std = 0, [], []
             from lmfit.models import ExpressionModel
             mod = ExpressionModel('1 - (1- eps_inf) * ( 1 - rho**x)')
