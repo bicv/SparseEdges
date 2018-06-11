@@ -1,7 +1,7 @@
 __author__ = "Laurent Perrinet INT - CNRS"
 __version__ = '20180606'
 __licence__ = 'GPLv2'
-from .SparseEdges import SparseEdges, SparseEdgesWithDipole, EdgeFactory
+from .SparseEdges import SparseEdges, EdgeFactory
 
 def adjust_spines(ax, spines):
     for loc, spine in ax.spines.iteritems():
