@@ -835,7 +835,6 @@ class SparseEdges(LogGabor):
         ``note`` designs a string that modified the histogram (such as changing the number of bins)
 
         """
-
         self.log.info(' > computing edges for experiment %s with database %s ', exp, name_database)
         #: 1 - Creating an image list
         locked = False
@@ -849,6 +848,7 @@ class SparseEdges(LogGabor):
             return 'locked imagelist', 'not done', 'not done'
         else:
             try:
+                # HACK to regenerate edgeslist
                 edgeslist = np.load(matname + '_edges.npy')
             except Exception as e:
                 self.log.info(' >> There is no edgeslist: %s ', e)
@@ -863,7 +863,6 @@ class SparseEdges(LogGabor):
         if locked:
             return imagelist, 'edgeslist not done', 'not started'
         else:
-
             # Computing RMSE to check the edge extraction process
             try:
                 RMSE = np.load(matname + '_RMSE.npy')
@@ -931,8 +930,8 @@ class SparseEdges(LogGabor):
                         if noise >0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         if self.pe.do_whitening: image = self.whitening(image)
                         fig, ax = self.show_edges(edgeslist[:, :, index], image=image*1.)
-                        plt.savefig(figname)
-                        plt.close('all')
+                        # print(figname)
+                        self.savefig(fig, figname)
                         try:
                             os.remove(figname + '_lock')
                         except Exception as e:
@@ -948,8 +947,7 @@ class SparseEdges(LogGabor):
                         image_ = self.reconstruct(edgeslist[:, :, index])
 #                         if self.pe.do_whitening: image_ = self.dewhitening(image_)
                         fig, ax = self.show_edges(edgeslist[:, :, index], image=image_*1.)
-                        plt.savefig(figname)
-                        plt.close('all')
+                        self.savefig(fig, figname)
                         try:
                             os.remove(figname + '_lock')
                         except Exception as e:
@@ -965,7 +963,7 @@ class SparseEdges(LogGabor):
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
                     fig, ax = self.histedges_theta(edgeslist, display=True)
-                    self.savefig(figname, formats=self.pe.formats[0])
+                    self.savefig(fig, figname, formats=self.pe.formats[0])
                     plt.close('all')
                     os.remove(figname + '_lock')
                 #
@@ -989,7 +987,7 @@ class SparseEdges(LogGabor):
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
                     fig, ax = self.cohistedges(edgeslist, display='chevrons')
-                    self.savefig(figname, formats=self.pe.formats[0])
+                    self.savefig(fig, figname, formats=self.pe.formats[0])
                     plt.close('all')
                     os.remove(figname + '_lock')
 
@@ -1001,7 +999,7 @@ class SparseEdges(LogGabor):
                         edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist_prior, noise=noise)
                         v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
                         fig, ax = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior)
-                        self.savefig(figname, formats=self.pe.formats[0])
+                        self.savefig(fig, figname, formats=self.pe.formats[0])
                         plt.close('all')
                         os.remove(figname + '_lock')
             except Exception as e:
@@ -1331,89 +1329,6 @@ class SparseEdges(LogGabor):
 
             except Exception as e:
                 print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
-
-
-class SparseEdgesWithDipole(SparseEdges):
-    def __init__(self, pe):
-        """
-        Extends the SparseEdges class by includiong a dipole, see
-
-        http://invibe.net/Publications/Perrinet15eusipco
-
-        """
-        SparseEdges.__init__(self, pe=pe)
-        self.init_logging(name='SparseEdgesWithDipole')
-
-        self.pe.eta_SO =  0.
-        self.pe.dip_w =  0.2
-        self.pe.dip_B_psi =  0.1
-        self.pe.dip_B_theta =  1.
-        self.pe.dip_scale =  1.5
-        self.pe.dip_epsilon =  .5
-
-    def run_mp(self, image, verbose=False):
-        """
-        runs the MatchingPursuit algorithm on image
-
-        """
-        edges = np.zeros((6, self.pe.N))
-        image_ = image.copy()
-#         residual = image.copy()
-#         RMSE = np.ones(self.pe.N)
-        if self.pe.do_whitening: image_ = self.whitening(image_)
-        C = self.linear_pyramid(image_)
-        logD = np.zeros((self.pe.N_X, self.pe.N_Y, self.pe.n_theta, self.n_levels), dtype=np.complex)
-        if verbose:
-            import pyprind
-            my_prbar = pyprind.ProgPercent(self.pe.N)   # 1) initialization with number of iterations
-        for i_edge in range(self.pe.N):
-#             RMSE[i_edge] = np.sum((residual - image_)**2)
-            # MATCHING
-            ind_edge_star = self.argmax(C * np.exp( self.pe.eta_SO * logD))
-            if not self.pe.MP_rho is None:
-                if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
-                coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) *C_Max
-                # recording
-                if verbose: print('Edge', i_edge, '/', self.pe.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
-            else:
-                coeff = self.pe.MP_alpha * np.absolute(C[ind_edge_star])
-                # recording
-                if verbose: print('Edge', i_edge, '/', self.pe.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
-            if verbose: my_prbar.update()
-            edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
-                                         self.theta[ind_edge_star[2]],
-                                         self.sf_0[ind_edge_star[3]],
-                                         coeff, np.angle(C[ind_edge_star])])
-            # PURSUIT
-            if self.pe.eta_SO>0.: logD+= np.absolute(C[ind_edge_star]) * self.dipole(edges[:, i_edge])
-            C = self.backprop(C, ind_edge_star)
-        return edges, C
-
-
-    def dipole(self, edge):
-
-        y, x, theta_edge, sf_0, C, phase = edge # get edge coordinates
-        theta_edge = np.pi/2 - theta_edge
-
-        D = np.ones((self.pe.N_X, self.pe.N_Y, self.pe.n_theta, self.n_levels))
-        distance = np.sqrt(((1.*self.X-x)**2+(1.*self.Y-y)**2)/(self.pe.N_X**2+self.pe.N_Y**2))/self.pe.dip_w
-        neighborhood = np.exp(-distance**2)
-        for i_sf_0, sf_0_ in enumerate(self.sf_0):
-            for i_theta, theta_layer in enumerate(self.theta):
-                theta_layer = np.pi/2 - theta_layer
-                theta_layer = ((theta_layer + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
-                theta = theta_layer - theta_edge # angle between edge's orientation and the layer's one
-                psi = np.arctan2(self.Y-y, self.X-x) - theta_edge -np.pi/2 - theta/2 #- np.pi/4
-                d = (1-self.pe.dip_epsilon)*distance + self.pe.dip_epsilon
-                D[:, :, i_theta, i_sf_0] = np.exp((np.cos(2*psi)-1.)/(self.pe.dip_B_psi**2 * d))
-                D[:, :, i_theta, i_sf_0] *= np.exp((np.cos(2*theta)-1.)/(self.pe.dip_B_theta**2 * d))
-            D[:, :, :, i_sf_0] *= neighborhood[:, :, np.newaxis] * np.exp(-np.abs( np.log2(self.sf_0[i_sf_0] / sf_0)) / self.pe.dip_scale)
-        #print np.exp(-np.abs( np.log2(self.sf_0 / sf_0)) / self.pe.dip_scale)
-        D -= D.mean()
-        D /= np.abs(D).max()
-
-        return np.log2(1.+D)
-
 
 
 class EdgeFactory(SparseEdges):
@@ -1761,8 +1676,7 @@ class EdgeFactory(SparseEdges):
                             plt.xticks(np.arange(0, len(gamma_range), N_step), ['2^%.2f' % np.log2(k) for k in gamma_range[::N_step]], rotation=45)
                             N_step = np.floor(len(C_range) / 5)
                             plt.yticks(np.arange(0, len(C_range), N_step), ['2^%.2f' % np.log2(k) for k in C_range[::N_step]])
-                        fig.savefig(figname)
-                        plt.close(fig)
+                        self.savefig(fig, figname)
                     except Exception as e:
                         self.log.error('could not draw grid score : %s ', e)
 
@@ -1910,8 +1824,7 @@ class EdgeFactory(SparseEdges):
             pylab.ylabel('false negative rate = Sensitivity')
             pylab.axis('tight')
             pylab.text(0.5, 0.1, 'AUC = ' + str(AUC(cdfb, cdfa)))
-            fig.savefig(figname)
-            pylab.close(fig)
+            self.savefig(fig, figname)
 
 
 def AUC(cdfb, cdfa):
