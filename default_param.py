@@ -41,7 +41,6 @@
 # 'N': 2**8,
     'MP_alpha': .7, # ratio of inhibition in alpha-Matching Pursuit
     'MP_rho': None, # geometric scaling parameter
-    'eta_SO': 0., # including a dipole
     'MP_do_mask' : True, # used in Matching Pursuit self.pe.do_mask
 # parameters for computing the histograms
     'd_width': 45., # Geisler 1.23 deg (full image = 45deg)
@@ -81,13 +80,6 @@
     'svm_max_iter': -1,
     'svm_log': False, #
     'svm_norm': False, #
-#do_real=False # do we consider log-gabors with a complex part?
-# Dipole
-    'dip_w': .2,
-    'dip_B_psi': .1,
-    'dip_B_theta': 1.,
-    'dip_scale': 1.5,
-    'dip_epsilon': .5,
 # PATHS
     'figpath': 'results',
     'do_edgedir': False,

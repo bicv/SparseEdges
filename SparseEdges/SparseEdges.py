@@ -48,8 +48,6 @@ class SparseEdges(LogGabor):
         image_ = image.copy()
 #         residual = image.copy()
 #         RMSE = np.ones(self.pe.N)
-        if self.pe.do_whitening: image_ = self.whitening(image_)
-        if self.pe.do_mask: image_ *= self.mask
         C = self.linear_pyramid(image_) # check LogGabor package
         if progress:
             import pyprind
@@ -287,6 +285,8 @@ class SparseEdges(LogGabor):
                         self.log.info('Doing edge extraction of %s ', matname)
                         open(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
+                        if self.pe.do_whitening: image = self.whitening(image)
+                        if self.pe.do_mask: image *= self.mask
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         edges, C = self.run_mp(image, verbose=self.pe.verbose>50)
                         np.save(matname, edges)
