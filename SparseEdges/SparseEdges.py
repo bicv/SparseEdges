@@ -45,39 +45,24 @@ class SparseEdges(LogGabor):
 
         """
         edges = np.zeros((6, self.pe.N))
-        # image_ = image.copy()
-#         residual = image.copy()
-#         RMSE = np.ones(self.pe.N)
-        # if self.pe.do_whitening: image_ = self.whitening(image_)
-        # if self.pe.do_mask: image_ *= self.mask
         C = self.linear_pyramid(image) # check LogGabor package
         if progress:
             import pyprind
             my_prbar = pyprind.ProgPercent(self.pe.N)   # 1) initialization with number of iterations
         for i_edge in range(self.pe.N):
-#             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
             ind_edge_star = self.argmax(C) # check LogGabor package
-            if not (self.pe.MP_rho is None):
-                print('dooh!')
-                if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
-                coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) * C_Max
-                # recording
-                if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
-            elif self.pe.MP_alpha == np.inf:
-                # linear coding - no sparse coding, see ``backprop`` function
-                coeff = np.absolute(C[ind_edge_star])
-            else:
-                coeff = self.pe.MP_alpha * np.abs(C[ind_edge_star])
-                # recording
-                if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
-            if progress: my_prbar.update()
+            coeff = self.pe.MP_alpha * np.abs(C[ind_edge_star])
+            # recording
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta[ind_edge_star[2]],
                                          self.sf_0[ind_edge_star[3]],
                                          coeff, np.angle(C[ind_edge_star])])
             # PURSUIT
             C = self.backprop(C, ind_edge_star)
+            # reporting
+            if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
+            if progress: my_prbar.update()
         return edges, C
 
     def backprop(self, C, ind_edge_star):
@@ -85,21 +70,17 @@ class SparseEdges(LogGabor):
         Removes edge_star from the activity
 
         """
-        if self.pe.MP_alpha == np.inf:
-            # linear coding - no sparse coding
-            C[ind_edge_star] = 0.
-        else:
-            C_star = self.pe.MP_alpha * C[ind_edge_star]
-            FT_lg_star = self.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
-                                          theta=self.theta[ind_edge_star[2]], B_theta=self.pe.B_theta,
-                                          sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.pe.B_sf,
-                                          )
-            # image of the winning filter
-            lg_star = self.invert(C_star*FT_lg_star, full=False)
-            for i_sf_0, sf_0 in enumerate(self.sf_0):
-                for i_theta, theta in enumerate(self.theta):
-                    FT_lg = self.loggabor(0., 0., sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
-                    C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
+        C_star = self.pe.MP_alpha * C[ind_edge_star]
+        FT_lg_star = self.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
+                                      theta=self.theta[ind_edge_star[2]], B_theta=self.pe.B_theta,
+                                      sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.pe.B_sf,
+                                      )
+        # image of the winning filter
+        lg_star = self.invert(C_star*FT_lg_star, full=False)
+        for i_sf_0, sf_0 in enumerate(self.sf_0):
+            for i_theta, theta in enumerate(self.theta):
+                FT_lg = self.loggabor(0., 0., sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
+                C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
         return C
 
     def reconstruct(self, edges, mask=False):
@@ -115,10 +96,6 @@ class SparseEdges(LogGabor):
                                                     ),
                                     full=False)
         return image
-
-    def adapt(self, edges):
-        # TODO : implement a COMP adaptation of the thetas and scales tesselation of Fourier space
-        pass
 
     def show_edges(self, edges, fig=None, ax=None, image=None, norm=True,
                    color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1.,
@@ -223,47 +200,6 @@ class SparseEdges(LogGabor):
         else:
             return fig, ax
 
-    def texture(self, N_edge=256, a=None, filename='', croparea='', randn=True):
-        # a way to get always the same seed for each image
-        if not (filename==''):# or not (croparea==''):
-            np.random.seed(seed=int(int("0x" +  hashlib.sha224((filename+str(croparea)).encode('utf-8')).hexdigest(), 0)*1. % 4294967295))
-        # white noise or texture
-        if randn:
-            return np.random.randn(self.pe.N_X, self.pe.N_Y)
-        else:
-            edgeslist = np.zeros((6, N_edge))
-            edgeslist[0, :] = self.pe.N_X * np.random.rand(N_edge)
-            edgeslist[1, :] = self.pe.N_X * np.random.rand(N_edge)
-            edgeslist[2, :] = (np.pi* np.random.rand(N_edge) ) % np.pi
-            if a is None:
-                edgeslist[3, :] =  self.sf_0[np.random.randint(self.sf_0.size, size=(N_edge))] # best would be to have more high frequency components
-                edgeslist[4, :] = np.random.randn(N_edge)
-            else:
-                #edgeslist[4, :] = 1 / np.random.power(a=a, size=N_edge)
-                edgeslist[3, :] =  self.sf_0.max() * powerlaw.rvs(a=4., size = N_edge)
-                edgeslist[4, :]  = np.random.pareto(a=a, size=(N_edge)) + 1
-
-
-            edgeslist[5, :] = 2*np.pi*np.random.rand(N_edge)
-            image_rec = self.reconstruct(edgeslist)
-            image_rec /= image_rec.std()
-            return image_rec
-    #  TODO : use MotionClouds strategy
-    # for i_sf, sf_0_ in enumerate(sf_0 * scaling ** np.linspace(-1, 1, n_sf)):
-    #     z = mc.envelope_gabor(fx, fy, ft, V_X=V_X, V_Y=V_Y, B_V=B_V, sf_0=sf_0_, B_sf=B_sf*sf_0_/sf_0, B_theta=B_theta)
-    #     texton = mc.random_cloud(z, impulse=True) # TODO : and the seed?
-    #     if verbose:
-    #         print(' ⇒ At scale ', sf_0_, ', the texton has energy ', np.sqrt((texton**2).mean()),
-    #               ', the number of components is ', int(mask.sum()))
-    #
-    #     Fz = np.fft.fftn(( events[:, :, :, i_sf] ))
-    #     Fz = np.fft.fftshift(Fz)
-    #     Fz *= z
-    #     Fz = np.fft.ifftshift(Fz)
-    #     Fz[0, 0, 0] = 0. # removing the DC component
-    #     droplets_mc += np.fft.ifftn((Fz)).real
-    # return events, droplets_mc
-
     def full_run(self, exp, name_database, imagelist, noise, N_do=2, time_sleep=.1):
         """
         runs the edge extraction for a list of images
@@ -328,19 +264,18 @@ class SparseEdges(LogGabor):
                 if not(os.path.isfile(matname)):
                     if not(os.path.isfile(matname + '_lock')):
                         open(matname + '_lock', 'w').close()
+                        # loading image
                         image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
+                        if self.pe.do_whitening: image = self.whitening(image)
+                        if self.pe.do_mask: image *= self.mask
+                        # loading edges
                         edges = edgeslist[:, :, i_image]
                         # computing RMSE
                         RMSE = np.ones(self.pe.N)
-                        if self.pe.MP_alpha == np.inf:
-                            RMSE *= np.nan
-                        else:
-                            image_ = image.copy()
-                            image_rec = np.zeros_like(image_)
-                            if self.pe.do_whitening: image_ = self.whitening(image_)
-                            for i_N in range(self.pe.N):
-                                image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis], mask=self.pe.do_mask)
-                                RMSE[i_N] =  ((image_-image_rec)**2).sum()
+                        image_rec = np.zeros_like(image_)
+                        for i_N in range(self.pe.N):
+                            image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis], mask=self.pe.do_mask)
+                            RMSE[i_N] =  ((image-image_rec)**2).sum()
                         np.save(matname, RMSE)
                         try:
                             os.remove(matname + '_lock')
@@ -364,6 +299,49 @@ class SparseEdges(LogGabor):
             except Exception as e:
                 self.log.error(' some locked RMSE extractions %s, error ', e)
                 return 'locked'
+
+
+    def texture(self, N_edge=256, a=None, filename='', croparea='', randn=True):
+        # a way to get always the same seed for each image
+        if not (filename==''):# or not (croparea==''):
+            np.random.seed(seed=int(int("0x" +  hashlib.sha224((filename+str(croparea)).encode('utf-8')).hexdigest(), 0)*1. % 4294967295))
+        # white noise or texture
+        if randn:
+            return np.random.randn(self.pe.N_X, self.pe.N_Y)
+        else:
+            edgeslist = np.zeros((6, N_edge))
+            edgeslist[0, :] = self.pe.N_X * np.random.rand(N_edge)
+            edgeslist[1, :] = self.pe.N_X * np.random.rand(N_edge)
+            edgeslist[2, :] = (np.pi* np.random.rand(N_edge) ) % np.pi
+            if a is None:
+                edgeslist[3, :] =  self.sf_0[np.random.randint(self.sf_0.size, size=(N_edge))] # best would be to have more high frequency components
+                edgeslist[4, :] = np.random.randn(N_edge)
+            else:
+                #edgeslist[4, :] = 1 / np.random.power(a=a, size=N_edge)
+                edgeslist[3, :] =  self.sf_0.max() * powerlaw.rvs(a=4., size = N_edge)
+                edgeslist[4, :]  = np.random.pareto(a=a, size=(N_edge)) + 1
+
+
+            edgeslist[5, :] = 2*np.pi*np.random.rand(N_edge)
+            image_rec = self.reconstruct(edgeslist)
+            image_rec /= image_rec.std()
+            return image_rec
+    #  TODO : use MotionClouds strategy
+    # for i_sf, sf_0_ in enumerate(sf_0 * scaling ** np.linspace(-1, 1, n_sf)):
+    #     z = mc.envelope_gabor(fx, fy, ft, V_X=V_X, V_Y=V_Y, B_V=B_V, sf_0=sf_0_, B_sf=B_sf*sf_0_/sf_0, B_theta=B_theta)
+    #     texton = mc.random_cloud(z, impulse=True) # TODO : and the seed?
+    #     if verbose:
+    #         print(' ⇒ At scale ', sf_0_, ', the texton has energy ', np.sqrt((texton**2).mean()),
+    #               ', the number of components is ', int(mask.sum()))
+    #
+    #     Fz = np.fft.fftn(( events[:, :, :, i_sf] ))
+    #     Fz = np.fft.fftshift(Fz)
+    #     Fz *= z
+    #     Fz = np.fft.ifftshift(Fz)
+    #     Fz[0, 0, 0] = 0. # removing the DC component
+    #     droplets_mc += np.fft.ifftn((Fz)).real
+    # return events, droplets_mc
+
 
     def init_binedges(self):
         # configuring histograms

@@ -40,7 +40,6 @@
     'N': 2**11,
 # 'N': 2**8,
     'MP_alpha': .7, # ratio of inhibition in alpha-Matching Pursuit
-    'MP_rho': None, # geometric scaling parameter
     'MP_do_mask' : True, # used in Matching Pursuit self.pe.do_mask
 # parameters for computing the histograms
     'd_width': 45., # Geisler 1.23 deg (full image = 45deg)
