@@ -271,7 +271,7 @@ class SparseEdges(LogGabor):
                         edges = edgeslist[:, :, i_image]
                         # computing RMSE
                         RMSE = np.ones(self.pe.N)
-                        image_rec = np.zeros_like(image_)
+                        image_rec = np.zeros_like(image)
                         for i_N in range(self.pe.N):
                             image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis], mask=self.pe.do_mask)
                             RMSE[i_N] =  ((image-image_rec)**2).sum()
@@ -894,6 +894,8 @@ class SparseEdges(LogGabor):
         # 4- Doing the edge figures to check the edge extraction process
         if not(locked) and self.pe.do_edgedir:
             edgedir = os.path.join(self.pe.edgefigpath, exp + '_' + name_database)
+            if not(os.path.isdir(self.pe.figpath)): os.mkdir(self.pe.figpath)
+            if not(os.path.isdir(self.pe.edgefigpath)): os.mkdir(self.pe.edgefigpath)
             if not(os.path.isdir(edgedir)): os.mkdir(edgedir)
 
             N_image = edgeslist.shape[2]
@@ -906,7 +908,7 @@ class SparseEdges(LogGabor):
                         open(figname + '_lock', 'w').close()
                         self.log.info('> redoing figure %s ', figname)
                         image, filename_, croparea_ = self.patch(name_database=name_database, filename=filename, croparea=croparea, do_whitening=self.pe.do_whitening)
-                        if noise >0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
+                        if noise>0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         # if self.pe.do_whitening: image = self.whitening(image)
                         fig, ax = self.show_edges(edgeslist[:, :, index], image=image*1.)
                         # print(figname)
