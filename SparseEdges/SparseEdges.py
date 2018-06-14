@@ -61,7 +61,7 @@ class SparseEdges(LogGabor):
             # PURSUIT
             C = self.backprop(C, ind_edge_star)
             # reporting
-            if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
+            if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity  : ', '%.3f' % np.absolute(C[ind_edge_star]), ' phase= ', '%.3f' % np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
             if progress: my_prbar.update()
         return edges, C
 
@@ -222,8 +222,7 @@ class SparseEdges(LogGabor):
                     if not(os.path.isfile(matname + '_lock')):
                         self.log.info('Doing edge extraction of %s ', matname)
                         open(matname + '_lock', 'w').close()
-                        image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
-                        if self.pe.do_whitening: image = self.whitening(image)
+                        image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea, do_whitening=self.pe.do_whitening)
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         if self.pe.do_mask: image *= self.mask
                         edges, C = self.run_mp(image, verbose=self.pe.verbose>50)
