@@ -45,10 +45,12 @@ class SparseEdges(LogGabor):
 
         """
         edges = np.zeros((6, self.pe.N))
-        image_ = image.copy()
+        # image_ = image.copy()
 #         residual = image.copy()
 #         RMSE = np.ones(self.pe.N)
-        C = self.linear_pyramid(image_) # check LogGabor package
+        # if self.pe.do_whitening: image_ = self.whitening(image_)
+        # if self.pe.do_mask: image_ *= self.mask
+        C = self.linear_pyramid(image) # check LogGabor package
         if progress:
             import pyprind
             my_prbar = pyprind.ProgPercent(self.pe.N)   # 1) initialization with number of iterations
@@ -286,8 +288,8 @@ class SparseEdges(LogGabor):
                         open(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
                         if self.pe.do_whitening: image = self.whitening(image)
-                        if self.pe.do_mask: image *= self.mask
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
+                        if self.pe.do_mask: image *= self.mask
                         edges, C = self.run_mp(image, verbose=self.pe.verbose>50)
                         np.save(matname, edges)
                         self.log.info('Finished edge extraction of %s ', matname)
