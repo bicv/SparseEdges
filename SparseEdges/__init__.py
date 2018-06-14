@@ -27,10 +27,10 @@ def adjust_spines(ax, spines):
 def init_pylab():
     ############################  FIGURES   ########################################
     from NeuroTools import check_dependency
-    HAVE_MATPLOTLIB = check_dependency('matplotlib')
-    if HAVE_MATPLOTLIB:
-        import matplotlib
-        matplotlib.use("Agg") # agg-backend, so we can create figures without x-server (no PDF, just PNG etc.)
+    # HAVE_MATPLOTLIB = check_dependency('matplotlib')
+    # if HAVE_MATPLOTLIB:
+    #     import matplotlib
+    #     matplotlib.use("Agg") # agg-backend, so we can create figures without x-server (no PDF, just PNG etc.)
     HAVE_PYLAB = check_dependency('pylab')
     if HAVE_PYLAB:
         import pylab

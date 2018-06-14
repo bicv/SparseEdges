@@ -45,39 +45,24 @@ class SparseEdges(LogGabor):
 
         """
         edges = np.zeros((6, self.pe.N))
-        image_ = image.copy()
-#         residual = image.copy()
-#         RMSE = np.ones(self.pe.N)
-        # if self.pe.do_whitening: image_ = self.whitening(image_)
-        # if self.pe.do_mask: image_ *= self.mask # done at patch extraction
-        C = self.linear_pyramid(image_) # check LogGabor package
+        C = self.linear_pyramid(image) # check LogGabor package
         if progress:
             import pyprind
             my_prbar = pyprind.ProgPercent(self.pe.N)   # 1) initialization with number of iterations
         for i_edge in range(self.pe.N):
-#             RMSE[i_edge] = np.sum((residual - image_)**2)
             # MATCHING
             ind_edge_star = self.argmax(C) # check LogGabor package
-            if not (self.pe.MP_rho is None):
-                print('dooh!')
-                if i_edge==0: C_Max = np.absolute(C[ind_edge_star])
-                coeff = self.pe.MP_alpha * (self.pe.MP_rho ** i_edge) * C_Max
-                # recording
-                if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity (quant mode) : ', np.absolute(C[ind_edge_star]), ', coeff/alpha=', coeff/self.pe.MP_alpha , ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
-            elif self.pe.MP_alpha == np.inf:
-                # linear coding - no sparse coding, see ``backprop`` function
-                coeff = np.absolute(C[ind_edge_star])
-            else:
-                coeff = self.pe.MP_alpha * np.abs(C[ind_edge_star])
-                # recording
-                if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
-            if progress: my_prbar.update()
+            coeff = self.pe.MP_alpha * np.abs(C[ind_edge_star])
+            # recording
             edges[:, i_edge] = np.array([ind_edge_star[0]*1., ind_edge_star[1]*1.,
                                          self.theta[ind_edge_star[2]],
                                          self.sf_0[ind_edge_star[3]],
                                          coeff, np.angle(C[ind_edge_star])])
             # PURSUIT
             C = self.backprop(C, ind_edge_star)
+            # reporting
+            if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity  : ', np.absolute(C[ind_edge_star]), ' phase= ', np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
+            if progress: my_prbar.update()
         return edges, C
 
     def backprop(self, C, ind_edge_star):
@@ -85,21 +70,17 @@ class SparseEdges(LogGabor):
         Removes edge_star from the activity
 
         """
-        if self.pe.MP_alpha == np.inf:
-            # linear coding - no sparse coding
-            C[ind_edge_star] = 0.
-        else:
-            C_star = self.pe.MP_alpha * C[ind_edge_star]
-            FT_lg_star = self.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
-                                          theta=self.theta[ind_edge_star[2]], B_theta=self.pe.B_theta,
-                                          sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.pe.B_sf,
-                                          )
-            # image of the winning filter
-            lg_star = self.invert(C_star*FT_lg_star, full=False)
-            for i_sf_0, sf_0 in enumerate(self.sf_0):
-                for i_theta, theta in enumerate(self.theta):
-                    FT_lg = self.loggabor(0., 0., sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
-                    C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
+        C_star = self.pe.MP_alpha * C[ind_edge_star]
+        FT_lg_star = self.loggabor(ind_edge_star[0]*1., ind_edge_star[1]*1.,
+                                      theta=self.theta[ind_edge_star[2]], B_theta=self.pe.B_theta,
+                                      sf_0=self.sf_0[ind_edge_star[3]], B_sf=self.pe.B_sf,
+                                      )
+        # image of the winning filter
+        lg_star = self.invert(C_star*FT_lg_star, full=False)
+        for i_sf_0, sf_0 in enumerate(self.sf_0):
+            for i_theta, theta in enumerate(self.theta):
+                FT_lg = self.loggabor(0., 0., sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
+                C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
         return C
 
     def reconstruct(self, edges, mask=False):
@@ -115,10 +96,6 @@ class SparseEdges(LogGabor):
                                                     ),
                                     full=False)
         return image
-
-    def adapt(self, edges):
-        # TODO : implement a COMP adaptation of the thetas and scales tesselation of Fourier space
-        pass
 
     def show_edges(self, edges, fig=None, ax=None, image=None, norm=True,
                    color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1.,
@@ -223,6 +200,107 @@ class SparseEdges(LogGabor):
         else:
             return fig, ax
 
+    def full_run(self, exp, name_database, imagelist, noise, N_do=2, time_sleep=.1):
+        """
+        runs the edge extraction for a list of images
+
+        """
+        self.mkdir()
+        for path in self.pe.edgefigpath, self.pe.edgematpath:
+            if not(os.path.isdir(path)): os.mkdir(path)
+        for _ in range(N_do): # repeat this loop to make sure to scan everything
+            global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
+            for index in np.random.permutation(np.arange(len(imagelist))):
+                filename, croparea = imagelist[index]
+#                 signal = do_edge(self, image, exp, name_database, filename, croparea)
+#                         def do_edge(self, image, exp, name_database, filename, croparea):
+                path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+                if not(os.path.isdir(path)): os.mkdir(path)
+                matname = os.path.join(path, filename + str(croparea) + '.npy')
+                if not(os.path.isfile(matname)):
+                    time.sleep(time_sleep*np.random.rand())
+                    if not(os.path.isfile(matname + '_lock')):
+                        self.log.info('Doing edge extraction of %s ', matname)
+                        open(matname + '_lock', 'w').close()
+                        image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
+                        if self.pe.do_whitening: image = self.whitening(image)
+                        if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
+                        if self.pe.do_mask: image *= self.mask
+                        edges, C = self.run_mp(image, verbose=self.pe.verbose>50)
+                        np.save(matname, edges)
+                        self.log.info('Finished edge extraction of %s ', matname)
+                        try:
+                            os.remove(matname + '_lock')
+                        except Exception as e:
+                            self.log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
+                    else:
+                        self.log.info('The edge extraction at step %s is locked', matname)
+                        global_lock = True
+        if global_lock is True:
+            self.log.error(' some locked edge extractions ')
+            return 'locked'
+        else:
+            try:
+                N_image = len(imagelist)
+                edgeslist = np.zeros((6, self.pe.N, N_image))
+                for i_image, (filename, croparea) in enumerate(imagelist):
+                    matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
+                    edgeslist[:, :, i_image] = np.load(matname)
+                return edgeslist
+            except Exception as e:
+                self.log.error(' some locked edge extractions %s, error on file %s', e, matname)
+                return 'locked'
+
+    def full_RMSE(self, exp, name_database, imagelist):
+        matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
+        self.mkdir()
+        if not(os.path.isdir(matname)): os.mkdir(matname)
+        edgeslist = np.load(matname + '_edges.npy')
+        N_do = 2
+        for _ in range(N_do): # repeat this loop to make sure to scan everything
+            global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
+            for i_image, (filename, croparea) in enumerate(imagelist):
+                matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
+                if not(os.path.isfile(matname)):
+                    if not(os.path.isfile(matname + '_lock')):
+                        open(matname + '_lock', 'w').close()
+                        # loading image
+                        image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
+                        if self.pe.do_whitening: image = self.whitening(image)
+                        if self.pe.do_mask: image *= self.mask
+                        # loading edges
+                        edges = edgeslist[:, :, i_image]
+                        # computing RMSE
+                        RMSE = np.ones(self.pe.N)
+                        image_rec = np.zeros_like(image_)
+                        for i_N in range(self.pe.N):
+                            image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis], mask=self.pe.do_mask)
+                            RMSE[i_N] =  ((image-image_rec)**2).sum()
+                        np.save(matname, RMSE)
+                        try:
+                            os.remove(matname + '_lock')
+                        except Exception as e:
+                            self.log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
+                    else:
+                        self.log.info('The edge extraction at step %s is locked', matname)
+                        global_lock = True
+        if global_lock is True:
+            self.log.error(' some locked RMSE extractions ')
+            return 'locked'
+        else:
+            try:
+                N_image = len(imagelist)
+                RMSE = np.ones((N_image, self.pe.N))
+                for i_image in range(N_image):
+                    filename, croparea = imagelist[i_image]
+                    matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
+                    RMSE[i_image, :] = np.load(matname_RMSE)
+                return RMSE
+            except Exception as e:
+                self.log.error(' some locked RMSE extractions %s, error ', e)
+                return 'locked'
+
+
     def texture(self, N_edge=256, a=None, filename='', croparea='', randn=True):
         # a way to get always the same seed for each image
         if not (filename==''):# or not (croparea==''):
@@ -264,104 +342,6 @@ class SparseEdges(LogGabor):
     #     droplets_mc += np.fft.ifftn((Fz)).real
     # return events, droplets_mc
 
-    def full_run(self, exp, name_database, imagelist, noise, N_do=2, time_sleep=.1):
-        """
-        runs the edge extraction for a list of images
-
-        """
-        self.mkdir()
-        for path in self.pe.edgefigpath, self.pe.edgematpath:
-            if not(os.path.isdir(path)): os.mkdir(path)
-        for _ in range(N_do): # repeat this loop to make sure to scan everything
-            global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
-            for index in np.random.permutation(np.arange(len(imagelist))):
-                filename, croparea = imagelist[index]
-#                 signal = do_edge(self, image, exp, name_database, filename, croparea)
-#                         def do_edge(self, image, exp, name_database, filename, croparea):
-                path = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
-                if not(os.path.isdir(path)): os.mkdir(path)
-                matname = os.path.join(path, filename + str(croparea) + '.npy')
-                if not(os.path.isfile(matname)):
-                    time.sleep(time_sleep*np.random.rand())
-                    if not(os.path.isfile(matname + '_lock')):
-                        self.log.info('Doing edge extraction of %s ', matname)
-                        open(matname + '_lock', 'w').close()
-                        image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
-                        if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
-                        edges, C = self.run_mp(image, verbose=self.pe.verbose>50)
-                        np.save(matname, edges)
-                        self.log.info('Finished edge extraction of %s ', matname)
-                        try:
-                            os.remove(matname + '_lock')
-                        except Exception as e:
-                            self.log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
-                    else:
-                        self.log.info('The edge extraction at step %s is locked', matname)
-                        global_lock = True
-        if global_lock is True:
-            self.log.error(' some locked edge extractions ')
-            return 'locked'
-        else:
-            try:
-                N_image = len(imagelist)
-                edgeslist = np.zeros((6, self.pe.N, N_image))
-                for i_image, (filename, croparea) in enumerate(imagelist):
-                    matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '.npy')
-                    edgeslist[:, :, i_image] = np.load(matname)
-                return edgeslist
-            except Exception as e:
-                self.log.error(' some locked edge extractions %s, error on file %s', e, matname)
-                return 'locked'
-
-    def full_RMSE(self, exp, name_database, imagelist):
-        matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
-        self.mkdir()
-        if not(os.path.isdir(matname)): os.mkdir(matname)
-        edgeslist = np.load(matname + '_edges.npy')
-        N_do = 2
-        for _ in range(N_do): # repeat this loop to make sure to scan everything
-            global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
-            for i_image, (filename, croparea) in enumerate(imagelist):
-                matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
-                if not(os.path.isfile(matname)):
-                    if not(os.path.isfile(matname + '_lock')):
-                        open(matname + '_lock', 'w').close()
-                        image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea, do_whitening=self.pe.do_whitening)
-                        edges = edgeslist[:, :, i_image]
-                        # computing RMSE
-                        RMSE = np.ones(self.pe.N)
-                        if self.pe.MP_alpha == np.inf:
-                            RMSE *= np.nan
-                        else:
-                            image_ = image.copy()
-                            image_rec = np.zeros_like(image_)
-                            if self.pe.do_whitening: image_ = self.whitening(image_)
-                            for i_N in range(self.pe.N):
-                                image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis], mask=self.pe.do_mask)
-                                RMSE[i_N] =  ((image_-image_rec)**2).sum()
-                        np.save(matname, RMSE)
-                        try:
-                            os.remove(matname + '_lock')
-                        except Exception as e:
-                            self.log.error('Failed to remove lock file %s_lock, error : %s ', matname, traceback.print_tb(sys.exc_info()[2]))
-                    else:
-                        self.log.info('The edge extraction at step %s is locked', matname)
-                        global_lock = True
-        if global_lock is True:
-            self.log.error(' some locked RMSE extractions ')
-            return 'locked'
-        else:
-            try:
-                N_image = len(imagelist)
-                RMSE = np.ones((N_image, self.pe.N))
-                for i_image in range(N_image):
-                    filename, croparea = imagelist[i_image]
-                    matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
-                    RMSE[i_image, :] = np.load(matname_RMSE)
-                return RMSE
-            except Exception as e:
-                self.log.error(' some locked RMSE extractions %s, error ', e)
-                return 'locked'
 
     def init_binedges(self):
         # configuring histograms
