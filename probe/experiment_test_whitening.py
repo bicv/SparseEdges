@@ -7,29 +7,28 @@ mp.init()
 
 
 image = mp.imread('https://raw.githubusercontent.com/bicv/SLIP/master/database/serre07_targets/B_N107001.jpg')
+white = mp.whitening(image)
 
-#print image.mean(), image.std()
-image = mp.normalize(image, center=True)
-#print image.mean(), image.std()
+white = mp.normalize(white, center=True)
+if mp.pe.do_mask: white *= mp.mask
+    
 import os
 matname = os.path.join(mp.pe.matpath, 'experiment_test_whitening.npy')
 try:
     edges = np.load(matname)
 except Exception:
-    edges, C_res = mp.run_mp(image, verbose=True)
+    edges, C_res = mp.run_mp(white, verbose=True)
     np.save(matname, edges)    
 
 
-matname_RMSE = os.path.join(mp.pe.matpath, 'experiment_test_whitening_RMSE.npy')
+matname_MSE = os.path.join(mp.pe.matpath, 'experiment_test_whitening_MSE.npy')
 try:
-    RMSE = np.load(matname_RMSE)
+    MSE = np.load(matname_MSE)
 except Exception:
-    RMSE = np.ones(mp.pe.N)
-    image_ = image.copy()
-    image_rec = np.zeros_like(image_)
-    if mp.pe.do_whitening: image_ = mp.whitening(image_)
+    MSE = np.ones(mp.pe.N)
+    image_rec = np.zeros_like(image)
     for i_N in range(mp.pe.N):
+        MSE[i_N] =  ((white-image_rec*mp.mask)**2).sum()
         image_rec += mp.reconstruct(edges[:, i_N][:, np.newaxis])
-        RMSE[i_N] =  ((image_*mp.mask-image_rec*mp.mask)**2).sum()
 
-    np.save(matname_RMSE, RMSE)     
+    np.save(matname_MSE, MSE)     

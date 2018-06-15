@@ -15,7 +15,7 @@ matname = os.path.join(mp.pe.matpath, 'experiment_test_MP.npy')
 try:
     edges = np.load(matname)
 except Exception:
-    edges, C_res = mp.run_mp(image, verbose=True)
+    edges, C_res = mp.run_mp(mp.whitening(image), verbose=True)
     try:
         os.mkdir(mp.pe.matpath)
     except Exception:
