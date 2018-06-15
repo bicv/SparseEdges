@@ -83,23 +83,22 @@ class SparseEdges(LogGabor):
                 C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
         return C
 
-    def reconstruct(self, edges, mask=False):
+    def reconstruct(self, edges, do_mask=False):
         image = np.zeros((self.pe.N_X, self.pe.N_Y))
-        for i_edge in range(edges.shape[1]):#self.pe.N):
-            # TODO : check that it is correct when we remove alpha when making new MP
-            if not mask or ((edges[0, i_edge]/self.pe.N_X -.5)**2+(edges[1, i_edge]/self.pe.N_Y -.5)**2) < .5**2:
-                image += self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
-                                    self.loggabor(
-                                                    edges[0, i_edge], edges[1, i_edge],
-                                                    theta=edges[2, i_edge], B_theta=self.pe.B_theta,
-                                                    sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
-                                                    ),
-                                    full=False)
+        for i_edge in range(edges.shape[1]):
+            image += self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
+                                self.loggabor(
+                                                edges[0, i_edge], edges[1, i_edge],
+                                                theta=edges[2, i_edge], B_theta=self.pe.B_theta,
+                                                sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
+                                                ),
+                                full=False)
+        if do_mask: image *= self.mask
         return image
 
     def show_edges(self, edges, fig=None, ax=None, image=None, norm=True,
                    color='auto', v_min=-1., v_max=1., show_phase=True, gamma=1.,
-                   pedestal=0., mask=False, mappable=False, scale=None):
+                   pedestal=0., show_mask=False, mappable=False, scale=None):
         """
         Shows the quiver plot of a set of edges, optionally associated to an image.
 
@@ -148,34 +147,34 @@ class SparseEdges(LogGabor):
             phases = edges[5, :]
 
             for x, y, theta, sf_0, weight, phase in zip(X, Y, Theta, Sf_0, weights, phases):
-                if (not mask) or ((y/self.pe.N_X -.5)**2+(x/self.pe.N_Y -.5)**2) < .5**2:
-                    u_, v_ = np.cos(theta)*scale/sf_0, np.sin(theta)*scale/sf_0
-                    segment = [(x - u_, y - v_), (x + u_, y + v_)]
-                    segments.append(segment)
-                    if color=='auto':
-                        if not(show_phase):
-                            fc = cm.hsv(0, alpha=pedestal + (1. - pedestal)*weight**gamma)
-                        else:
-                            fc = cm.hsv((phase/np.pi/2) % 1., alpha=pedestal + (1. - pedestal)*weight**gamma)
+                #if (not show_mask) or ((y/self.pe.N_X -.5)**2+(x/self.pe.N_Y -.5)**2) < .5**2:
+                u_, v_ = np.cos(theta)*scale/sf_0, np.sin(theta)*scale/sf_0
+                segment = [(x - u_, y - v_), (x + u_, y + v_)]
+                segments.append(segment)
+                if color=='auto':
+                    if not(show_phase):
+                        fc = cm.hsv(0, alpha=pedestal + (1. - pedestal)*weight**gamma)
+                    else:
+                        fc = cm.hsv((phase/np.pi/2) % 1., alpha=pedestal + (1. - pedestal)*weight**gamma)
 # TODO                     https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
 #                     RGB_weight = [0.299, 0.587, 0.114]
 #                     luminance = np.sqrt(np.dot(np.array(fc[:, :3]) ** 2, RGB_weight))
 #                     print luminance
 #                     fc[:, :3] /= luminance
 
-                    elif color == 'black':
-                        fc = (0, 0, 0, 1)# black
-                    elif color == 'green': # figure 1DE
-                        fc = (0.05, 0.5, 0.05, np.abs(weight)**gamma)
-                    elif color == 'blue': # figure 1DE
-                        fc = (0.05, 0.05, 0.5, np.abs(weight)**gamma)
-                    elif color == 'brown': # figure 1DE
-                        fc = (0.5, 0.05, 0.05, np.abs(weight)**gamma)
-                    else:
-                        fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
-                    colors.append(fc)
-                    linewidths.append(linewidth) # *weight thinning byalphax...
-                    patch_circles.append(patches.Circle((x, y), self.pe.scale_circle*scale/sf_0, lw=0., facecolor=fc, edgecolor='none'))
+                elif color == 'black':
+                    fc = (0, 0, 0, 1)# black
+                elif color == 'green': # figure 1DE
+                    fc = (0.05, 0.5, 0.05, np.abs(weight)**gamma)
+                elif color == 'blue': # figure 1DE
+                    fc = (0.05, 0.05, 0.5, np.abs(weight)**gamma)
+                elif color == 'brown': # figure 1DE
+                    fc = (0.5, 0.05, 0.05, np.abs(weight)**gamma)
+                else:
+                    fc = ((np.sign(weight)+1)/2, 0, (1-np.sign(weight))/2, np.abs(weight)**gamma)
+                colors.append(fc)
+                linewidths.append(linewidth) # *weight thinning byalphax...
+                patch_circles.append(patches.Circle((x, y), self.pe.scale_circle*scale/sf_0, lw=0., facecolor=fc, edgecolor='none'))
 
             line_segments = LineCollection(segments, linewidths=linewidths, colors=colors, linestyles='solid')
             ax.add_collection(line_segments)
@@ -185,7 +184,7 @@ class SparseEdges(LogGabor):
         plt.setp(ax, xticks=[])
         plt.setp(ax, yticks=[])
 
-        if mask:
+        if show_mask:
             linewidth_mask = 1 #
             from matplotlib.patches import Ellipse
             circ = Ellipse((.5*self.pe.N_Y, .5*self.pe.N_X),
@@ -250,7 +249,7 @@ class SparseEdges(LogGabor):
                 self.log.error(' some locked edge extractions %s, error on file %s', e, matname)
                 return 'locked'
 
-    def full_RMSE(self, exp, name_database, imagelist):
+    def full_MSE(self, exp, name_database, imagelist):
         matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
         self.mkdir()
         if not(os.path.isdir(matname)): os.mkdir(matname)
@@ -259,7 +258,7 @@ class SparseEdges(LogGabor):
         for _ in range(N_do): # repeat this loop to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
             for i_image, (filename, croparea) in enumerate(imagelist):
-                matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
+                matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_MSE.npy')
                 if not(os.path.isfile(matname)):
                     if not(os.path.isfile(matname + '_lock')):
                         open(matname + '_lock', 'w').close()
@@ -269,13 +268,13 @@ class SparseEdges(LogGabor):
                         if self.pe.do_mask: image *= self.mask
                         # loading edges
                         edges = edgeslist[:, :, i_image]
-                        # computing RMSE
-                        RMSE = np.ones(self.pe.N)
+                        # computing MSE
+                        MSE = np.ones(self.pe.N)
                         image_rec = np.zeros_like(image)
                         for i_N in range(self.pe.N):
-                            image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis], mask=self.pe.do_mask)
-                            RMSE[i_N] =  ((image-image_rec)**2).sum()
-                        np.save(matname, RMSE)
+                            MSE[i_N] =  ((image-image_rec)**2).sum()
+                            image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis], do_mask=False)
+                        np.save(matname, MSE)
                         try:
                             os.remove(matname + '_lock')
                         except Exception as e:
@@ -284,19 +283,19 @@ class SparseEdges(LogGabor):
                         self.log.info('The edge extraction at step %s is locked', matname)
                         global_lock = True
         if global_lock is True:
-            self.log.error(' some locked RMSE extractions ')
+            self.log.error(' some locked MSE extractions ')
             return 'locked'
         else:
             try:
                 N_image = len(imagelist)
-                RMSE = np.ones((N_image, self.pe.N))
+                MSE = np.ones((N_image, self.pe.N))
                 for i_image in range(N_image):
                     filename, croparea = imagelist[i_image]
-                    matname_RMSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_RMSE.npy')
-                    RMSE[i_image, :] = np.load(matname_RMSE)
-                return RMSE
+                    matname_MSE = os.path.join(self.pe.edgematpath, exp + '_' + name_database, filename + str(croparea) + '_MSE.npy')
+                    MSE[i_image, :] = np.load(matname_MSE)
+                return MSE
             except Exception as e:
-                self.log.error(' some locked RMSE extractions %s, error ', e)
+                self.log.error(' some locked MSE extractions %s, error ', e)
                 return 'locked'
 
 
@@ -322,7 +321,7 @@ class SparseEdges(LogGabor):
 
 
             edgeslist[5, :] = 2*np.pi*np.random.rand(N_edge)
-            image_rec = self.reconstruct(edgeslist)
+            image_rec = self.reconstruct(edgeslist, do_mask=False)
             image_rec /= image_rec.std()
             return image_rec
     #  TODO : use MotionClouds strategy
@@ -842,28 +841,28 @@ class SparseEdges(LogGabor):
         if locked:
             return imagelist, 'edgeslist not done', 'not started'
         else:
-            # Computing RMSE to check the edge extraction process
+            # Computing MSE to check the edge extraction process
             try:
-                RMSE = np.load(matname + '_RMSE.npy')
+                MSE = np.load(matname + '_MSE.npy')
             except Exception as e:
-                self.log.info(' >> There is no RMSE: %s ', e)
+                self.log.info(' >> There is no MSE: %s ', e)
                 try:
-                    RMSE = self.full_RMSE(exp, name_database, imagelist)
-                    if RMSE is 'locked':
-                        self.log.info('>> RMSE extraction %s is locked', matname)
+                    MSE = self.full_MSE(exp, name_database, imagelist)
+                    if MSE is 'locked':
+                        self.log.info('>> MSE extraction %s is locked', matname)
                         locked = True
                     else:
-                            np.save(matname + '_RMSE.npy', RMSE)
+                            np.save(matname + '_MSE.npy', MSE)
                 except Exception as e:
-                    self.log.error('Failed to compute RMSE %s , error : %s ', matname + '_RMSE.npy', e)
-                    return 'imagelist ok', 'edgelist ok', 'locked RMSE'
+                    self.log.error('Failed to compute MSE %s , error : %s ', matname + '_MSE.npy', e)
+                    return 'imagelist ok', 'edgelist ok', 'locked MSE'
 
             try:
-                self.log.info('>>> For the class %s, in experiment %s RMSE = %f ', name_database, exp, (RMSE[:, -1]/RMSE[:, 0]).mean())
+                self.log.info('>>> For the class %s, in experiment %s MSE = %f ', name_database, exp, (MSE[:, -1]/MSE[:, 0]).mean())
             except Exception as e:
                 locked = True
-                self.log.error('Failed to compute average RMSE %s ', e)
-                return 'imagelist ok', 'edgelist ok', 'locked RMSE'
+                self.log.error('Failed to compute average MSE %s ', e)
+                return 'imagelist ok', 'edgelist ok', 'locked MSE'
 
         # clean-up edges sub-folder
         if not(locked):
@@ -925,7 +924,7 @@ class SparseEdges(LogGabor):
                     try:
                         open(figname + '_lock', 'w').close()
                         self.log.info('> reconstructing figure %s ', figname)
-                        image_ = self.reconstruct(edgeslist[:, :, index])
+                        image_ = self.reconstruct(edgeslist[:, :, index], do_mask=False)
 #                         if self.pe.do_whitening: image_ = self.dewhitening(image_)
                         fig, ax = self.show_edges(edgeslist[:, :, index], image=image_*1.)
                         self.savefig(fig, figname)
@@ -987,9 +986,9 @@ class SparseEdges(LogGabor):
                 self.log.error('Failed to create figures, error : %s ', e)
 
         if not(locked):
-            return imagelist, edgeslist, RMSE
+            return imagelist, edgeslist, MSE
         else:
-            return 'locked', 'locked edgeslist', ' locked RMSE '
+            return 'locked', 'locked edgeslist', ' locked MSE '
 
     # some helper funtion to compare the databases
     def KL(self, v_hist, v_hist_obs):
@@ -1102,9 +1101,9 @@ class SparseEdges(LogGabor):
             l0_max, eev = 0., -len(experiments)/2
             for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
                 try:
-                    imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                    # print(RMSE.shape, RMSE[:, 0])
-                    N = RMSE.shape[1] #number of edges
+                    imagelist, edgeslist, MSE = mp.process(exp=experiment, name_database=name_database)
+                    # print(MSE.shape, MSE[:, 0])
+                    N = MSE.shape[1] #number of edges
                     l0_max = max(l0_max, N*np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y)
                     if not(scale):
                         l0_axis = np.arange(N)
@@ -1112,14 +1111,14 @@ class SparseEdges(LogGabor):
                         l0_axis = np.linspace(0, N*np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y, N)
                     errorevery_zoom = 1.4**(1.*eev/len(experiments))
                     try:
-                        RMSE /= RMSE[:, 0][:, np.newaxis]
-                        errorevery = np.max((int(RMSE.shape[1]/8*errorevery_zoom), 1))
-                        ax.errorbar(l0_axis, RMSE.mean(axis=0),
-                                    yerr=RMSE.std(axis=0), label=label, errorevery=errorevery)
-                        ax.plot(l0_axis[::errorevery], RMSE.mean(axis=0)[::errorevery],
+                        MSE /= MSE[:, 0][:, np.newaxis]
+                        errorevery = np.max((int(MSE.shape[1]/8*errorevery_zoom), 1))
+                        ax.errorbar(l0_axis, MSE.mean(axis=0),
+                                    yerr=MSE.std(axis=0), label=label, errorevery=errorevery)
+                        ax.plot(l0_axis[::errorevery], MSE.mean(axis=0)[::errorevery],
                                     linestyle='None', marker='o', ms=3)
                     except Exception as e:
-                        print('Failed to plot RMSE in experiment %s with error : %s ' % (experiment, e) )
+                        print('Failed to plot MSE in experiment %s with error : %s ' % (experiment, e) )
                     try:
                         coeff0 = edgeslist[4, 0, :].mean()
                         inset.errorbar(l0_axis, edgeslist[4, :, :].mean(axis=1)/coeff0,
@@ -1171,22 +1170,22 @@ class SparseEdges(LogGabor):
             mod = ExpressionModel('1 - (1- eps_inf) * ( 1 - rho**x)')
             for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
                 try:
-                    imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                    RMSE /= RMSE[:, 0][:, np.newaxis]
-                    N = RMSE.shape[1] #number of edges
-                    if RMSE.min()>threshold: print('the threshold is never reached for', experiment, name_database)
+                    imagelist, edgeslist, MSE = mp.process(exp=experiment, name_database=name_database)
+                    MSE /= MSE[:, 0][:, np.newaxis]
+                    N = MSE.shape[1] #number of edges
+                    if MSE.min()>threshold: print('the threshold is never reached for', experiment, name_database)
                     try:
                         l0_results = np.zeros(N)
-                        for i_image in range(RMSE.shape[0]):
+                        for i_image in range(MSE.shape[0]):
                             mod.def_vals = {'eps_inf':.1, 'rho':.99}
-                            out  = mod.fit(RMSE[i_image, :], x=np.arange(N))
+                            out  = mod.fit(MSE[i_image, :], x=np.arange(N))
                             eps_inf = out.params.get('eps_inf').value
                             rho =  out.params.get('rho').value
                             #print rho, eps_inf, np.log((threshold-eps_inf)/(1-eps_inf))/np.log(rho)
 
                             l0_results[i_image] = np.log((threshold-eps_inf)/(1-eps_inf))/np.log(rho)
                     except Exception:
-                        l0_results = np.argmax(RMSE<threshold, axis=1)*1.
+                        l0_results = np.argmax(MSE<threshold, axis=1)*1.
                     if (scale):
                         l0_results *= np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y
                     l0.append(l0_results.mean())
@@ -1233,15 +1232,15 @@ class SparseEdges(LogGabor):
             absSE, absSE_std = [], []
 
             for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-                imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                if isinstance(RMSE, str):
+                imagelist, edgeslist, MSE = mp.process(exp=experiment, name_database=name_database)
+                if isinstance(MSE, str):
                     print ('not finished in ', experiment, name_database)
                     return None
-                RMSE /= RMSE[:, 0][:, np.newaxis]
-                N = RMSE.shape[1] #number of edges
+                MSE /= MSE[:, 0][:, np.newaxis]
+                N = MSE.shape[1] #number of edges
                 l0 = np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y
-                absSE.append(RMSE.mean())
-                absSE_std.append(RMSE.std(axis=0).mean())
+                absSE.append(MSE.mean())
+                absSE_std.append(MSE.std(axis=0).mean())
             fig.subplots_adjust(wspace=0.1, hspace=0.1,
                                 left=0.2, right=0.9,
                                 top=0.9,    bottom=0.175)
@@ -1269,18 +1268,18 @@ class SparseEdges(LogGabor):
             try:
                 relL0, relL0_std = [], []
                 # computes for the reference
-                imagelist_ref, edgeslist_ref, RMSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
-                RMSE_ref /= RMSE_ref[:, 0][:, np.newaxis] # normalize RMSE
-                L0_ref =  np.argmax(RMSE_ref<threshold, axis=1)*1. +1
+                imagelist_ref, edgeslist_ref, MSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
+                MSE_ref /= MSE_ref[:, 0][:, np.newaxis] # normalize MSE
+                L0_ref =  np.argmax(MSE_ref<threshold, axis=1)*1. +1
                 if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].pe.N_X/mps[ref].pe.N_Y
 #             print("ref-thr - L0_ref=", L0_ref)
 
                 for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
-                    imagelist, edgeslist, RMSE = mp.process(exp=experiment, name_database=name_database)
-                    RMSE /= RMSE[:, 0][:, np.newaxis] # normalize RMSE
-                    N = RMSE.shape[1] #number of edges
-                    L0 =  np.argmax(RMSE<threshold, axis=1)*1.
-                    if RMSE.min()>threshold: print('the threshold is never reached for', experiment, name_database)
+                    imagelist, edgeslist, MSE = mp.process(exp=experiment, name_database=name_database)
+                    MSE /= MSE[:, 0][:, np.newaxis] # normalize MSE
+                    N = MSE.shape[1] #number of edges
+                    L0 =  np.argmax(MSE<threshold, axis=1)*1.
+                    if MSE.min()>threshold: print('the threshold is never reached for', experiment, name_database)
                     if scale: L0 *= np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y
                     relL0.append((L0/L0_ref).mean())
                     relL0_std.append((L0/L0_ref).std())
@@ -1365,7 +1364,7 @@ class EdgeFactory(SparseEdges):
         n_databases = len(databases)
         for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
             if edgeslist is None:
-                imagelist, edgeslist, RMSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
+                imagelist, edgeslist, MSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
             else:
                 imagelist = 'ok'
 
@@ -1393,7 +1392,7 @@ class EdgeFactory(SparseEdges):
                         else:
                             open(matname_hist + '_lock', 'w').close()
                             if edgeslist is None:
-                                imagelist, edgeslist, RMSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
+                                imagelist, edgeslist, MSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
                             else:
                                 imagelist = 'ok'
                             try:#if not(type(imagelist) == 'str'):
@@ -1751,7 +1750,7 @@ class EdgeFactory(SparseEdges):
         for name_database in databases:
             matname = os.path.join(self.pe.matpath, exp + '_' + name_database)
             self.log.info(' >> getting edges for %s ', name_database)
-            imagelist, edgeslist, RMSE = self.process(exp, name_database=name_database, noise=noise)
+            imagelist, edgeslist, MSE = self.process(exp, name_database=name_database, noise=noise)
 #            edgeslist_db.append(edgeslist)
             if not(imagelist == 'locked'):
                 self.log.info(' >> computing histogram for %s ', name_database)

@@ -15,7 +15,6 @@ if mp.pe.do_mask: image *= mp.mask
 
 import os
 matname = os.path.join(mp.pe.matpath, 'experiment_test_nowhitening.npy')
-matname_RMSE = os.path.join(mp.pe.matpath, 'experiment_test_nowhitening_RMSE.npy')
 try:
     edges = np.load(matname)
 except Exception:
