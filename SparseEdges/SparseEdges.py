@@ -223,7 +223,6 @@ class SparseEdges(LogGabor):
                         open(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea, do_whitening=self.pe.do_whitening)
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
-                        if self.pe.do_mask: image *= self.mask
                         edges, C = self.run_mp(image, verbose=self.pe.verbose>50)
                         np.save(matname, edges)
                         self.log.info('Finished edge extraction of %s ', matname)
@@ -263,9 +262,7 @@ class SparseEdges(LogGabor):
                     if not(os.path.isfile(matname + '_lock')):
                         open(matname + '_lock', 'w').close()
                         # loading image
-                        image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea)
-                        if self.pe.do_whitening: image = self.whitening(image)
-                        if self.pe.do_mask: image *= self.mask
+                        image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea, do_whitening=self.pe.do_whitening)
                         # loading edges
                         edges = edgeslist[:, :, i_image]
                         # computing MSE
