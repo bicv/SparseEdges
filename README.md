@@ -8,7 +8,7 @@ Our goal here is to build practical algorithms of sparse coding for computer vis
 
 This class exploits the [SLIP](https://pythonhosted.org/SLIP/) and [LogGabor](https://pythonhosted.org/LogGabor/) libraries to provide with a sparse representation of edges in images.
 
-This algorithm was presented in the following paper:
+This algorithm was presented in the following paper, which is available as a reprint @ http://invibe.net/LaurentPerrinet/Publications/Perrinet15bicv :
 
 ~~~~{.bibtex}
 @inbook{Perrinet15bicv,
@@ -17,12 +17,10 @@ This algorithm was presented in the following paper:
     chapter = {13},
     citeulike-article-id = {13566753},
     editor = {Keil, Matthias and Crist\'{o}bal, Gabriel and Perrinet, Laurent U.},
-    keywords = {anr-trax, bicv-sparse},
-    posted-at = {2015-03-31 14:21:35},
-    priority = {2},
     publisher = {Wiley, New-York},
     title = {Sparse models},
-    year = {2015}
+    year = {2015},
+    url = {http://invibe.net/LaurentPerrinet/Publications/Perrinet15bicv}
 }
 ~~~~
 
