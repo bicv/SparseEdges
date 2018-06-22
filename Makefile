@@ -3,11 +3,7 @@ VERSION=`python3 -c'import SparseEdges; print(SparseEdges.__version__)'`
 PYTHON = python3
 UNAME_S := $(shell uname -s)
 
-ifeq ($(UNAME_S),Linux)
-	PIP = pip
-else
-	PIP = pip3
-endif
+PIP = pip
 
 default: $(NAME).pdf index.html
 # check out http://stackoverflow.com/questions/714100/os-detecting-makefile#12099167
@@ -40,7 +36,7 @@ pypi_docs:
 	open https://pypi.python.org/pypi?action=pkg_edit&name=$NAME
 
 
-RIOU = /hpc/invibe/perrineti.l/science/$(NAME)
+RIOU = /hpc/invibe/perrinet.l/$(NAME)
 FRIOUL = perrinet.l@frioul.int.univ-amu.fr
 OPTIONS = -av --delete --progress --exclude .AppleDouble --exclude .git
 
@@ -60,11 +56,6 @@ pull:
 	git pull
 
 update:
-	if [ `uname` = Darwin ]; then \
-		PIP = pip3
-	else \
-		PIP = pip
-	fi
 	cd ../SLIP; git pull; $(PIP) install -U --user . ; cd ../SparseEdges/
 	cd ../LogGabor; git pull; $(PIP) install -U --user . ; cd ../SparseEdges/
 	git pull; $(PIP) install -U --user .
