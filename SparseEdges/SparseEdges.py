@@ -578,7 +578,7 @@ class SparseEdges(LogGabor):
             a4.set_yticklabels([str(edges_d_half[0]), str(edges_d_half[-1])])
             a4.axis('tight')
 #             plt.tight_layout()
-            return fig, a1, a2, a3, a4
+            return fig, (a1, a2, a3, a4)
 
         elif display=='colin_geisler':
             edge_scale = 8.
@@ -898,7 +898,7 @@ class SparseEdges(LogGabor):
             for index in np.random.permutation(np.arange(len(imagelist))):
                 filename, croparea = imagelist[index]
 
-                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '.png')
+                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea))
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     try:
                         open(figname + '_lock', 'w').close()
@@ -908,7 +908,7 @@ class SparseEdges(LogGabor):
                         # if self.pe.do_whitening: image = self.whitening(image)
                         fig, ax = self.show_edges(edgeslist[:, :, index], image=image*1.)
                         # print(figname)
-                        self.savefig(fig, figname, figpath='')
+                        self.savefig(fig, figname)
                         try:
                             os.remove(figname + '_lock')
                         except Exception as e:
@@ -916,7 +916,7 @@ class SparseEdges(LogGabor):
                     except Exception as e:
                         self.log.info('Failed to make edge image  %s, error : %s ', figname , traceback.print_tb(sys.exc_info()[2]))
 
-                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct.png')
+                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct')
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     try:
                         open(figname + '_lock', 'w').close()
@@ -924,6 +924,7 @@ class SparseEdges(LogGabor):
                         image_ = self.reconstruct(edgeslist[:, :, index], do_mask=False)
 #                         if self.pe.do_whitening: image_ = self.dewhitening(image_)
                         fig, ax = self.show_edges(edgeslist[:, :, index], image=image_*1.)
+                        # print(figname)
                         self.savefig(fig, figname)
                         try:
                             os.remove(figname + '_lock')
@@ -940,7 +941,7 @@ class SparseEdges(LogGabor):
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
                     fig, ax = self.histedges_theta(edgeslist, display=True)
-                    self.savefig(fig, figname, formats=[self.pe.formats[0]], figpath='')
+                    self.savefig(fig, figname, formats=[self.pe.formats[0]])
                     plt.close('all')
                     os.remove(figname + '_lock')
                 #
@@ -964,7 +965,7 @@ class SparseEdges(LogGabor):
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
                     fig, ax = self.cohistedges(edgeslist, display='chevrons')
-                    self.savefig(fig, figname, formats=[self.pe.formats[0]], figpath='')
+                    self.savefig(fig, figname, formats=[self.pe.formats[0]])
                     plt.close('all')
                     os.remove(figname + '_lock')
 
@@ -976,7 +977,7 @@ class SparseEdges(LogGabor):
                         edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist_prior, noise=noise)
                         v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
                         fig, ax = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior)
-                        self.savefig(fig, figname, formats=[self.pe.formats[0]], figpath='')
+                        self.savefig(fig, figname, formats=[self.pe.formats[0]])
                         plt.close('all')
                         os.remove(figname + '_lock')
             except Exception as e:
@@ -1653,7 +1654,7 @@ class EdgeFactory(SparseEdges):
                             plt.xticks(np.arange(0, len(gamma_range), N_step), ['2^%.2f' % np.log2(k) for k in gamma_range[::N_step]], rotation=45)
                             N_step = np.floor(len(C_range) / 5)
                             plt.yticks(np.arange(0, len(C_range), N_step), ['2^%.2f' % np.log2(k) for k in C_range[::N_step]])
-                        self.savefig(fig, figname, figpath='')
+                        self.savefig(fig, figname)
                     except Exception as e:
                         self.log.error('could not draw grid score : %s ', e)
 
@@ -1801,7 +1802,7 @@ class EdgeFactory(SparseEdges):
             pylab.ylabel('false negative rate = Sensitivity')
             pylab.axis('tight')
             pylab.text(0.5, 0.1, 'AUC = ' + str(AUC(cdfb, cdfa)))
-            self.savefig(fig, figname, figpath='')
+            self.savefig(fig, figname)
 
 
 def AUC(cdfb, cdfa):
