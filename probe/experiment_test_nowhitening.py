@@ -9,9 +9,8 @@ image = mp.imread('../../SLIP/database/serre07_targets/B_N107001.jpg')
 
 
 mp.pe.figsize_edges = 9
-image = mp.normalize(image, center=True)
-if mp.pe.do_mask: image *= mp.mask
-#! trying now using no whitening of the image
+image = mp.pipeline(image, do_whitening=False)
+
 
 import os
 matname = os.path.join(mp.pe.matpath, 'experiment_test_nowhitening.npy')
@@ -21,4 +20,3 @@ except Exception:
     edges, C_res = mp.run_mp(image, verbose=True)
     np.save(matname, edges)    
     
-fig, a = mp.show_edges(edges, image=image, mask=True)

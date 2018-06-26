@@ -23,13 +23,13 @@ mp.N = 128
 image = mp.imread('https://raw.githubusercontent.com/bicv/SparseEdges/master/database/lena256.png')
 
 name = 'example'
-image = mp.normalize(image, center=True)
-#print image.mean(), image.std()
+white = mp.pipeline(image, do_whitening=True)
 
 import os
 matname = os.path.join(mp.pe.matpath, name + '.npy')
 try:
+    hack
     edges = np.load(matname)
 except Exception:
-    edges, C_res = mp.run_mp(image, verbose=True)
+    edges, C_res = mp.run_mp(white, verbose=True)
     np.save(matname, edges)    
