@@ -343,7 +343,8 @@ class SparseEdges(LogGabor):
         # sequence of scalars,it defines the bin edges, including the rightmost edge.
         self.binedges_d = np.linspace(self.pe.d_min, self.pe.d_max, self.pe.N_r+1)
         self.binedges_phi = np.linspace(-np.pi/2, np.pi/2, self.pe.N_phi+1) + np.pi/self.pe.N_phi/2
-        theta_bin = (self.theta + np.hstack((self.theta[-1]-np.pi, self.theta[:-1]))) /2
+        theta = np.linspace(-np.pi/2, np.pi/2, self.pe.N_Dtheta+1)[1:]
+        theta_bin = (theta + np.hstack((theta[-1]-np.pi, theta[:-1]))) /2
         self.binedges_theta = np.hstack((theta_bin, theta_bin[0]+np.pi))
         # self.binedges_sf_0 = 2**np.arange(np.ceil(np.log2(self.pe.N_X)))
         self.binedges_sf_0 = 1. / np.logspace(.5, self.n_levels+.5, self.n_levels+1, base=self.pe.base_levels)
@@ -372,12 +373,12 @@ class SparseEdges(LogGabor):
         weights = np.absolute(value)/(np.absolute(value)).sum()
         v_hist, v_theta_edges_ = np.histogram(theta, bins=self.binedges_theta, density=False, weights=weights)
         v_hist /= v_hist.sum()
+
         if display:
             if figsize is None: figsize = (self.pe.figsize_hist, self.pe.figsize_hist)
             if fig is None: fig = plt.figure(figsize=figsize)
             if ax is None: ax = plt.axes(polar=True, facecolor='w')
-#             see http://blog.invibe.net/posts/14-12-09-polar-bar-plots.html
-            #width=np.hstack((self.theta[1:], self.theta[0]+np.pi)) - self.theta
+            # see http://blog.invibe.net/posts/14-12-09-polar-bar-plots.html
             width = self.binedges_theta[1:] - self.binedges_theta[:-1]
             ax.bar(self.binedges_theta[:-1], np.sqrt(v_hist), width=width, color='#66c0b7', align='edge')# edgecolor="none")
 
@@ -1131,33 +1132,33 @@ class SparseEdges(LogGabor):
             for a in [ax, inset]:
                 #ax.set_yscale("log")#, nonposx = 'clip')
                 if not(scale):
-                    ax.set_xlim([-0.05*N, 1.05*N])
+                    a.set_xlim([-0.05*N, 1.05*N])
                 else:
-                    ax.set_xlim([-0.05*l0_max, 1.05*l0_max])
-                    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 1))#, useOffset=False)
-                #ax.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-                ax.spines['left'].set_position('zero')#('outward', -10))
-                ax.spines['right'].set_visible(False)
-                ax.spines['bottom'].set_position('zero')#(('outward', -10))
-                ax.spines['top'].set_visible(False)
+                    a.set_xlim([-0.05*l0_max, 1.05*l0_max])
+                    a.ticklabel_format(axis='x', style='sci', scilimits=(0, 1))#, useOffset=False)
+                #a.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+                a.spines['left'].set_position('zero')#('outward', -10))
+                a.spines['right'].set_visible(False)
+                a.spines['bottom'].set_position('zero')#(('outward', -10))
+                a.spines['top'].set_visible(False)
                 #ax.spines['left'].set_smart_bounds(True)
-                ax.spines['bottom'].set_smart_bounds(True)
-                ax.xaxis.set_ticks_position('bottom')
-                ax.yaxis.set_ticks_position('left')
+                a.spines['bottom'].set_smart_bounds(True)
+                a.xaxis.set_ticks_position('bottom')
+                a.yaxis.set_ticks_position('left')
                 if not(scale):#False and a==ax:
-                    ax.set_xlabel(r'$\ell_0$-norm')
+                    a.set_xlabel(r'$\ell_0$-norm')
                 else:
-                    ax.set_xlabel(r'relative $\ell_0$ pseudo-norm (bits / pixel)')#relative $\ell_0$-norm')
+                    a.set_xlabel(r'relative $\ell_0$ pseudo-norm (bits / pixel)')#relative $\ell_0$-norm')
 
-                ax.grid(b=False, which="both")
+                a.grid(b=False, which="both")
 
             ax.set_ylim(-.02, 1.02)
             ax.set_ylabel(r'Squared error')
             inset.set_ylabel(r'Coefficient')
             if revert:
-                ax.legend(loc='best', frameon=False)#, bbox_to_anchor = (0.5, 0.5))
+                ax.legend(loc='best', frameon=False, prop={'size': 6})#, bbox_to_anchor = (0.5, 0.5))
             else:
-                inset.legend(loc='best', frameon=False, bbox_to_anchor = (0.4, 0.4))
+                inset.legend(loc='best', frameon=False, bbox_to_anchor = (0.4, 0.4), prop={'size': 6})
             plt.locator_params(tight=False, nbins=4)
             plt.tight_layout()
             return fig, ax, inset

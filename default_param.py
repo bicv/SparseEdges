@@ -88,7 +88,7 @@
     'figsize': 14.,
     'figsize_hist': 8, # width of a column in inches
     'figsize_cohist': 8, #
-    'formats': ['png', 'pdf', 'svg', 'jpg'],
+    'formats': ['png', 'pdf', 'jpg'],
     'dpi': 450,
     'use_cache' : True,
     'verbose': 0,
