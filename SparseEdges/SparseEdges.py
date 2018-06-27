@@ -1145,13 +1145,13 @@ class SparseEdges(LogGabor):
                 a.spines['bottom'].set_smart_bounds(True)
                 a.xaxis.set_ticks_position('bottom')
                 a.yaxis.set_ticks_position('left')
-                if not(scale):#False and a==ax:
-                    a.set_xlabel(r'$\ell_0$-norm')
-                else:
-                    a.set_xlabel(r'relative $\ell_0$ pseudo-norm (bits / pixel)')#relative $\ell_0$-norm')
 
                 a.grid(b=False, which="both")
 
+            if not(scale):#False and a==ax:
+                ax.set_xlabel(r'$\ell_0$-norm')
+            else:
+                ax.set_xlabel(r'relative $\ell_0$ pseudo-norm (bits / pixel)')#relative $\ell_0$-norm')
             ax.set_ylim(-.02, 1.02)
             ax.set_ylabel(r'Squared error')
             inset.set_ylabel(r'Coefficient')
