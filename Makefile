@@ -3,7 +3,7 @@ VERSION=`python3 -c'import SparseEdges; print(SparseEdges.__version__)'`
 PYTHON = python3
 UNAME_S := $(shell uname -s)
 
-PIP = pip
+PIP = python3 -m pip
 
 default: $(NAME).pdf index.html
 # check out http://stackoverflow.com/questions/714100/os-detecting-makefile#12099167
