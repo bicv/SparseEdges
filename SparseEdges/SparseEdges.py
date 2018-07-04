@@ -39,13 +39,15 @@ class SparseEdges(LogGabor):
     def init(self):
         LogGabor.init(self)
 
-    def run_mp(self, image, verbose=False, progress=False):
+    def run_mp(self, image, verbose=False, progress=False, progressfile=None):
         """
         runs the MatchingPursuit algorithm on image
 
         """
         edges = np.zeros((6, self.pe.N))
         C = self.linear_pyramid(image) # check LogGabor package
+        if progressfile is not None:
+            t0 = time.time()
         if progress:
             import pyprind
             my_prbar = pyprind.ProgPercent(self.pe.N)   # 1) initialization with number of iterations
@@ -63,6 +65,12 @@ class SparseEdges(LogGabor):
             # reporting
             if verbose: print('Edge ', i_edge, '/', self.pe.N, ' - Max activity  : ', '%.3f' % np.absolute(C[ind_edge_star]), ' phase= ', '%.3f' % np.angle(C[ind_edge_star], deg=True), ' deg,  @ ', ind_edge_star)
             if progress: my_prbar.update()
+            if progressfile is not None:
+                #if i_edge / (self.pe.N/32)
+                f = open(progressfile, 'w')
+                f.write('Edge ' + str(i_edge) + '/' + str(self.pe.N) + 'in %.3f' % (time.time() -t0) + 's')
+                f.close()
+
         return edges, C
 
     def backprop(self, C, ind_edge_star):
@@ -223,7 +231,7 @@ class SparseEdges(LogGabor):
                         open(matname + '_lock', 'w').close()
                         image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea, do_whitening=self.pe.do_whitening)
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
-                        edges, C = self.run_mp(image, verbose=self.pe.verbose>50)
+                        edges, C = self.run_mp(image, verbose=self.pe.verbose>50, progressfile=matname + '_lock')
                         np.save(matname, edges)
                         self.log.info('Finished edge extraction of %s ', matname)
                         try:
@@ -882,7 +890,7 @@ class SparseEdges(LogGabor):
                 f = open(txtname, 'w')
                 f.write(out)
                 f.close()
-                print(out)
+                #print(out)
                 try:
                     os.remove(txtname + '_lock')
                 except Exception as e:
@@ -1794,15 +1802,14 @@ class EdgeFactory(SparseEdges):
             hb /= np.sum(hb)
             cdfa, cdfb = np.cumsum(ha), np.cumsum(hb)
             # plots
-            fig = pylab.figure(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
-            a = fig.add_subplot(111)#, polar = True)
+            fig, ax = plt.subplots(figsize=(self.pe.figsize_hist, self.pe.figsize_hist))
             ax.plot(cdfb, cdfa, color='r', lw=2)
             ax.plot(np.linspace(0, 1, 2), np.linspace(0, 1, 2), 'k--', lw=2)
             print(" >> AUC for experiment ", exp, " classifiying between databases ", databases, " = ", AUC(cdfb, cdfa))
-            pylab.xlabel('false positive rate = 1 - Specificity')
-            pylab.ylabel('false negative rate = Sensitivity')
-            pylab.axis('tight')
-            pylab.text(0.5, 0.1, 'AUC = ' + str(AUC(cdfb, cdfa)))
+            ax.set_xlabel('false positive rate = 1 - Specificity')
+            ax.set_ylabel('false negative rate = Sensitivity')
+            ax.set_axis('tight')
+            ax.text(0.5, 0.1, 'AUC = ' + str(AUC(cdfb, cdfa)))
             self.savefig(fig, figname)
 
 
