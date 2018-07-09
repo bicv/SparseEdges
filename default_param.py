@@ -82,8 +82,8 @@
     'figpath': 'results',
     'do_edgedir': False,
     'edgefigpath': 'results/edges',
-    'matpath': 'data_cache',
-    'edgematpath': 'data_cache/edges',
+    'matpath': 'cache_dir',
+    'edgematpath': 'cache_dir/edges',
     'datapath': 'database',
     'figsize': 14.,
     'figsize_hist': 8, # width of a column in inches

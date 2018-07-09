@@ -2,7 +2,7 @@
 .ipynb_checkpoints/
 database/.AppleDouble/
 database/Yelmo/
-data_cache
+cache_dir
 results
 web.zip
 frioul*
