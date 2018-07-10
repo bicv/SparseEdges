@@ -672,7 +672,7 @@ class SparseEdges(LogGabor):
             assert(symmetry==True)
             v_hist_angle = v_hist.sum(axis=0).sum(axis=-1) # -d-,phi,  theta, -scale-
             # some useful normalizations
-            if not(prior==None):
+            if prior is not None:
                 # this allows to show conditional probability by dividing by an arbitrary (prior) distribution
                 prior_angle = prior.sum(axis=0).sum(axis=-1) # -d-, phi, theta, -scale-
                 prior_angle /= prior_angle.sum()
@@ -1342,17 +1342,34 @@ class EdgeFactory(SparseEdges):
     * classify and return the f1-score.
 
     """
-    def svm(self, exp, opt_notSVM='', opt_SVM='', databases=['serre07_distractors', 'serre07_targets'],
-            edgeslists = [None, None], database_labels = None,
-            feature='full', kernel = 'precomputed', KL_type='JSD', noise=0.):
+    def get_labels(self, edges, database_labels, filename, croparea, pos_noise = .1, seed=42):
+        # see "2018-07-09 loading ground truth - associating labels to edges" to tune pos_noise
+        np.random.seed(seed)
 
+        labels = np.load(os.path.join(database_labels, filename.replace('.png', '.npy')))
+        labels = labels[croparea[0]:croparea[1], croparea[2]:croparea[3]]
+        X, Y, sf_0 = edges[0, :], edges[1, :],  edges[3, :]
+        X += pos_noise * np.random.randn(ef.pe.N) / sf_0
+        Y += pos_noise * np.random.randn(ef.pe.N) / sf_0
+        X, Y = [int(np.max((0, np.min((X_, ef.pe.N_X-1))))) for X_ in X], [int(np.max((0, np.min((Y_, ef.pe.N_Y-1))))) for Y_ in Y]
+        y = labels[X, Y]
+        return labels, y
+
+    def svm(self, exp, opt_notSVM='', opt_SVM='', databases=['serre07_distractors', 'serre07_targets'],
+            edgeslists=[None, None], database_labels=None,
+            feature='full', kernel = 'precomputed', KL_type='JSD', noise=0.):
+        """
+        by convention, if we use a database_labels string (path to folder),
+        then we perform an edge by edge classification
+
+        """
         import time
         time.sleep(.1*np.random.rand())
 
         # DEFINING FILENAMES
         # put here thing that do change the histogram
-        #opt_notSVM = opt_notSVM # (this should be normally passed to exp, as in 'classifier_noise')
-        # and here things that do not change the (individual) histogramsi but
+        # opt_notSVM = opt_notSVM # (this should be normally passed to exp, as in 'classifier_noise')
+        # and here things that do not change the (individual) histograms but
         # rather the SVM classification:
         if (self.pe.svm_log): opt_SVM += '_log'
 #         if not(self.pe.svm_log): opt_SVM += 'nolog_'
@@ -1417,19 +1434,19 @@ class EdgeFactory(SparseEdges):
                                     # TODO : make full minus chevrons
                                     if feature_ == 'full':
                                         # using the full histogram
-                                        v_hist = self.cohistedges(edgeslist[:, :, i_image][..., np.newaxis], display=None)
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image])
                                     elif feature_ == 'chevron':
                                         #  or just the chevron map
-                                        v_hist = self.cohistedges(edgeslist[:, :, i_image][..., np.newaxis], display=None)
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image])
                                         # marginalize over distances and scales
                                         v_hist = v_hist.sum(axis=3).sum(axis=0)
                                     elif feature_ == 'first':
                                         # control with first-order
-                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image][..., np.newaxis], display=False)
+                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image], display=False)
                                     elif feature_ == 'first_rot':
                                         edgeslist[2, :, i_image] += np.random.rand() * np.pi
                                         # control with first-order
-                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image][..., np.newaxis], display=False)
+                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image], display=False)
                                     else:
                                         self.log.error('problem here, you asked for a non-existant feature', feature_)
                                         break
@@ -1545,7 +1562,7 @@ class EdgeFactory(SparseEdges):
                     self.log.error("Failed doing the dummy classifier : %s ", e)
                 ###############################################################################
                 ###############################################################################
-                # 3- preparing th gram matrix
+                # 3- preparing the gram matrix
                 if not(kernel == 'rbf'):
                     # use KL distance as my kernel
                     kernel = 'precomputed'
@@ -1706,7 +1723,7 @@ class EdgeFactory(SparseEdges):
                     with open(txtname, 'w') as f: f.write(results)
                 self.log.info("Prediction on the testing set done in %0.3fs", (time.time() - t0))
 
-                if edgeslist is None:# try: #(kernel=='rbf'):#len(databases)<3:
+                if edgeslist is None:
                     self.log.info(">> compiling results ")
                     t0 = time.time()
                     # tested_indices is the index of the image that is tested
