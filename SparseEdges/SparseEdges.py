@@ -121,7 +121,7 @@ class SparseEdges(LogGabor):
             ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), facecolor='w')
         ax.axis(c='b', lw=0, frame_on=False)
 
-        if color == 'black' or color == 'redblue' or color in['brown', 'green', 'blue']: #cocir or chevrons
+        if color in ['black', 'redblue', 'brown', 'green', 'blue']: #cocir or chevrons
             linewidth = self.pe.line_width_chevrons
             if scale is None: scale = self.pe.scale_chevrons
         else:
@@ -164,16 +164,16 @@ class SparseEdges(LogGabor):
                         fc = cm.hsv(0, alpha=pedestal + (1. - pedestal)*weight**gamma)
                     else:
                         fc = cm.hsv((phase/np.pi/2) % 1., alpha=pedestal + (1. - pedestal)*weight**gamma)
-# TODO                     https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
-#                     RGB_weight = [0.299, 0.587, 0.114]
-#                     luminance = np.sqrt(np.dot(np.array(fc[:, :3]) ** 2, RGB_weight))
-#                     print luminance
-#                     fc[:, :3] /= luminance
+                        # check-out  https://jakevdp.github.io/blog/2014/10/16/how-bad-is-your-colormap/
 
                 elif color == 'black':
                     fc = (0, 0, 0, 1)# black
                 elif color == 'green': # figure 1DE
                     fc = (0.05, 0.5, 0.05, np.abs(weight)**gamma)
+                elif color == 'redgreen': # figure 1DE
+                    fc = (0.5, 0.5, 0.05, np.abs(weight)**gamma)
+                elif color == 'redblue': # figure 1DE
+                    fc = (0.5, 0.05, 0.5, np.abs(weight)**gamma)
                 elif color == 'blue': # figure 1DE
                     fc = (0.05, 0.05, 0.5, np.abs(weight)**gamma)
                 elif color == 'brown': # figure 1DE
