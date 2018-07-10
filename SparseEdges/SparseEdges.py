@@ -468,6 +468,46 @@ class SparseEdges(LogGabor):
 
         return d, phi, theta, loglevel, dphase, logvalue
 
+    def cooccurence_hist(self, edges, symmetry=True):
+
+        d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(edges, symmetry=symmetry)
+
+        #computing weights
+        # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
+        Weights = edges[4, :]
+        if self.pe.do_rank: Weights[Weights.argsort()] = np.linspace(1./Weights.size, 1., Weights.size)
+        weights = Weights[:, np.newaxis] * Weights[np.newaxis, :]
+        if self.pe.weight_by_distance:
+            # normalize weights by the relative distance (bin areas increase with radius)
+            # it makes sense to give less weight to "far bins"
+            weights /= (d + 1.e-6) # warning, some are still at the same position d=0...
+        # exclude self-occurence
+#                 weights[np.diag_indices_from(weights)] = 0.
+        np.fill_diagonal(weights, 0.)
+        # TODO check: if not self.pe.multiscale: weights *= (Sf_0[:, np.newaxis]==Sf_0[inp.newaxis, :])
+        # just checking if we get different results when selecting edges with a similar phase (von Mises profile)
+        if self.pe.kappa_phase>0:
+            # TODO: should we use the phase information to refine position?
+            # https://en.wikipedia.org/wiki/Atan2
+            weights *= np.exp(self.pe.kappa_phase*np.cos(np.arctan2(dphase)))
+
+        if weights.sum()>0:
+            weights /= weights.sum()
+            weights = weights.ravel()
+        else:
+            weights = np.ones_like(weights)
+
+        #computing histogram
+        v_hist_, edges_ = np.histogramdd([d.ravel(), phi.ravel(), theta.ravel(), loglevel.ravel()], #data,
+                                         bins=(self.binedges_d, self.binedges_phi, self.binedges_theta, self.binedges_loglevel),
+                                         normed=False, # TODO check if correct True,
+                                         weights = weights
+                                        )
+#                 print v_hist_.sum(), v_hist_.min(), v_hist_.max(), d.ravel().shape
+        if v_hist_.sum()<.01: self.log.debug(' less than 1 percent of co-occurences within ranges: %f ', v_hist_.sum())
+
+        return v_hist_
+
     def cohistedges(self, edgeslist, v_hist=None, prior=None,
                     fig=None, ax=None, symmetry=True,
                     display='chevrons', v_min=None, v_max=None, labels=True, mappable=False, radius=None,
@@ -484,42 +524,7 @@ class SparseEdges(LogGabor):
             v_hist = None
             six, N_edge, N_image = edgeslist.shape
             for i_image in range(N_image):
-
-                d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(edgeslist[:, :, i_image], symmetry=symmetry)
-
-                #computing weights
-                # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
-                Weights = edgeslist[4, :, i_image]
-                if self.pe.do_rank: Weights[Weights.argsort()] = np.linspace(1./Weights.size, 1., Weights.size)
-                weights = Weights[:, np.newaxis] * Weights[np.newaxis, :]
-                if self.pe.weight_by_distance:
-                    # normalize weights by the relative distance (bin areas increase with radius)
-                    # it makes sense to give less weight to "far bins"
-                    weights /= (d + 1.e-6) # warning, some are still at the same position d=0...
-                # exclude self-occurence
-#                 weights[np.diag_indices_from(weights)] = 0.
-                np.fill_diagonal(weights, 0.)
-                # TODO check: if not self.pe.multiscale: weights *= (Sf_0[:, np.newaxis]==Sf_0[inp.newaxis, :])
-                # just checking if we get different results when selecting edges with a similar phase (von Mises profile)
-                if self.pe.kappa_phase>0:
-                    # TODO: should we use the phase information to refine position?
-                    # https://en.wikipedia.org/wiki/Atan2
-                    weights *= np.exp(self.pe.kappa_phase*np.cos(np.arctan2(dphase)))
-
-                if weights.sum()>0:
-                    weights /= weights.sum()
-                    weights = weights.ravel()
-                else:
-                    weights = np.ones_like(weights)
-
-                #computing histogram
-                v_hist_, edges_ = np.histogramdd([d.ravel(), phi.ravel(), theta.ravel(), loglevel.ravel()], #data,
-                                                 bins=(self.binedges_d, self.binedges_phi, self.binedges_theta, self.binedges_loglevel),
-                                                 normed=False, # TODO check if correct True,
-                                                 weights = weights
-                                                )
-#                 print v_hist_.sum(), v_hist_.min(), v_hist_.max(), d.ravel().shape
-                if v_hist_.sum()<.01: self.log.debug(' less than 1 percent of co-occurences within ranges: %f ', v_hist_.sum())
+                v_hist_ = self.cooccurence_hist(edgeslist[:, :, i_image], symmetry=symmetry)
                 if not(v_hist_.sum() == 0.):
                     # add to the full histogram
                     if v_hist is None:
