@@ -3,6 +3,7 @@
 database/.AppleDouble/
 database/Yelmo/
 cache_dir
+data_cache
 results
 web.zip
 frioul*
@@ -61,4 +62,3 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
-
