@@ -432,22 +432,16 @@ class SparseEdges(LogGabor):
 
 
     def cooccurence(self, edgeslist, symmetry=True):
+        if self.pe.edge_mask:
+            # remove edges whose center position is not on the central disk
+            mask = ((edgeslist[1, :]/self.pe.N_X -.5)**2+(edgeslist[0, :]/self.pe.N_Y -.5)**2) < .5**2
+            edgeslist = edgeslist[:, mask]
         # retrieve individual positions, orientations, scales and coefficients
         X, Y = edgeslist[0, :], edgeslist[1, :]
         Theta = edgeslist[2, :]
         Sf_0 = edgeslist[3, :]
         value = edgeslist[4, :]
         phase = edgeslist[5, :]
-        if self.pe.edge_mask:
-            # remove edges whose center position is not on the central disk
-            mask = ((Y/self.pe.N_X -.5)**2+(X/self.pe.N_Y -.5)**2) < .5**2
-            edgeslist = edgeslist[:, mask]
-            # X = X[mask]
-            # Y = Y[mask]
-            # Theta = Theta[mask]
-            # Sf_0 = Sf_0[mask]
-            # value = value[mask]
-            # phase = phase[mask]
 
         # TODO: include phases or use that to modify center of the edge
         # TODO: or at least on the value (ON or OFF) of the edge
