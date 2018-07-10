@@ -1210,17 +1210,17 @@ class SparseEdges(LogGabor):
                     print('Failed to plot (no threshold) experiments %s with error : %s ' % (experiments, e) )
 
 
-#  subplots_adjust(left=None, bottom=None, right=None, top=None,
-#                  wspace=None, hspace=None)
-#
-#The parameter meanings (and suggested defaults) are::
-#
-#  left  = 0.125  # the left side of the subplots of the figure
-#  right = 0.9    # the right side of the subplots of the figure
-#  bottom = 0.1   # the bottom of the subplots of the figure
-#  top = 0.9      # the top of the subplots of the figure
-#  wspace = 0.2   # the amount of width reserved for blank space between subplots
-#  hspace = 0.2   # the amount of height reserved for white space between subplots
+            #  subplots_adjust(left=None, bottom=None, right=None, top=None,
+            #                  wspace=None, hspace=None)
+            #
+            #The parameter meanings (and suggested defaults) are::
+            #
+            #  left  = 0.125  # the left side of the subplots of the figure
+            #  right = 0.9    # the right side of the subplots of the figure
+            #  bottom = 0.1   # the bottom of the subplots of the figure
+            #  top = 0.9      # the top of the subplots of the figure
+            #  wspace = 0.2   # the amount of width reserved for blank space between subplots
+            #  hspace = 0.2   # the amount of height reserved for white space between subplots
             fig.subplots_adjust(wspace=0.1, hspace=0.1,
                                 left=0.2, right=0.9,
                                 top=0.9,    bottom=0.175)
@@ -1332,8 +1332,7 @@ class EdgeFactory(SparseEdges):
 
     A class which classifies images based on histograms of their statistics.
 
-    We tested first a simplistic classifier ``compare`` and then use the ``SVM``
-    classifier from sklearn.
+    We use the ``SVM`` classifier from sklearn.
 
     The pipeline is to
 
@@ -1344,7 +1343,7 @@ class EdgeFactory(SparseEdges):
 
     """
     def svm(self, exp, opt_notSVM='', opt_SVM='', databases=['serre07_distractors', 'serre07_targets'],
-            edgeslists = [None, None],
+            edgeslists = [None, None], database_labels = None,
             feature='full', kernel = 'precomputed', KL_type='JSD', noise=0.):
 
         import time
