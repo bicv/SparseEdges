@@ -380,14 +380,15 @@ class SparseEdges(LogGabor):
 
             weights = np.absolute(value)/(np.absolute(value)).sum()
             v_hist, v_theta_edges = np.histogram(theta, bins=self.binedges_theta, density=False, weights=weights)
-            v_hist /= v_hist.sum()
 
         if display:
+            # v_hist /= v_hist.sum()
             if figsize is None: figsize = (self.pe.figsize_hist, self.pe.figsize_hist)
             if fig is None: fig = plt.figure(figsize=figsize)
             if ax is None: ax = plt.axes(polar=True, facecolor='w')
             # see http://blog.invibe.net/posts/14-12-09-polar-bar-plots.html
             width = self.binedges_theta[1:] - self.binedges_theta[:-1]
+
             ax.bar(self.binedges_theta[:-1], (v_hist)**.5, width=width, color='#66c0b7', align='edge')# edgecolor="none")
 
             ax.bar(self.binedges_theta[:-1]+np.pi, (v_hist)**.5, width=width, color='#32ab9f', align='edge')
@@ -431,17 +432,23 @@ class SparseEdges(LogGabor):
             return v_hist, v_sf_0_edges_
 
 
-    def cooccurence(self, edgeslist, symmetry=True):
+    def cooccurence(self, edges_ref, edges_comp=None, symmetry=True):
+        if edges_comp is None: edges_comp = edges_ref
         if self.pe.edge_mask:
             # remove edges whose center position is not on the central disk
-            mask = ((edgeslist[1, :]/self.pe.N_X -.5)**2+(edgeslist[0, :]/self.pe.N_Y -.5)**2) < .5**2
-            edgeslist = edgeslist[:, mask]
+            mask = ((edges_ref[1, :]/self.pe.N_X -.5)**2+(edges_ref[0, :]/self.pe.N_Y -.5)**2) < .5**2
+            edges_ref = edges_ref[:, mask]
         # retrieve individual positions, orientations, scales and coefficients
-        X, Y = edgeslist[0, :], edgeslist[1, :]
-        Theta = edgeslist[2, :]
-        Sf_0 = edgeslist[3, :]
-        value = edgeslist[4, :]
-        phase = edgeslist[5, :]
+        X_ref, Y_ref = edges_ref[0, :], edges_ref[1, :]
+        Theta_ref = edges_ref[2, :]
+        Sf_0_ref = edges_ref[3, :]
+        value_ref = edges_ref[4, :]
+        phase_ref = edges_ref[5, :]
+        X_comp, Y_comp = edges_comp[0, :], edges_comp[1, :]
+        Theta_comp = edges_comp[2, :]
+        Sf_0_comp = edges_comp[3, :]
+        value_comp = edges_comp[4, :]
+        phase_comp = edges_comp[5, :]
 
         # TODO: include phases or use that to modify center of the edge
         # TODO: or at least on the value (ON or OFF) of the edge
@@ -451,39 +458,41 @@ class SparseEdges(LogGabor):
 
         # to control if we raise an error on numerical error, we use
         np.seterr(all='ignore')
-        dx = X[:, np.newaxis] - X[np.newaxis, :]
-        dy = Y[:, np.newaxis] - Y[np.newaxis, :]
+        dx = X_ref[:, np.newaxis] - X_comp[np.newaxis, :]
+        dy = Y_ref[:, np.newaxis] - Y_comp[np.newaxis, :]
         d = np.sqrt(dx**2 + dy**2) / self.pe.N_X  # distance normalized by the image size
-        if self.pe.scale_invariant: d *= np.sqrt(Sf_0[:, np.newaxis]*Sf_0[np.newaxis, :])#*np.sqrt(self.pe.N_X)
+        if self.pe.scale_invariant: d *= np.sqrt(Sf_0_ref[:, np.newaxis]*Sf_0_comp[np.newaxis, :])#*np.sqrt(self.pe.N_X)
         d *= self.pe.d_width # distance in visual angle
-        theta = Theta[:, np.newaxis] - Theta[np.newaxis, :]
-        phi = np.arctan2(dy, dx) - np.pi/2 - Theta[np.newaxis, :]
+        theta = Theta_ref[:, np.newaxis] - Theta_comp[np.newaxis, :]
+        phi = np.arctan2(dy, dx) - np.pi/2 - Theta_comp[np.newaxis, :]
         if symmetry: phi -= theta/2
-        loglevel = np.log2(Sf_0[:, np.newaxis]) - np.log2(Sf_0[np.newaxis, :])
+        loglevel = np.log2(Sf_0_ref[:, np.newaxis]) - np.log2(Sf_0_comp[np.newaxis, :])
         # putting everything in the right range:
         phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
         theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
-        dphase = phase[:, np.newaxis] - phase[np.newaxis, :]
-        logvalue = np.log2(value[:, np.newaxis]) - np.log2(value[np.newaxis, :])
+        dphase = phase_ref[:, np.newaxis] - phase_comp[np.newaxis, :]
+        logvalue = np.log2(value_ref[:, np.newaxis]) - np.log2(value_comp[np.newaxis, :])
 
         return d, phi, theta, loglevel, dphase, logvalue
 
-    def cooccurence_hist(self, edges, symmetry=True):
+    def cooccurence_hist(self, edges_ref, edges_comp=None, symmetry=True):
+        d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(edges_ref, edges_comp, symmetry=symmetry)
 
-        d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(edges, symmetry=symmetry)
+        if edges_comp is None: edges_comp = edges_ref
 
         #computing weights
         # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
-        Weights = edges[4, :]
+        Weights = edges_ref[4, :]
         if self.pe.do_rank: Weights[Weights.argsort()] = np.linspace(1./Weights.size, 1., Weights.size)
-        weights = Weights[:, np.newaxis] * Weights[np.newaxis, :]
+        weights = Weights[:, np.newaxis] * edges_comp[4, :][np.newaxis, :]
         if self.pe.weight_by_distance:
             # normalize weights by the relative distance (bin areas increase with radius)
             # it makes sense to give less weight to "far bins"
             weights /= (d + 1.e-6) # warning, some are still at the same position d=0...
-        # exclude self-occurence
+            # exclude self-occurence
+            weights[d==0] = 0
 #                 weights[np.diag_indices_from(weights)] = 0.
-        np.fill_diagonal(weights, 0.)
+        # np.fill_diagonal(weights, 0.)
         # TODO check: if not self.pe.multiscale: weights *= (Sf_0[:, np.newaxis]==Sf_0[inp.newaxis, :])
         # just checking if we get different results when selecting edges with a similar phase (von Mises profile)
         if self.pe.kappa_phase>0:
