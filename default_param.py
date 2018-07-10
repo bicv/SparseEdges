@@ -50,7 +50,7 @@
     'N_scale': 5, #
     'loglevel_max': 7, # used for the statistics
 # doing the computation on a circular mask
-    'edge_mask': True, # should we use a circular mask to exclude some edges when computing statistics (first- and second-order). True in Geisler et al, 2001.
+    'edge_mask': False, # should we use a circular mask to exclude some edges when computing statistics (first- and second-order). True in Geisler et al, 2001.
     'do_rank': False,
     'scale_invariant': True,
     'multiscale': True,
