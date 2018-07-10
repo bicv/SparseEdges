@@ -359,7 +359,7 @@ class SparseEdges(LogGabor):
         self.binedges_sf_0 = self.binedges_sf_0[::-1]
         self.binedges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
-    def histedges_theta(self, edgeslist, fig=None, ax=None, figsize=None, display=True):
+    def histedges_theta(self, edgeslist, v_hist=None, fig=None, ax=None, figsize=None, display=True):
         """
         First-order stats
 
@@ -367,20 +367,20 @@ class SparseEdges(LogGabor):
 
         """
         self.init_binedges()
+        if v_hist is None:
+            theta = edgeslist[2, ...].ravel()
+            value = edgeslist[4, ...].ravel()
 
-        theta = edgeslist[2, ...].ravel()
-        value = edgeslist[4, ...].ravel()
+            if self.pe.edge_mask:
+                # remove edges whose center position is not on the central disk
+                x , y = edgeslist[0, ...].ravel().real, edgeslist[1, ...].ravel().real
+                mask = ((y/self.pe.N_X -.5)**2+(x/self.pe.N_Y -.5)**2) < .5**2
+                theta = theta[mask]
+                value = value[mask]
 
-        if self.pe.edge_mask:
-            # remove edges whose center position is not on the central disk
-            x , y = edgeslist[0, ...].ravel().real, edgeslist[1, ...].ravel().real
-            mask = ((y/self.pe.N_X -.5)**2+(x/self.pe.N_Y -.5)**2) < .5**2
-            theta = theta[mask]
-            value = value[mask]
-
-        weights = np.absolute(value)/(np.absolute(value)).sum()
-        v_hist, v_theta_edges_ = np.histogram(theta, bins=self.binedges_theta, density=False, weights=weights)
-        v_hist /= v_hist.sum()
+            weights = np.absolute(value)/(np.absolute(value)).sum()
+            v_hist, v_theta_edges = np.histogram(theta, bins=self.binedges_theta, density=False, weights=weights)
+            v_hist /= v_hist.sum()
 
         if display:
             if figsize is None: figsize = (self.pe.figsize_hist, self.pe.figsize_hist)
@@ -388,16 +388,16 @@ class SparseEdges(LogGabor):
             if ax is None: ax = plt.axes(polar=True, facecolor='w')
             # see http://blog.invibe.net/posts/14-12-09-polar-bar-plots.html
             width = self.binedges_theta[1:] - self.binedges_theta[:-1]
-            ax.bar(self.binedges_theta[:-1], np.sqrt(v_hist), width=width, color='#66c0b7', align='edge')# edgecolor="none")
+            ax.bar(self.binedges_theta[:-1], (v_hist)**.5, width=width, color='#66c0b7', align='edge')# edgecolor="none")
 
-            ax.bar(self.binedges_theta[:-1]+np.pi, np.sqrt(v_hist), width=width, color='#32ab9f', align='edge')
+            ax.bar(self.binedges_theta[:-1]+np.pi, (v_hist)**.5, width=width, color='#32ab9f', align='edge')
             ax.plot(self.binedges_theta, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
             ax.plot(self.binedges_theta+np.pi, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
 
             plt.setp(ax, yticks=[])
             return fig, ax
         else:
-            return v_hist, v_theta_edges_
+            return v_hist, v_theta_edges
 
     def histedges_scale(self, edgeslist, fig=None, ax=None, display=True):
         """
@@ -769,7 +769,7 @@ class SparseEdges(LogGabor):
                     cbar.set_ticklabels(np.linspace(v_min, v_max, 5))#, base=2))
                 cbar.update_ticks()
 
-            if not(labels==False):
+            if labels:
                 if not(xticks=='left'): ax.set_xlabel(r'azimuth difference $\psi$')
                 if not(xticks=='bottom'): ax.set_ylabel(r'orientation difference $\theta$')
             if not(xticks==False):
