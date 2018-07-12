@@ -209,8 +209,8 @@ class SparseEdges(LogGabor):
         runs the edge extraction for a list of images
 
         """
-        self.mkdir()
-        for path in self.pe.edgefigpath, self.pe.edgematpath:
+        #self.mkdir()
+        for path in self.pe.matpath, self.pe.edgematpath:
             if not(os.path.isdir(path)): os.mkdir(path)
         for _ in range(N_do): # repeat this loop to make sure to scan everything
             global_lock = False # will switch to True when we resume a batch and detect that one edgelist is not finished in another process
@@ -255,7 +255,7 @@ class SparseEdges(LogGabor):
 
     def full_MSE(self, exp, name_database, imagelist):
         matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
-        self.mkdir()
+        #self.mkdir()
         if not(os.path.isdir(matname)): os.mkdir(matname)
         edgeslist = np.load(matname + '_edges.npy')
         N_do = 2
@@ -830,6 +830,9 @@ class SparseEdges(LogGabor):
         self.log.info(' > computing edges for experiment %s with database %s ', exp, name_database)
         #: 1 - Creating an image list
         locked = False
+        #self.mkdir()
+        for path in self.pe.matpath, self.pe.edgematpath:
+            if not(os.path.isdir(path)): os.mkdir(path)
         matname = os.path.join(self.pe.edgematpath, exp + '_' + name_database)
         #while os.path.isfile(matname + '_images_lock'):
         imagelist = self.get_imagelist(exp, name_database=name_database)
@@ -890,6 +893,7 @@ class SparseEdges(LogGabor):
 
         # 3- Doing the independence check for this set
         if not(locked):
+            if not(os.path.isdir(self.pe.figpath)): os.mkdir(self.pe.figpath)
             txtname = os.path.join(self.pe.figpath, exp + '_dependence_' + name_database + note + '.txt')
             if not(os.path.isfile(txtname)) and not(os.path.isfile(txtname + '_lock')):
                 open(txtname + '_lock', 'w').close() # touching
@@ -914,8 +918,9 @@ class SparseEdges(LogGabor):
             N_image = edgeslist.shape[2]
             for index in np.random.permutation(np.arange(len(imagelist))):
                 filename, croparea = imagelist[index]
+                ext = 'png'
 
-                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea))
+                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '.' + ext)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     try:
                         open(figname + '_lock', 'w').close()
@@ -933,7 +938,7 @@ class SparseEdges(LogGabor):
                     except Exception as e:
                         self.log.info('Failed to make edge image  %s, error : %s ', figname , traceback.print_tb(sys.exc_info()[2]))
 
-                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct')
+                figname = os.path.join(edgedir, filename.replace('.png', '') + str(croparea) + '_reconstruct' + '.' + ext)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     try:
                         open(figname + '_lock', 'w').close()
@@ -953,11 +958,13 @@ class SparseEdges(LogGabor):
         if not(locked):
             # 6- Plotting the histogram and al
             if True:# try:
-                figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note)
+                ext = 'pdf'
+                figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note + '.' + ext)
+                print(figname)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
                     fig, ax = self.histedges_theta(edgeslist, display=True)
-                    self.savefig(fig, figname, formats=[self.pe.formats[0]])
+                    self.savefig(fig, figname, formats=[ext])
                     plt.close('all')
                     os.remove(figname + '_lock')
                 #
@@ -977,23 +984,23 @@ class SparseEdges(LogGabor):
                 #     plt.close('all')
                 #     os.remove(figname + '_lock')
 
-                figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note)
+                figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_' + name_database + note + '.' + ext)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
                     fig, ax = self.cohistedges(edgeslist, display='chevrons')
-                    self.savefig(fig, figname, formats=[self.pe.formats[0]])
+                    self.savefig(fig, figname, formats=[ext])
                     plt.close('all')
                     os.remove(figname + '_lock')
 
                 if 'targets' in name_database or 'laboratory' in name_database:
-                    figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_priordistractors_' + name_database + '_' + note)
+                    figname = os.path.join(self.pe.figpath, exp + '_proba-edgefield_chevrons_priordistractors_' + name_database + '_' + note + '.' + ext)
                     if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                         open(figname + '_lock', 'w').close()
                         imagelist_prior = self.get_imagelist(exp, name_database=name_database.replace('targets', 'distractors'))
                         edgeslist_prior = self.full_run(exp, name_database.replace('targets', 'distractors'), imagelist_prior, noise=noise)
                         v_hist_prior = self.cohistedges(edgeslist_prior, display=None)
                         fig, ax = self.cohistedges(edgeslist, display='chevrons', prior=v_hist_prior)
-                        self.savefig(fig, figname, formats=[self.pe.formats[0]])
+                        self.savefig(fig, figname, formats=[ext])
                         plt.close('all')
                         os.remove(figname + '_lock')
             # except Exception as e:
