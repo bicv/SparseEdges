@@ -960,8 +960,8 @@ class SparseEdges(LogGabor):
             try:
                 ext = 'pdf'
                 figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note + '.' + ext)
-                print(figname)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
+                    print(figname)
                     open(figname + '_lock', 'w').close()
                     fig, ax = self.histedges_theta(edgeslist, display=True)
                     self.savefig(fig, figname, formats=[ext])
