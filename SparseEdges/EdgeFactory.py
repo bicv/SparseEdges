@@ -75,7 +75,7 @@ class EdgeFactory(SparseEdges):
 
          - gathering all data:
           * first the raw complete data,
-          * then the X, y vectors; 
+          * then the X, y vectors;
         -the final result is the matname_score file containg the
         classification results
 
@@ -150,7 +150,6 @@ class EdgeFactory(SparseEdges):
                                 t0 = time.time()
                                 hists = []
                                 for i_image in range(edgeslist.shape[2]):
-                                    # TODO : use as features each edge co-occurence?
                                     # TODO : make full minus chevrons
                                     if feature_ == 'full':
                                         # using the full histogram
