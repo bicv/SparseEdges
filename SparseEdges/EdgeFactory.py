@@ -150,15 +150,19 @@ class EdgeFactory(SparseEdges):
                                 t0 = time.time()
                                 hists = []
                                 for i_image in range(edgeslist.shape[2]):
-                                    # TODO : make full minus chevrons
                                     if feature_ == 'full':
                                         # using the full histogram
                                         v_hist = self.cooccurence_hist(edgeslist[:, :, i_image])
+                                    elif feature_ == 'full-nochevron':
+                                        #  or just the chevron map
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image])
+                                        # marginalize over theta and psi
+                                        v_hist = v_hist.sum(axis=(1, 2))
                                     elif feature_ == 'chevron':
                                         #  or just the chevron map
                                         v_hist = self.cooccurence_hist(edgeslist[:, :, i_image])
                                         # marginalize over distances and scales
-                                        v_hist = v_hist.sum(axis=3).sum(axis=0)
+                                        v_hist = v_hist.sum(axis=(0, 3))
                                     elif feature_ == 'first':
                                         # control with first-order
                                         v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image], display=False)
