@@ -229,11 +229,11 @@ class EdgeFactory(SparseEdges):
             t0_cv = time.time()
             for i_cv in range(self.pe.N_svm_cv):
                 ###############################################################################
-                # 1- Split into a training set and a test set using a stratified k fold
-                from sklearn.cross_validation import ShuffleSplit
-                rs = ShuffleSplit(y.shape[0], n_iter=1, test_size=self.pe.svm_test_size, random_state=i_cv)#random_state + i_cv)
+                # 1- Split into a training set and a test set using a ShuffleSplit + doing that in parallel for the differrent features to test
+                from sklearn.model_selection import ShuffleSplit
+                rs = ShuffleSplit(n_splits=1, test_size=self.pe.svm_test_size, random_state=i_cv)#random_state + i_cv)
                 # split into a training and testing set
-                for index_train, index_test in rs: pass
+                for index_train, index_test in rs.split(X): pass
                 X_train, X_test, y_train, y_test = {}, {}, [], []
                 for feature_ in features:
                     X_train[feature_], X_test[feature_] = X[feature_][index_train, :], X[feature_][index_test, :]
