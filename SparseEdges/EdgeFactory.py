@@ -71,8 +71,17 @@ class EdgeFactory(SparseEdges):
             edgeslists=[None, None], database_labels=None,
             feature='full', kernel = 'precomputed', KL_type='JSD', noise=0.):
         """
+        outline:
+
+         - gathering all data:
+          * first the raw complete data,
+          * then the X, y vectors; 
+        -the final result is the matname_score file containg the
+        classification results
+
+
         by convention, if we use a database_labels string (path to folder),
-        then we perform an edge by edge classification
+        then we perform an edge-by-edge classification
 
         """
         import time
@@ -88,11 +97,10 @@ class EdgeFactory(SparseEdges):
         if self.pe.svm_norm: opt_SVM += '_norm'
         name_databases = ''
         for database in databases: name_databases += database + '_'
+
         txtname = os.path.join(self.pe.figpath, exp + '_SVM_' + name_databases + feature + opt_notSVM + opt_SVM +'.txt')
         matname_score = txtname.replace(self.pe.figpath, self.pe.matpath).replace('.txt', '.npy')
-        # gathering all data: first the raw complete data, then the X, y
-        # vectors; the final result is the matname_score file containg the
-        # classification results
+
 
         # DEFINING FEATURES TO USE
         if feature == 'first_chevron':
@@ -484,6 +492,7 @@ class EdgeFactory(SparseEdges):
         """
         Here, we compare 2 sets of images thanks to their respective histograms
         of edge co-occurences using a 2-means classification algorithm
+
 
         """
         v_hist, edgeslist_db = [], []
