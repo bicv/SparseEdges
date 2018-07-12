@@ -952,7 +952,7 @@ class SparseEdges(LogGabor):
 
         if not(locked):
             # 6- Plotting the histogram and al
-            if True: try:
+            if True:# try:
                 figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
