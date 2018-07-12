@@ -952,8 +952,7 @@ class SparseEdges(LogGabor):
 
         if not(locked):
             # 6- Plotting the histogram and al
-            try:
-
+            if True: try:
                 figname = os.path.join(self.pe.figpath, exp + '_proba-theta_' + name_database + note)
                 if not(os.path.isfile(figname)) and not(os.path.isfile(figname + '_lock')):
                     open(figname + '_lock', 'w').close()
@@ -997,8 +996,8 @@ class SparseEdges(LogGabor):
                         self.savefig(fig, figname, formats=[self.pe.formats[0]])
                         plt.close('all')
                         os.remove(figname + '_lock')
-            except Exception as e:
-                self.log.error('Failed to create figures, error : %s ', e)
+            # except Exception as e:
+            #     self.log.error('Failed to create figures, error : %s ', e)
 
         if not(locked):
             return imagelist, edgeslist, MSE
