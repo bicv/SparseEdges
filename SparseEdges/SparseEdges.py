@@ -224,8 +224,8 @@ class SparseEdges(LogGabor):
                 if not(os.path.isfile(matname)):
                     time.sleep(time_sleep*np.random.rand())
                     if not(os.path.isfile(matname + '_lock')):
-                        self.log.info('Doing edge extraction of %s ', matname)
                         open(matname + '_lock', 'w').close()
+                        self.log.info('Doing edge extraction of %s ', matname)
                         image, filename_, croparea_ = self.patch(name_database, filename=filename, croparea=croparea, do_whitening=self.pe.do_whitening)
                         if noise > 0.: image += noise*image[:].std()*self.texture(filename=filename, croparea=croparea)
                         edges, C = self.run_mp(image, verbose=self.pe.verbose>50, progressfile=matname + '_lock')
@@ -470,12 +470,12 @@ class SparseEdges(LogGabor):
         # putting everything in the right range:
         phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
         theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
-        dphase = phase_ref[:, np.newaxis] - phase_comp[np.newaxis, :]
+            dphase = phase_ref[:, np.newaxis] - phase_comp[np.newaxis, :]
         logvalue = np.log2(value_ref[:, np.newaxis]) - np.log2(value_comp[np.newaxis, :])
 
         return d, phi, theta, loglevel, dphase, logvalue
 
-    def cooccurence_hist(self, edges_ref, edges_comp=None, symmetry=True):
+    def cooccurence_hist(self, edges_ref, edges_comp=None, symmetry=True, mode='full'):
         d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(edges_ref, edges_comp, symmetry=symmetry)
 
         if edges_comp is None: edges_comp = edges_ref
