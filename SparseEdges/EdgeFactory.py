@@ -131,11 +131,12 @@ class EdgeFactory(SparseEdges):
             open(matname_score + '_lock', 'w').close()
             for feature_ in features:
                 ###############################################################################
-                # Download the data, if not already on disk and load it as numpy arrays
+                # Download the data, if not already on disk and saves it as numpy arrays
                 n_databases = len(databases)
+                mode = 'full' if n_databases>1 else 'edge'
                 for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
-
                     matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
+
                     if not(os.path.isfile(matname_hist)):
                         self.log.info(' >> There is no histogram, computing %s ', matname_hist)
                         if os.path.isfile(matname_hist + '_lock'):
@@ -146,42 +147,47 @@ class EdgeFactory(SparseEdges):
                                 imagelist, edgeslist, MSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
                             else:
                                 imagelist = 'ok'
-                            try:#if not(type(imagelist) == 'str'):
+                            try:
                                 t0 = time.time()
                                 hists = []
                                 for i_image in range(edgeslist.shape[2]):
                                     if feature_ == 'full':
                                         # using the full histogram
-                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image])
-                                    elif feature_ == 'full-nochevron':
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image], mode=mode)
+                                    elif feature_ == 'full_nochevron':
                                         #  or just the chevron map
-                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image])
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image], mode=mode)
                                         # marginalize over theta and psi
                                         v_hist = v_hist.sum(axis=(1, 2))
                                     elif feature_ == 'chevron':
                                         #  or just the chevron map
-                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image])
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image], mode=mode)
                                         # marginalize over distances and scales
                                         v_hist = v_hist.sum(axis=(0, 3))
                                     elif feature_ == 'first':
                                         # control with first-order
-                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image], display=False)
+                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image], display=False, mode=mode)
                                     elif feature_ == 'first_rot':
                                         edgeslist[2, :, i_image] += np.random.rand() * np.pi
                                         # control with first-order
-                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image], display=False)
+                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image], display=False, mode=mode)
                                     else:
                                         self.log.error('problem here, you asked for a non-existant feature', feature_)
                                         break
+
                                     # normalize histogram
-                                    v_hist /= v_hist.sum()
+                                    if mode=='full':
+                                        v_hist /= v_hist.sum()
+                                    else:
+                                        v_hist /= v_hist.sum(axis=-1)[:, None]
+                                    # ravel and append for all images
                                     hists.append(v_hist.ravel())
                                 hists = np.array(hists)
                                 np.save(matname_hist, hists)
                                 self.log.info("Histogram done in %0.3fs", (time.time() - t0))
                             except Exception as e:
                                 self.log.error(' XX The process computing edges in %s is locked ', name_database)
-                                self.log.error(' Raised exection %s  ', e)
+                                self.log.error(' Raised Exception %s  ', e)
                             try:
                                 os.remove(matname_hist + '_lock')
                             except Exception:
