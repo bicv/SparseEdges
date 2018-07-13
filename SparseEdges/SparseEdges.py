@@ -65,7 +65,7 @@ class SparseEdges(LogGabor):
             if progressfile is not None:
                 #if i_edge / (self.pe.N/32)
                 f = open(progressfile, 'w')
-                f.write('Edge ' + str(i_edge) + '/' + str(self.pe.N) + 'in %.3f' % (time.time() -t0) + 's')
+                f.write('Edge ' + str(i_edge) + '/' + str(self.pe.N) + 'in %.3f' % (time.time() -t0) + 's - ' + progressfile + '\n')
                 f.close()
 
         return edges, C
@@ -470,7 +470,7 @@ class SparseEdges(LogGabor):
         # putting everything in the right range:
         phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
         theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
-            dphase = phase_ref[:, np.newaxis] - phase_comp[np.newaxis, :]
+        dphase = phase_ref[:, np.newaxis] - phase_comp[np.newaxis, :]
         logvalue = np.log2(value_ref[:, np.newaxis]) - np.log2(value_comp[np.newaxis, :])
 
         return d, phi, theta, loglevel, dphase, logvalue
