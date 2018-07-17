@@ -387,9 +387,10 @@ class SparseEdges(LogGabor):
             if figsize is None: figsize = (self.pe.figsize_hist, self.pe.figsize_hist)
             if fig is None: fig = plt.figure(figsize=figsize)
             if ax is None: ax = plt.axes(polar=True, facecolor='w')
-            # see http://blog.invibe.net/posts/14-12-09-polar-bar-plots.html
             width = self.binedges_theta[1:] - self.binedges_theta[:-1]
-
+            # in polar coordinates, probability should be made proportional to
+            # the surface, i.e. bars height to the square root of probability
+            # see http://blog.invibe.net/posts/2014-12-09-polar-bar-plots.html
             ax.bar(self.binedges_theta[:-1], (v_hist)**.5, width=width, color='#66c0b7', align='edge')# edgecolor="none")
 
             ax.bar(self.binedges_theta[:-1]+np.pi, (v_hist)**.5, width=width, color='#32ab9f', align='edge')
