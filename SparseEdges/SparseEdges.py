@@ -275,7 +275,7 @@ class SparseEdges(LogGabor):
                         image_rec = np.zeros_like(image)
                         for i_N in range(self.pe.N):
                             MSE[i_N] =  ((image-image_rec)**2).sum()
-                            image_rec += self.reconstruct(edges[:, i_N][:, np.newaxis], do_mask=False)
+                            image_rec += self.reconstruct(edges[:, i_N][:, None], do_mask=False)
                         np.save(matname, MSE)
                         try:
                             os.remove(matname + '_lock')
@@ -458,20 +458,20 @@ class SparseEdges(LogGabor):
 
         # to control if we raise an error on numerical error, we use
         np.seterr(all='ignore')
-        dx = X_ref[:, np.newaxis] - X_comp[np.newaxis, :]
-        dy = Y_ref[:, np.newaxis] - Y_comp[np.newaxis, :]
+        dx = X_ref[:, None] - X_comp[None, :]
+        dy = Y_ref[:, None] - Y_comp[None, :]
         d = np.sqrt(dx**2 + dy**2) / self.pe.N_X  # distance normalized by the image size
-        if self.pe.scale_invariant: d *= np.sqrt(Sf_0_ref[:, np.newaxis]*Sf_0_comp[np.newaxis, :])#*np.sqrt(self.pe.N_X)
+        if self.pe.scale_invariant: d *= np.sqrt(Sf_0_ref[:, None]*Sf_0_comp[None, :])#*np.sqrt(self.pe.N_X)
         d *= self.pe.d_width # distance in visual angle
-        theta = Theta_ref[:, np.newaxis] - Theta_comp[np.newaxis, :]
-        phi = np.arctan2(dy, dx) - np.pi/2 - Theta_comp[np.newaxis, :]
+        theta = Theta_ref[:, None] - Theta_comp[None, :]
+        phi = np.arctan2(dy, dx) - np.pi/2 - Theta_comp[None, :]
         if symmetry: phi -= theta/2
-        loglevel = np.log2(Sf_0_ref[:, np.newaxis]) - np.log2(Sf_0_comp[np.newaxis, :])
+        loglevel = np.log2(Sf_0_ref[:, None]) - np.log2(Sf_0_comp[None, :])
         # putting everything in the right range:
         phi = ((phi + np.pi/2  - np.pi/self.pe.N_phi/2 ) % (np.pi)) - np.pi/2  + np.pi/self.pe.N_phi/2
         theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
-        dphase = phase_ref[:, np.newaxis] - phase_comp[np.newaxis, :]
-        logvalue = np.log2(value_ref[:, np.newaxis]) - np.log2(value_comp[np.newaxis, :])
+        dphase = phase_ref[:, None] - phase_comp[None, :]
+        logvalue = np.log2(value_ref[:, None]) - np.log2(value_comp[None, :])
 
         return d, phi, theta, loglevel, dphase, logvalue
 
@@ -484,7 +484,7 @@ class SparseEdges(LogGabor):
         # normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
         Weights = edges_ref[4, :]
         if self.pe.do_rank: Weights[Weights.argsort()] = np.linspace(1./Weights.size, 1., Weights.size)
-        weights = Weights[:, np.newaxis] * edges_comp[4, :][np.newaxis, :]
+        weights = Weights[:, None] * edges_comp[4, :][None, :]
         if self.pe.weight_by_distance:
             # normalize weights by the relative distance (bin areas increase with radius)
             # it makes sense to give less weight to "far bins"
@@ -493,7 +493,7 @@ class SparseEdges(LogGabor):
             weights[d==0] = 0.
         if not self.pe.multiscale:
             # selecting only co-occurrences at the same scale
-            weights *= (edges_ref[3, :][:, np.newaxis]==edges_comp[3, :][np.newaxis, :])
+            weights *= (edges_ref[3, :][:, None]==edges_comp[3, :][None, :])
         # just checking if we get different results when selecting edges with a similar phase (von Mises profile)
         if self.pe.kappa_phase>0:
             # TODO: should we use the phase information to refine position?
@@ -1116,7 +1116,7 @@ class SparseEdges(LogGabor):
             #CCycle = np.vstack((np.linspace(0, 1, len(experiments)), np.zeros(len(experiments)), np.zeros(len(experiments)))).T
             grad = np.linspace(0., 1., 2*len(experiments))
             grad[1::2] = grad[::2]
-            CCycle = np.array(color)[np.newaxis, :] * grad[:, np.newaxis]
+            CCycle = np.array(color)[None, :] * grad[:, None]
             ax.set_color_cycle(CCycle)
             inset.set_color_cycle(CCycle)
             l0_max, eev = 0., -len(experiments)/2
@@ -1132,7 +1132,7 @@ class SparseEdges(LogGabor):
                         l0_axis = np.linspace(0, N*np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y, N)
                     errorevery_zoom = 1.4**(1.*eev/len(experiments))
                     try:
-                        MSE /= MSE[:, 0][:, np.newaxis]
+                        MSE /= MSE[:, 0][:, None]
                         errorevery = np.max((int(MSE.shape[1]/8*errorevery_zoom), 1))
                         ax.errorbar(l0_axis, MSE.mean(axis=0),
                                     yerr=MSE.std(axis=0), label=label, errorevery=errorevery)
@@ -1192,7 +1192,7 @@ class SparseEdges(LogGabor):
             for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
                 try:
                     imagelist, edgeslist, MSE = mp.process(exp=experiment, name_database=name_database)
-                    MSE /= MSE[:, 0][:, np.newaxis]
+                    MSE /= MSE[:, 0][:, None]
                     N = MSE.shape[1] #number of edges
                     if MSE.min()>threshold: print('the threshold is never reached for', experiment, name_database)
                     try:
@@ -1257,7 +1257,7 @@ class SparseEdges(LogGabor):
                 if isinstance(MSE, str):
                     print ('not finished in ', experiment, name_database)
                     return None
-                MSE /= MSE[:, 0][:, np.newaxis]
+                MSE /= MSE[:, 0][:, None]
                 N = MSE.shape[1] #number of edges
                 l0 = np.log2(mp.oc)/mp.pe.N_X/mp.pe.N_Y
                 absSE.append(MSE.mean())
@@ -1290,14 +1290,14 @@ class SparseEdges(LogGabor):
                 relL0, relL0_std = [], []
                 # computes for the reference
                 imagelist_ref, edgeslist_ref, MSE_ref = mps[ref].process(exp=experiments[ref], name_database=databases[ref])
-                MSE_ref /= MSE_ref[:, 0][:, np.newaxis] # normalize MSE
+                MSE_ref /= MSE_ref[:, 0][:, None] # normalize MSE
                 L0_ref =  np.argmax(MSE_ref<threshold, axis=1)*1. +1
                 if scale: L0_ref *= np.log2(mps[ref].oc)/mps[ref].pe.N_X/mps[ref].pe.N_Y
 #             print("ref-thr - L0_ref=", L0_ref)
 
                 for mp, experiment, name_database, label in zip(mps, experiments, databases, labels):
                     imagelist, edgeslist, MSE = mp.process(exp=experiment, name_database=name_database)
-                    MSE /= MSE[:, 0][:, np.newaxis] # normalize MSE
+                    MSE /= MSE[:, 0][:, None] # normalize MSE
                     N = MSE.shape[1] #number of edges
                     L0 =  np.argmax(MSE<threshold, axis=1)*1.
                     if MSE.min()>threshold: print('the threshold is never reached for', experiment, name_database)
