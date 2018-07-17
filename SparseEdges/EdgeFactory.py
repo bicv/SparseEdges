@@ -52,8 +52,11 @@ class EdgeFactory(SparseEdges):
     def init(self):
         SparseEdges.init(self)
 
-    def get_labels(self, edges, database_labels, filename, croparea, pos_noise=.1, seed=42):
+    def get_labels(self, edges, filename, croparea, database_labels=None, pos_noise=None, seed=None):
         # see "2018-07-09 loading ground truth - associating labels to edges" to tune pos_noise
+        if database_labels is None: database_labels = self.pe.database_labels
+        if pos_noise is None: pos_noise = self.pe.pos_noise
+        if seed is None: seed = self.pe.seed
         np.random.seed(seed)
 
         labels = np.load(os.path.join(database_labels, filename.replace('.png', '.npy')))

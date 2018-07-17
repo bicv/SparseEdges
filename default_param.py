@@ -53,7 +53,7 @@
     'edge_mask': False, # should we use a circular mask to exclude some edges when computing statistics (first- and second-order). True in Geisler et al, 2001.
     'do_rank': False,
     'scale_invariant': True,
-    'multiscale': True,
+    'multiscale': False,
     'kappa_phase': 0.,
     'weight_by_distance': True,
 # SVM PARAMETERS

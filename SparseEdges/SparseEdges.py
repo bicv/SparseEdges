@@ -118,7 +118,7 @@ class SparseEdges(LogGabor):
             ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), facecolor='w')
         ax.axis(c='b', lw=0, frame_on=False)
 
-        if color in ['black', 'redblue', 'brown', 'green', 'blue']: #cocir or chevrons
+        if color in ['black', 'redgreen', 'redblue', 'bluegreen', 'brown', 'green', 'blue']: #cocir or chevrons
             linewidth = self.pe.line_width_chevrons
             if scale is None: scale = self.pe.scale_chevrons
         else:
@@ -360,7 +360,7 @@ class SparseEdges(LogGabor):
         self.binedges_sf_0 = self.binedges_sf_0[::-1]
         self.binedges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
-    def histedges_theta(self, edgeslist=None, mp_theta=None, v_hist=None, fig=None, ax=None, figsize=None, display=True):
+    def histedges_theta(self, edgeslist, mp_theta=None, v_hist=None, fig=None, ax=None, figsize=None, display=True):
         """
         First-order stats
 
@@ -368,7 +368,7 @@ class SparseEdges(LogGabor):
 
         """
         self.init_binedges(mp_theta)
-        if edgeslist is None:
+        if v_hist is None:
             theta = edgeslist[2, ...].ravel()
             value = edgeslist[4, ...].ravel()
 
@@ -380,7 +380,7 @@ class SparseEdges(LogGabor):
                 value = value[mask]
 
             weights = np.absolute(value)/(np.absolute(value)).sum()
-            v_hist, v_theta_edges = np.histogram(theta, bins=self.binedges_theta, density=False, weights=weights)
+            v_hist, v_theta_edges = np.histogram(theta, bins=self.binedges_theta, density=True, weights=weights)
 
         if display:
             # v_hist /= v_hist.sum()
@@ -395,11 +395,10 @@ class SparseEdges(LogGabor):
             ax.bar(self.binedges_theta[:-1]+np.pi, (v_hist)**.5, width=width, color='#32ab9f', align='edge')
             ax.plot(self.binedges_theta, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
             ax.plot(self.binedges_theta+np.pi, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
-            print(self.binedges_theta)
             plt.setp(ax, yticks=[])
             return fig, ax
         else:
-            return v_hist, v_theta_edges
+            return v_hist, self.binedges_theta
 
     def histedges_scale(self, edgeslist, fig=None, ax=None, display=True):
         """
@@ -434,7 +433,7 @@ class SparseEdges(LogGabor):
 
 
     def cooccurence(self, edges_ref, edges_comp=None, symmetry=True):
-        if edges_comp is None: edges_comp = edges_ref
+        if edges_comp is None: edges_comp = edges_ref.copy()
         if self.pe.edge_mask:
             # remove edges whose center position is not on the central disk
             mask = ((edges_ref[1, :]/self.pe.N_X -.5)**2+(edges_ref[0, :]/self.pe.N_Y -.5)**2) < .5**2
@@ -479,10 +478,10 @@ class SparseEdges(LogGabor):
     def cooccurence_hist(self, edges_ref, edges_comp=None, symmetry=True, mode='full'):
         d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(edges_ref, edges_comp, symmetry=symmetry)
 
-        if edges_comp is None: edges_comp = edges_ref
+        if edges_comp is None: edges_comp = edges_ref.copy()
 
         #computing weights
-        # TODO: should we normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
+        # normalize weights by the max (while some images are "weak")? the corr coeff would be an alternate solution... / or simply the rank
         Weights = edges_ref[4, :]
         if self.pe.do_rank: Weights[Weights.argsort()] = np.linspace(1./Weights.size, 1., Weights.size)
         weights = Weights[:, np.newaxis] * edges_comp[4, :][np.newaxis, :]
@@ -491,15 +490,16 @@ class SparseEdges(LogGabor):
             # it makes sense to give less weight to "far bins"
             weights /= (d + 1.e-6) # warning, some are still at the same position d=0...
             # exclude self-occurence
-            weights[d==0] = 0
-#                 weights[np.diag_indices_from(weights)] = 0.
-        # np.fill_diagonal(weights, 0.)
-        # TODO check: if not self.pe.multiscale: weights *= (Sf_0[:, np.newaxis]==Sf_0[inp.newaxis, :])
+            weights[d==0] = 0.
+        if not self.pe.multiscale:
+            # selecting only co-occurrences at the same scale
+            weights *= (edges_ref[3, :][:, np.newaxis]==edges_comp[3, :][np.newaxis, :])
         # just checking if we get different results when selecting edges with a similar phase (von Mises profile)
         if self.pe.kappa_phase>0:
             # TODO: should we use the phase information to refine position?
             # https://en.wikipedia.org/wiki/Atan2
             weights *= np.exp(self.pe.kappa_phase*np.cos(np.arctan2(dphase)))
+            # there may be a locus depending on dx and value
 
         if weights.sum()>0:
             weights /= weights.sum()
@@ -508,12 +508,12 @@ class SparseEdges(LogGabor):
             weights = np.ones_like(weights)
 
         #computing histogram
+        self.init_binedges()
         v_hist_, edges_ = np.histogramdd([d.ravel(), phi.ravel(), theta.ravel(), loglevel.ravel()], #data,
                                          bins=(self.binedges_d, self.binedges_phi, self.binedges_theta, self.binedges_loglevel),
                                          normed=False, # TODO check if correct True,
                                          weights = weights
                                         )
-#                 print v_hist_.sum(), v_hist_.min(), v_hist_.max(), d.ravel().shape
         if v_hist_.sum()<.01: self.log.debug(' less than 1 percent of co-occurences within ranges: %f ', v_hist_.sum())
 
         return v_hist_
