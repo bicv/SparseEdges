@@ -48,7 +48,7 @@
     'N_Dtheta': 24, # equal to n_theta: 24 to avoid artifacts
     'N_phi': 12, #
     'N_scale': 5, #
-    'loglevel_max': 7, # used for the statistics
+    'loglevel_max': 7., # used for the statistics
 # doing the computation on a circular mask
     'edge_mask': False, # should we use a circular mask to exclude some edges when computing statistics (first- and second-order). True in Geisler et al, 2001.
     'do_rank': False,
