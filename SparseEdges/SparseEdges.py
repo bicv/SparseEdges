@@ -892,7 +892,7 @@ class SparseEdges(LogGabor):
                 pass
 
         # 3- Doing the independence check for this set
-        if not(locked):
+        if not(locked) and self.pe.do_indepcheck:
             if not(os.path.isdir(self.pe.figpath)): os.mkdir(self.pe.figpath)
             txtname = os.path.join(self.pe.figpath, exp + '_dependence_' + name_database + note + '.txt')
             if not(os.path.isfile(txtname)) and not(os.path.isfile(txtname + '_lock')):

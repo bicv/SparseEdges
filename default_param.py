@@ -81,6 +81,7 @@
 # PATHS
     'figpath': 'results',
     'do_edgedir': False,
+    'do_indepcheck': False,
     'edgefigpath': 'results/edges',
     'matpath': 'cache_dir',
     'edgematpath': 'cache_dir/edges',
