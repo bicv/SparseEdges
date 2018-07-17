@@ -346,28 +346,29 @@ class SparseEdges(LogGabor):
     # return events, droplets_mc
 
 
-    def init_binedges(self):
+    def init_binedges(self, mp_theta=None):
         # configuring histograms
         # sequence of scalars,it defines the bin edges, including the rightmost edge.
         self.binedges_d = np.linspace(self.pe.d_min, self.pe.d_max, self.pe.N_r+1)
         self.binedges_phi = np.linspace(-np.pi/2, np.pi/2, self.pe.N_phi+1) + np.pi/self.pe.N_phi/2
-        theta = np.linspace(-np.pi/2, np.pi/2, self.pe.N_Dtheta+1)[1:]
-        theta_bin = (theta + np.hstack((theta[-1]-np.pi, theta[:-1]))) /2
+        if mp_theta is None:
+            mp_theta = np.linspace(-np.pi/2, np.pi/2, self.pe.N_Dtheta+1)[1:]
+        theta_bin = (mp_theta + np.hstack((mp_theta[-1]-np.pi, mp_theta[:-1]))) /2
         self.binedges_theta = np.hstack((theta_bin, theta_bin[0]+np.pi))
         # self.binedges_sf_0 = 2**np.arange(np.ceil(np.log2(self.pe.N_X)))
         self.binedges_sf_0 = 1. / np.logspace(.5, self.n_levels+.5, self.n_levels+1, base=self.pe.base_levels)
         self.binedges_sf_0 = self.binedges_sf_0[::-1]
         self.binedges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
-    def histedges_theta(self, edgeslist, v_hist=None, fig=None, ax=None, figsize=None, display=True):
+    def histedges_theta(self, edgeslist=None, mp_theta=None, v_hist=None, fig=None, ax=None, figsize=None, display=True):
         """
         First-order stats
 
         p(theta | I )
 
         """
-        self.init_binedges()
-        if v_hist is None:
+        self.init_binedges(mp_theta)
+        if edgeslist is None:
             theta = edgeslist[2, ...].ravel()
             value = edgeslist[4, ...].ravel()
 
@@ -394,7 +395,7 @@ class SparseEdges(LogGabor):
             ax.bar(self.binedges_theta[:-1]+np.pi, (v_hist)**.5, width=width, color='#32ab9f', align='edge')
             ax.plot(self.binedges_theta, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
             ax.plot(self.binedges_theta+np.pi, np.ones_like(self.binedges_theta)*np.sqrt(v_hist.mean()), 'r--')
-
+            print(self.binedges_theta)
             plt.setp(ax, yticks=[])
             return fig, ax
         else:
