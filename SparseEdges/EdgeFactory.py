@@ -182,9 +182,12 @@ class EdgeFactory(SparseEdges):
                                     if mode=='full':
                                         v_hist /= v_hist.sum()
                                     else:
-                                        v_hist /= v_hist.sum(axis=-1)[:, None]
-                                    # ravel and append for all images
-                                    hists.append(v_hist.ravel())
+                                        N_edge = v_hist.shape[-1]
+                                        for i_edge in range(N_edge):
+                                            v_hist[..., i_edge] /= v_hist[..., i_edge].sum()
+                                    # append for each image
+                                    hists.append(v_hist)
+
                                 hists = np.array(hists)
                                 np.save(matname_hist, hists)
                                 self.log.info("Histogram done in %0.3fs", (time.time() - t0))
@@ -206,20 +209,32 @@ class EdgeFactory(SparseEdges):
                     try:
                         hists = np.load(matname_hist)
                         for i_image in range(hists.shape[0]):
-                            X_[feature_].append(hists[i_image, :])
+                            if mode=='full':
+                                X_[feature_].append(hists[i_image, ...].ravel())
+                            else:
+                                for i_edge in range(N_edge):
+                                    X_[feature_].append(hists[i_image, ..., i_edge].ravel())
                     except Exception as e:
                         self.log.warn(' >> Missing histogram, skipping SVM : %s ', e)
                         locked = True
                         return None
-            # TODO simplify the following
-            for i_database, name_database in enumerate(databases):
-                matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
+            # DONE? simplify the following
+            for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
+                imagelist, edgeslist, MSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
+                # matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
                 try:
-                    hists = np.load(matname_hist)
-                    for i_image in range(hists.shape[0]):
-                        y_.append(i_database)
+                    #hists = np.load(matname_hist)
+                    if mode=='full':
+                        for i_image, (filename, croparea) in enumerate(imagelist):
+                        #for i_image in range(hists.shape[0]):
+                            y_.append(i_database)
+                    else:
+                        for i_image, (filename, croparea) in enumerate(imagelist):
+                            labels, y__ = self.get_labels(edgeslist[:, :, i_image], filename, croparea, database_labels=database_labels)
+                            y_.append(y__)
+                    print(name_database, y_)
                 except Exception as e:
-                    self.log.warn(' >> Missing histogram, skipping SVM : %s ', e)
+                    self.log.warn(' >> Failed the labelling, skipping SVM : %s ', e)
                     locked = True
                     return None
 

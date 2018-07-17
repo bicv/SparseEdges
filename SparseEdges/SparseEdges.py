@@ -481,9 +481,9 @@ class SparseEdges(LogGabor):
 
         if mode=='edge':
             N_edge = edges_ref.shape[1]
-            v_hist = np.zeros((N_edge, self.pe.N_r, self.pe.N_phi, self.pe.N_Dtheta, self.pe.N_scale))
+            v_hist = np.zeros((self.pe.N_r, self.pe.N_phi, self.pe.N_Dtheta, self.pe.N_scale, N_edge))
             for i_edge in range(N_edge):
-                v_hist[i_edge, ...] = self.cooccurence_hist(edges_ref=edges_ref[:, i_edge][:, None], edges_comp=edges_comp, symmetry=symmetry, mode='full')
+                v_hist[..., i_edge] = self.cooccurence_hist(edges_ref=edges_ref[:, i_edge][:, None], edges_comp=edges_comp, symmetry=symmetry, mode='full')
             return v_hist
         else:
             d, phi, theta, loglevel, dphase, logvalue = self.cooccurence(edges_ref, edges_comp, symmetry=symmetry)
