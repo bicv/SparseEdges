@@ -42,7 +42,7 @@
     'MP_alpha': .7, # ratio of inhibition in alpha-Matching Pursuit
 # parameters for computing the histograms
     'd_width': 45., # Geisler 1.23 deg (full image = 45deg)
-    'd_min': .5, # Geisler 1.23 deg (full image = 45deg)
+    'd_min': .1, # Geisler 1.23 deg (full image = 45deg)
     'd_max': 2., # Geisler 1.23 deg (full image = 45deg)
     'N_r': 6, #
     'N_Dtheta': 24, # equal to n_theta: 24 to avoid artifacts

@@ -72,7 +72,7 @@ class EdgeFactory(SparseEdges):
 
     def svm(self, exp, opt_notSVM='', opt_SVM='', databases=['serre07_distractors', 'serre07_targets'],
             edgeslists=[None, None], database_labels=None,
-            feature='full', kernel = 'precomputed', KL_type='JSD', noise=0.):
+            feature='full', kernel='precomputed', KL_type='JSD', noise=0.):
         """
         outline:
 
@@ -89,7 +89,6 @@ class EdgeFactory(SparseEdges):
         """
         import time
         time.sleep(.1*np.random.rand())
-
         # DEFINING FILENAMES
         # put here thing that do change the histogram
         # opt_notSVM = opt_notSVM # (this should be normally passed to exp, as in 'classifier_noise')
@@ -112,10 +111,11 @@ class EdgeFactory(SparseEdges):
             features = ['first', 'full']
         else:
             features = [feature]
-
         ###############################################################################
         # Process all images to extract edges and plot relevant histograms
         n_databases = len(databases)
+        mode = 'full' if n_databases>1 else 'edge'
+        # print('mode', mode)  #DEBUG
         for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
             if edgeslist is None:
                 imagelist, edgeslist, MSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
@@ -123,6 +123,7 @@ class EdgeFactory(SparseEdges):
                 imagelist = 'ok'
 
         if os.path.isfile(matname_score):
+            # print(matname_score)  #DEBUG
             fone_score = np.load(matname_score)
             self.log.warn("=> Accuracy = %0.2f +/- %0.2f in %s ", fone_score.mean(), fone_score.std(), txtname)
             return fone_score
@@ -136,7 +137,7 @@ class EdgeFactory(SparseEdges):
                 ###############################################################################
                 # Download the data, if not already on disk and saves it as numpy arrays
                 n_databases = len(databases)
-                mode = 'full' if n_databases>1 else 'edge'
+
                 for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
                     matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
 
@@ -302,14 +303,17 @@ class EdgeFactory(SparseEdges):
                     for feature_ in features:
                         X_test_ = np.hstack((X_test_, X_test[feature_]))
                         X_train_ = np.hstack((X_train_, X_train[feature_]))
-                    dc = dc.fit(X_train_, y_train)
-                    self.log.warn("Sanity check with a dummy classifier:")
-                    self.log.warn("score = %f ", dc.score(X_test_, y_test))#, scoring=metrics.f1_score))
+                    if y_train.size > 0:
+                        dc = dc.fit(X_train_, y_train)
+                        self.log.warn("Sanity check with a dummy classifier:")
+                        self.log.warn("score = %f ", dc.score(X_test_, y_test))#, scoring=metrics.f1_score))
                 except Exception as e:
                     self.log.error("Failed doing the dummy classifier : %s ", e)
                 ###############################################################################
                 ###############################################################################
                 # 3- preparing the gram matrix
+                if y_train.size == 0: break
+
                 if not(kernel == 'rbf'):
                     # use KL distance as my kernel
                     kernel = 'precomputed'
@@ -470,35 +474,35 @@ class EdgeFactory(SparseEdges):
                     with open(txtname, 'w') as f: f.write(results)
                 self.log.info("Prediction on the testing set done in %0.3fs", (time.time() - t0))
 
-                if edgeslist is None:
-                    self.log.info(">> compiling results ")
-                    t0 = time.time()
-                    # tested_indices is the index of the image that is tested
-                    # is_target is 1 if it is a target
-                    # predicted_target is the response of the categorizer
-                    imagelists = [self.get_imagelist(exp, name_database=databases[0]),
-                                  self.get_imagelist(exp, name_database=databases[1])]
-                    N_image = len(imagelists[0])
-                    matname_score_dic = txtname.replace(self.pe.figpath, self.pe.matpath).replace('.txt', '.pickle')
-                    try:
-                        with open(matname_score_dic, "wb" ) as f:
-                            results = pickle.load(f)
-                    except Exception:
-                        results = {}
-                        # setting up dictionary counting for each file how many times (integer) it is tested in total, how many times it is a target
-                        for i_database in range(2):
-                            for filename_, croparea_ in imagelists[i_database]:
-                                results[filename_] = [0, 0]
-
-#                     for vec in [tested_indices, is_target, predicted_target]: print len(vec)
-                    for i_image, in_cat, pred_cat in zip(np.array(tested_indices).ravel(), np.array(is_target).ravel(), np.array(predicted_target).ravel()):
-#                         print i_image, in_cat, pred_cat
-                        filename_, croparea_ = imagelists[in_cat][i_image - in_cat*N_image]
-                        results[filename_][0] +=  1 # how many times in total
-                        results[filename_][1] +=  1*(pred_cat==1) # how many times it is a target
-                    with open(matname_score_dic, "wb" ) as f:
-                        pickle.dump(results, f)
-                    self.log.info("Computing matname_score_dic done in %0.3fs", (time.time() - t0))
+#                 if True: # edgeslist is None: # ???
+#                     self.log.info(">> compiling results ")
+#                     t0_matname_score_dic = time.time()
+#                     # tested_indices is the index of the image that is tested
+#                     # is_target is 1 if it is a target
+#                     # predicted_target is the response of the categorizer
+#                     imagelists = [self.get_imagelist(exp, name_database=databases[0]),
+#                                   self.get_imagelist(exp, name_database=databases[1])]
+#                     N_image = len(imagelists[0])
+#                     matname_score_dic = txtname.replace(self.pe.figpath, self.pe.matpath).replace('.txt', '.pickle')
+#                     try:
+#                         with open(matname_score_dic, "wb" ) as f:
+#                             results = pickle.load(f)
+#                     except Exception:
+#                         results = {}
+#                         # setting up dictionary counting for each file how many times (integer) it is tested in total, how many times it is a target
+#                         for i_database in range(2):
+#                             for filename_, croparea_ in imagelists[i_database]:
+#                                 results[filename_] = [0, 0]
+#
+# #                     for vec in [tested_indices, is_target, predicted_target]: print len(vec)
+#                     for i_image, in_cat, pred_cat in zip(np.array(tested_indices).ravel(), np.array(is_target).ravel(), np.array(predicted_target).ravel()):
+# #                         print i_image, in_cat, pred_cat
+#                         filename_, croparea_ = imagelists[in_cat][i_image - in_cat*N_image]
+#                         results[filename_][0] +=  1 # how many times in total
+#                         results[filename_][1] +=  1*(pred_cat==1) # how many times it is a target
+#                     with open(matname_score_dic, "wb" ) as f:
+#                         pickle.dump(results, f)
+#                     self.log.info("Computing matname_score_dic done in %0.3fs", (time.time() - t0_matname_score_dic))
                 t_cv = time.time()
                 self.log.warn('Cross-validation in %s (%d/%d) - elaspsed = %0.1f s - ETA = %0.1f s ' % (matname_score, i_cv+1, self.pe.N_svm_cv, t_cv-t0_cv, (self.pe.N_svm_cv-i_cv-1)*(t_cv-t0_cv)/(i_cv+1) ) )
 

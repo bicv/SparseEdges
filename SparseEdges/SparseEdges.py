@@ -461,8 +461,10 @@ class SparseEdges(LogGabor):
         np.seterr(all='ignore')
         dx = X_ref[:, None] - X_comp[None, :]
         dy = Y_ref[:, None] - Y_comp[None, :]
-        d = np.sqrt(dx**2 + dy**2) / self.pe.N_X  # distance normalized by the image size
-        if self.pe.scale_invariant: d *= np.sqrt(Sf_0_ref[:, None]*Sf_0_comp[None, :])#*np.sqrt(self.pe.N_X)
+        d = np.sqrt(dx**2 + dy**2) / self.pe.N_X  # distance normalized by the image size (H)
+        if self.pe.scale_invariant:
+            d /= np.sqrt(np.median(Sf_0_ref)*np.median(Sf_0_comp))
+            d *= np.sqrt(Sf_0_ref[:, None]*Sf_0_comp[None, :])
         d *= self.pe.d_width # distance in visual angle
         theta = Theta_ref[:, None] - Theta_comp[None, :]
         phi = np.arctan2(dy, dx) - np.pi/2 - Theta_comp[None, :]
@@ -473,7 +475,6 @@ class SparseEdges(LogGabor):
         theta = ((theta + np.pi/2 - np.pi/self.pe.n_theta/2)  % (np.pi) ) - np.pi/2  + np.pi/self.pe.n_theta/2
         dphase = phase_ref[:, None] - phase_comp[None, :]
         logvalue = np.log2(value_ref[:, None]) - np.log2(value_comp[None, :])
-
         return d, phi, theta, loglevel, dphase, logvalue
 
     def cooccurence_hist(self, edges_ref, edges_comp=None, symmetry=True, mode='full'):
@@ -498,7 +499,8 @@ class SparseEdges(LogGabor):
                 # it makes sense to give less weight to "far bins"
                 weights /= (d + 1.e-6) # warning, some are still at the same position d=0...
                 # exclude self-occurence
-                weights[d==0] = 0.
+                # weights[d==0] = 0.
+                weights[d<self.pe.d_min] = 0.
             if not self.pe.multiscale:
                 # selecting only co-occurrences at the same scale
                 weights *= (edges_ref[3, :][:, None]==edges_comp[3, :][None, :])
@@ -509,18 +511,14 @@ class SparseEdges(LogGabor):
                 weights *= np.exp(self.pe.kappa_phase*np.cos(np.arctan2(dphase)))
                 # there may be a locus depending on dx and value
 
-            if weights.sum()>0:
-                weights /= weights.sum()
-                weights = weights.ravel()
-            else:
-                weights = np.ones_like(weights)
+            weights /= weights.sum()
 
             #computing histogram
             self.init_binedges()
             v_hist_, edges_ = np.histogramdd([d.ravel(), phi.ravel(), theta.ravel(), loglevel.ravel()], #data,
                                              bins=(self.binedges_d, self.binedges_phi, self.binedges_theta, self.binedges_loglevel),
-                                             normed=False, # TODO check if correct True,
-                                             weights = weights
+                                             normed=True, # TODO check if correct True,
+                                             weights = weights.ravel()
                                             )
             if v_hist_.sum()<.01: self.log.debug(' less than 1 percent of co-occurences within ranges: %f ', v_hist_.sum())
 
