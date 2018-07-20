@@ -67,7 +67,7 @@ class EdgeFactory(SparseEdges):
             Y += pos_noise * np.random.randn(self.pe.N) / sf_0
         X = [int(np.max((0, np.min((X_, self.pe.N_X-1))))) for X_ in X]
         Y = [int(np.max((0, np.min((Y_, self.pe.N_Y-1))))) for Y_ in Y]
-        y = labels[X, Y]
+        y = labels[X, Y].astype(np.int)
         return labels, y
 
     def svm(self, exp, opt_notSVM='', opt_SVM='', databases=['serre07_distractors', 'serre07_targets'],
@@ -122,8 +122,8 @@ class EdgeFactory(SparseEdges):
             else:
                 imagelist = 'ok'
 
+        # print('matname_score', matname_score)  #DEBUG
         if os.path.isfile(matname_score):
-            # print(matname_score)  #DEBUG
             fone_score = np.load(matname_score)
             self.log.warn("=> Accuracy = %0.2f +/- %0.2f in %s ", fone_score.mean(), fone_score.std(), txtname)
             return fone_score
@@ -213,37 +213,37 @@ class EdgeFactory(SparseEdges):
                             if mode=='full':
                                 X_[feature_].append(hists[i_image, ...].ravel())
                             else:
+                                N_edge = hists.shape[-1]
                                 for i_edge in range(N_edge):
-                                    X_[feature_].append(hists[i_image, ..., i_edge].ravel())
+                                    X_[feature_].append([hists[i_image, ..., i_edge].ravel()])
                     except Exception as e:
                         self.log.warn(' >> Missing histogram, skipping SVM : %s ', e)
                         locked = True
                         return None
-            # DONE? simplify the following
+            # appending all data for all images
             for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
                 imagelist, edgeslist, MSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
-                # matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
                 try:
-                    #hists = np.load(matname_hist)
                     if mode=='full':
                         for i_image, (filename, croparea) in enumerate(imagelist):
-                        #for i_image in range(hists.shape[0]):
                             y_.append(i_database)
                     else:
                         for i_image, (filename, croparea) in enumerate(imagelist):
                             labels, y__ = self.get_labels(edgeslist[:, :, i_image], filename, croparea, database_labels=database_labels)
                             y_.append(y__)
-                    print(name_database, y_)
                 except Exception as e:
                     self.log.warn(' >> Failed the labelling, skipping SVM : %s ', e)
                     locked = True
                     return None
 
-            # starting SVM
+            # converting to numpy
             X = {}
             for feature_ in features:
                 X[feature_] = np.array(X_[feature_])
+                print('feature_', feature_, 'X[feature_].shape', X[feature_].shape)  #DEBUG
             y = np.array(y_)
+            print('name_database', name_database, 'y.shape', y.shape, 'y', y)  #DEBUG
+
 
             # do the classification
             fone_score = np.zeros(self.pe.N_svm_cv)
@@ -253,17 +253,21 @@ class EdgeFactory(SparseEdges):
 #             random_state = int(self.pe.seed + random_state % 4294967295)
             t0_cv = time.time()
             for i_cv in range(self.pe.N_svm_cv):
+                print('i_cv', i_cv, 'self.pe.N_svm_cv', self.pe.N_svm_cv, 'fone_score', fone_score)  #DEBUG
+
                 ###############################################################################
                 # 1- Split into a training set and a test set using a ShuffleSplit + doing that in parallel for the differrent features to test
                 from sklearn.model_selection import ShuffleSplit
                 rs = ShuffleSplit(n_splits=1, test_size=self.pe.svm_test_size, random_state=i_cv)#random_state + i_cv)
                 # split into a training and testing set
                 for index_train, index_test in rs.split(X): pass
+                print('index_train', index_train, 'index_test', index_test)  #DEBUG
                 X_train, X_test, y_train, y_test = {}, {}, [], []
                 for feature_ in features:
                     X_train[feature_], X_test[feature_] = X[feature_][index_train, :], X[feature_][index_test, :]
                 y_train, y_test =  y[index_train], y[index_test]
                 n_train, n_test = len(y_train), len(y_test)
+                print('n_train', n_train, 'n_test', n_test)  #DEBUG
                 is_target.append(y_test)
                 tested_indices.append(index_test)
 
