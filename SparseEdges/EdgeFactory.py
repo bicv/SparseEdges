@@ -355,6 +355,9 @@ class EdgeFactory(SparseEdges):
                     gram_train = np.zeros((n_train, n_train))
                     gram_test = np.zeros((n_train, n_test))
                     for feature_ in features:
+                        print('feature_', feature_, 'X_train[feature_].shape', X_train[feature_].shape)  #DEBUG
+                        print('feature_', feature_, 'X_test[feature_].shape', X_test[feature_].shape)  #DEBUG
+
                         # compute the average KL
                         KL_0 = 0
                         if mode=='full':
