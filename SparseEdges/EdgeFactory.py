@@ -213,9 +213,13 @@ class EdgeFactory(SparseEdges):
                             if mode=='full':
                                 X_[feature_].append(hists[i_image, ...].ravel())
                             else:
+                                X__ = []
                                 N_edge = hists.shape[-1]
                                 for i_edge in range(N_edge):
-                                    X_[feature_].append([hists[i_image, ..., i_edge].ravel()])
+                                    X__.append(hists[i_image, ..., i_edge].ravel())
+                                X_[feature_].append(X__)
+                                print( 'np.array(X__).shape', np.array(X__).shape, 'np.array(X_[feature_]).shape', np.array(X_[feature_]).shape)  #DEBUG
+
                     except Exception as e:
                         self.log.warn(' >> Missing histogram, skipping SVM : %s ', e)
                         locked = True
@@ -253,6 +257,7 @@ class EdgeFactory(SparseEdges):
 #             random_state = int(self.pe.seed + random_state % 4294967295)
             t0_cv = time.time()
             for i_cv in range(self.pe.N_svm_cv):
+                # >>> YOU ARE HERE <<< DEBUGGING SVM
                 print('i_cv', i_cv, 'self.pe.N_svm_cv', self.pe.N_svm_cv, 'fone_score', fone_score)  #DEBUG
 
                 ###############################################################################
