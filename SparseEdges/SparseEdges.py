@@ -88,16 +88,19 @@ class SparseEdges(LogGabor):
                 C[:, :, i_theta, i_sf_0] -= self.FTfilter(lg_star, FT_lg, full=True)
         return C
 
-    def reconstruct(self, edges, do_mask=False):
+    def reconstruct(self, edges, do_mask=False, do_energy=False):
         image = np.zeros((self.pe.N_X, self.pe.N_Y))
         for i_edge in range(edges.shape[1]):
-            image += self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
+            atom = self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
                                 self.loggabor(
                                                 edges[0, i_edge], edges[1, i_edge],
                                                 theta=edges[2, i_edge], B_theta=self.pe.B_theta,
                                                 sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
                                                 ),
                                 full=False)
+            if do_energy: atom = atom**2
+            image += atom
+
         if do_mask: image *= self.mask
         return image
 
