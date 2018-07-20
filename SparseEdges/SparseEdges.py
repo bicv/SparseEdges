@@ -91,6 +91,7 @@ class SparseEdges(LogGabor):
     def reconstruct(self, edges, do_mask=False, do_energy=False):
         image = np.zeros((self.pe.N_X, self.pe.N_Y))
         for i_edge in range(edges.shape[1]):
+            if not do_energy:
             atom = self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
                                 self.loggabor(
                                                 edges[0, i_edge], edges[1, i_edge],
@@ -98,7 +99,22 @@ class SparseEdges(LogGabor):
                                                 sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
                                                 ),
                                 full=False)
-            if do_energy: atom = atom**2
+            else: # TODO: this may simplify in the call to LogGabor
+                atom = self.invert(edges[4, i_edge] * np.exp(1j*np.pi) *
+                                    self.loggabor(
+                                                    edges[0, i_edge], edges[1, i_edge],
+                                                    theta=edges[2, i_edge], B_theta=self.pe.B_theta,
+                                                    sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
+                                                    ),
+                                    full=False)**2
+                atom += self.invert(edges[4, i_edge] * np.exp(1j*2*np.pi) *
+                                    self.loggabor(
+                                                    edges[0, i_edge], edges[1, i_edge],
+                                                    theta=edges[2, i_edge], B_theta=self.pe.B_theta,
+                                                    sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
+                                                    ),
+                                    full=False)**2
+                atom = np.sqrt(atom)
             image += atom
 
         if do_mask: image *= self.mask
