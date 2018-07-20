@@ -99,6 +99,7 @@ class EdgeFactory(SparseEdges):
         if self.pe.svm_norm: opt_SVM += '_norm'
         name_databases = ''
         for database in databases: name_databases += database + '_'
+        # print('name_database', name_database)  #DEBUG
 
         txtname = os.path.join(self.pe.figpath, exp + '_SVM_' + name_databases + feature + opt_notSVM + opt_SVM +'.txt')
         matname_score = txtname.replace(self.pe.figpath, self.pe.matpath).replace('.txt', '.npy')
@@ -201,6 +202,7 @@ class EdgeFactory(SparseEdges):
                                 self.log.error(' xxx when trying to remove it, I found no lock file named %s_lock', matname_hist)
 
             # gather data
+            # TODO faster reshaping
             locked = False
             X_, y_ = {}, []
             for feature_ in features:
@@ -218,7 +220,7 @@ class EdgeFactory(SparseEdges):
                                 for i_edge in range(N_edge):
                                     X__.append(hists[i_image, ..., i_edge].ravel())
                                 X_[feature_].append(X__)
-                                print( 'np.array(X__).shape', np.array(X__).shape, 'np.array(X_[feature_]).shape', np.array(X_[feature_]).shape)  #DEBUG
+                                # print( 'np.array(X__).shape', np.array(X__).shape, 'np.array(X_[feature_]).shape', np.array(X_[feature_]).shape)  #DEBUG
 
                     except Exception as e:
                         self.log.warn(' >> Missing histogram, skipping SVM : %s ', e)
@@ -246,44 +248,45 @@ class EdgeFactory(SparseEdges):
                 X[feature_] = np.array(X_[feature_])
                 print('feature_', feature_, 'X[feature_].shape', X[feature_].shape)  #DEBUG
             y = np.array(y_)
-            print('name_database', name_database, 'y.shape', y.shape, 'y', y)  #DEBUG
+            print('y.shape', y.shape)  #DEBUG
+            # print('y.shape', y.shape, 'y', y)  #DEBUG
 
 
             # do the classification
             fone_score = np.zeros(self.pe.N_svm_cv)
-            tested_indices, is_target, predicted_target = [], [], []
-#             import hashlib
-#             random_state = int("0x" +  hashlib.sha224(matname_score).hexdigest(), 0)*1.
-#             random_state = int(self.pe.seed + random_state % 4294967295)
             t0_cv = time.time()
             for i_cv in range(self.pe.N_svm_cv):
-                # >>> YOU ARE HERE <<< DEBUGGING SVM
                 print('i_cv', i_cv, 'self.pe.N_svm_cv', self.pe.N_svm_cv, 'fone_score', fone_score)  #DEBUG
 
                 ###############################################################################
                 # 1- Split into a training set and a test set using a ShuffleSplit + doing that in parallel for the differrent features to test
                 from sklearn.model_selection import ShuffleSplit
-                rs = ShuffleSplit(n_splits=1, test_size=self.pe.svm_test_size, random_state=i_cv)#random_state + i_cv)
+                rs = ShuffleSplit(n_splits=1, test_size=self.pe.svm_test_size, random_state=self.pe.seed + i_cv)
                 # split into a training and testing set
-                for index_train, index_test in rs.split(X): pass
+                for index_train, index_test in rs.split(y): pass
                 print('index_train', index_train, 'index_test', index_test)  #DEBUG
-                X_train, X_test, y_train, y_test = {}, {}, [], []
-                for feature_ in features:
-                    X_train[feature_], X_test[feature_] = X[feature_][index_train, :], X[feature_][index_test, :]
-                y_train, y_test =  y[index_train], y[index_test]
-                n_train, n_test = len(y_train), len(y_test)
+                X_train, X_test = {}, {}
+                if mode=='full':
+                    for feature_ in features:
+                        X_train[feature_], X_test[feature_] = X[feature_][index_train, :], X[feature_][index_test, :]
+                    y_train, y_test =  y[index_train].copy(), y[index_test].copy()
+                else:
+                    for feature_ in features:
+                        X_train[feature_], X_test[feature_] = X[feature_][index_train, :, :].ravel(), X[feature_][index_test, :, :].ravel()
+                    y_train, y_test =  y[index_train, :].copy(), y[index_test, :].copy()
+                n_train, n_test = y_train.shape[0], y_test.shape[0]
                 print('n_train', n_train, 'n_test', n_test)  #DEBUG
-                is_target.append(y_test)
-                tested_indices.append(index_test)
+                # is_target.append(y_test)
+                # tested_indices.append(index_test)
 
-                # 2- normalization
+                # 2- normalization TODO: check in mode edge if that normalization is fine
                 if self.pe.svm_log and (kernel == 'rbf'):
                     # trying out if some log-likelihood like representation is better for classification (makes sense when thinking that animals would have some profile modulating all probabilities)
                     eps = 1.e-16
                     for feature_ in features:
-                        m_hist_1 = X_train[feature_][y_train==1, :].mean(axis=0) # average histogram for distractors x on the training set
-                        for i_image in range(X_train[feature_].shape[0]): X_train[feature_][i_image, :] = np.log(X_train[feature_][i_image, :] + eps)-np.log(m_hist_1 + eps)
-                        for i_image in range(X_test[feature_].shape[0]): X_test[feature_][i_image, :] = np.log(X_test[feature_][i_image, :] + eps)-np.log(m_hist_1 + eps)
+                        m_hist_1 = X_train[feature_][y_train==1, ...].mean(axis=0) # average histogram for distractors x on the training set
+                        for i_image in range(X_train[feature_].shape[0]): X_train[feature_][i_image, ...] = np.log(X_train[feature_][i_image, ...] + eps)-np.log(m_hist_1 + eps)
+                        for i_image in range(X_test[feature_].shape[0]): X_test[feature_][i_image, ...] = np.log(X_test[feature_][i_image, ...] + eps)-np.log(m_hist_1 + eps)
                 if self.pe.svm_norm:
                     if (kernel == 'rbf'):
                         from sklearn.preprocessing import StandardScaler
@@ -292,22 +295,22 @@ class EdgeFactory(SparseEdges):
                             X_train[feature_] = scaler.fit_transform(X_train[feature_])
                             scaler.fit(X[feature_])
                             X_test[feature_] = scaler.transform(X_test[feature_])
-                    else: # applying a "prior" (the probability represents the probability /knowing/ it belongs to a natural set)
+                    else: # applying a "prior" (the probability represents the probability /knowing/ it belongs to the reference set containging all categories)
                         eps = 1.e-16
                         for feature_ in features:
-                            m_hist_1 = X_train[feature_][y_train==1, :].mean(axis=0) # average histogram for distractors x on the training set
+                            m_hist_1 = X_train[feature_][y_train==1, ...].mean(axis=0) # average histogram for distractors x on the training set
                             for i_image in range(n_train):
-                                X_train[feature_][i_image, :] = X_train[feature_][i_image, :]/(m_hist_1 + eps)
-                                X_train[feature_][i_image, :] /= X_train[feature_][i_image, :].sum()
+                                X_train[feature_][i_image, ...] = X_train[feature_][i_image, ...]/(m_hist_1 + eps)
+                                X_train[feature_][i_image, ...] /= X_train[feature_][i_image, ...].sum()
                             for i_image in range(n_test):
-                                X_test[feature_][i_image, :] = X_test[feature_][i_image, :]/(m_hist_1 + eps)
-                                X_test[feature_][i_image, :] /= X_test[feature_][i_image, :].sum()
+                                X_test[feature_][i_image, ...] = X_test[feature_][i_image, ...]/(m_hist_1 + eps)
+                                X_test[feature_][i_image, ...] /= X_test[feature_][i_image, ...].sum()
 
                 try:
                     # sanity check with a dummy classifier:
                     from sklearn.dummy import DummyClassifier
                     from sklearn import metrics
-                    dc = DummyClassifier(strategy='most_frequent', random_state=0)
+                    dc = DummyClassifier(strategy='most_frequent', random_state=self.pe.seed+i_cv)
                     X_train_, X_test_ = np.zeros((n_train, 0)), np.zeros((n_test, 0))
                     for feature_ in features:
                         X_test_ = np.hstack((X_test_, X_test[feature_]))
@@ -320,8 +323,12 @@ class EdgeFactory(SparseEdges):
                     self.log.error("Failed doing the dummy classifier : %s ", e)
                 ###############################################################################
                 ###############################################################################
+                # >>> YOU ARE HERE <<< DEBUGGING SVM
+
                 # 3- preparing the gram matrix
-                if y_train.size == 0: break
+                if y_train.size == 0:
+                    self.log.error("preparing the gram matrix but y_train.size == 0 ")
+                    break
 
                 if not(kernel == 'rbf'):
                     # use KL distance as my kernel
@@ -338,26 +345,56 @@ class EdgeFactory(SparseEdges):
                         else:
                             return np.exp(-d/KL_0)
 
-                    n_train = X_train[feature_].shape[0]
-                    n_test = X_test[feature_].shape[0]
+                    if mode=='full':
+                        n_train = y_train.shape[0]
+                        n_test = y_test.shape[0]
+                    else:
+                        n_train = y_train.shape[0]*y_train.shape[1]
+                        n_test = y_test.shape[0]*y_test.shape[1]
+
                     gram_train = np.zeros((n_train, n_train))
                     gram_test = np.zeros((n_train, n_test))
                     for feature_ in features:
                         # compute the average KL
                         KL_0 = 0
-                        for i_ in range(X_train[feature_].shape[0]):
-                            for j_ in range(X_train[feature_].shape[0]):
-                                KL_0 += distance(X_train[feature_][i_, :], X_train[feature_][j_, :], KL_type=KL_type)
+                        if mode=='full':
+                            for i_ in range(X_train[feature_].shape[0]):
+                                for j_ in range(X_train[feature_].shape[0]):
+                                    KL_0 += distance(X_train[feature_][i_, :], X_train[feature_][j_, :], KL_type=KL_type)
+                        else:
+                            for i_image_ in range(X_train[feature_].shape[0]):
+                                for i_edge_ in range(X_train[feature_].shape[1]):
+                                    for j_image_ in range(X_train[feature_].shape[0]):
+                                        for j_edge_ in range(X_train[feature_].shape[1]):
+                                            KL_0 += distance(X_train[feature_][i_image_, i_edge_, :], X_train[feature_][j_image_, j_edge_, :], KL_type=KL_type)
                         KL_0 /= n_train**2
                         self.log.info('KL_0 = %f ', KL_0)
-                    for feature_ in features:
-                        for i_ in range(n_train):
-                            for j_ in range(n_train):
-                                gram_train[i_, j_] += my_kernel(X_train[feature_][i_, :], X_train[feature_][j_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                        self.log.info('for feature_ = %s ', feature_)
+                        if mode=='full':
+                            for i_ in range(n_train):
+                                for j_ in range(n_train):
+                                    gram_train[i_, j_] += my_kernel(X_train[feature_][i_, :], X_train[feature_][j_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                            # TODO: check the fact that we compute the crossed gram maytrix with train to test distance
+                            for i_ in range(n_train):
+                                for j_ in range(n_test):
+                                    gram_test[i_, j_] += my_kernel(X_train[feature_][i_, :], X_test[feature_][j_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                        else:
+                            for i_image_ in range(X_train[feature_].shape[0]):
+                                for i_edge_ in range(X_train[feature_].shape[1]):
+                                    for j_image_ in range(X_train[feature_].shape[0]):
+                                        for j_edge_ in range(X_train[feature_].shape[1]):
+                                            i__ = i_image_*X_train[feature_].shape[1]*i_edge_
+                                            j__ = j_image_*X_train[feature_].shape[1]*j_edge_
+                                            gram_train[i__, j__] += my_kernel(X_train[feature_][i_image_, i_edge_, :], X_train[feature_][j_image_, j_edge_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
 
-                        for i_ in range(n_train):
-                            for j_ in range(n_test):
-                                gram_test[i_, j_] += my_kernel(X_train[feature_][i_, :], X_test[feature_][j_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+
+                            for i_image_ in range(X_train[feature_].shape[0]):
+                                for i_edge_ in range(X_train[feature_].shape[1]):
+                                    for j_image_ in range(X_test[feature_].shape[0]):
+                                        for j_edge_ in range(X_test[feature_].shape[1]):
+                                            i__ = i_image_*X_train[feature_].shape[1]*i_edge_
+                                            j__ = j_image_*X_test[feature_].shape[1]*j_edge_
+                                            gram_test[i__, j__] += my_kernel(X_train[feature_][i_image_, i_edge_, :], X_test[feature_][j_image_, j_edge_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
 
                 ###############################################################################
                 # 4- Train a SVM classification model
@@ -462,7 +499,7 @@ class EdgeFactory(SparseEdges):
                     for feature_ in features:
                         X_test_ = np.hstack((X_test_, X_test[feature_]))
                     y_pred = grid.predict(X_test_)
-                predicted_target.append(y_pred)
+                # predicted_target.append(y_pred)
                 if self.log.level<=10:
                     from sklearn.metrics import classification_report
                     print(classification_report(y_test, y_pred))
