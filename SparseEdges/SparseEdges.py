@@ -92,7 +92,7 @@ class SparseEdges(LogGabor):
         image = np.zeros((self.pe.N_X, self.pe.N_Y))
         for i_edge in range(edges.shape[1]):
             if not do_energy:
-            atom = self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
+                atom = self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
                                 self.loggabor(
                                                 edges[0, i_edge], edges[1, i_edge],
                                                 theta=edges[2, i_edge], B_theta=self.pe.B_theta,
