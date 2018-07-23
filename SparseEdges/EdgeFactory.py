@@ -272,7 +272,7 @@ class EdgeFactory(SparseEdges):
                     y_train, y_test =  y[index_train].copy(), y[index_test].copy()
                 else:
                     for feature_ in features:
-                        X_train[feature_], X_test[feature_] = X[feature_][index_train, :, :].ravel(), X[feature_][index_test, :, :].ravel()
+                        X_train[feature_], X_test[feature_] = X[feature_][index_train, :, :].copy(), X[feature_][index_test, :, :].copy()
                     y_train, y_test =  y[index_train, :].copy(), y[index_test, :].copy()
                 n_train, n_test = y_train.shape[0], y_test.shape[0]
                 print('n_train', n_train, 'n_test', n_test)  #DEBUG
@@ -505,12 +505,12 @@ class EdgeFactory(SparseEdges):
                 # predicted_target.append(y_pred)
                 if self.log.level<=10:
                     from sklearn.metrics import classification_report
-                    print(classification_report(y_test, y_pred))
+                    print(classification_report(y_test.ravel(), y_pred))
                     from sklearn.metrics import confusion_matrix
-                    print(confusion_matrix(y_test, y_pred))
+                    print(confusion_matrix(y_test.ravel(), y_pred))
                 # see https://en.wikipedia.org/wiki/F1_score
                 try:
-                    fone_score[i_cv] = np.array(metrics.f1_score(y_test, y_pred, labels=[0, 1], average=None)).mean()#'weighted')
+                    fone_score[i_cv] = np.array(metrics.f1_score(y_test.ravel(), y_pred, labels=[0, 1], average=None)).mean()#'weighted')
                 except Exception:
                     self.log.error(' something bad happened for the fone score ')
                 results = "=> Accuracy @ %d = %0.2f" % (i_cv+1, fone_score[i_cv])
