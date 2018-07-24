@@ -1038,6 +1038,11 @@ class SparseEdges(LogGabor):
 
     # some helper funtion to compare the databases
     def KL(self, v_hist, v_hist_obs):
+        """
+        Computes the kullback-Leibler divergence  between 2 histograms
+
+        """
+
         if v_hist.sum()==0 or v_hist_obs.sum()==0: self.log.error('>X>X>X KL function:  problem with null histograms! <X<X<X<')
         elif True:
             v_hist /= v_hist.sum()

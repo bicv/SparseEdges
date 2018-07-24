@@ -366,7 +366,9 @@ class EdgeFactory(SparseEdges):
                                     KL_0 += distance(X_train[feature_][i_, :], X_train[feature_][j_, :], KL_type=KL_type)
                         else:
                             for i_image_ in range(X_train[feature_].shape[0]):
+                                print(' KL_0 i_image_', i_image_, '/X_train[feature_].shape[0]=', X_train[feature_].shape[0])  #DEBUG
                                 for i_edge_ in range(X_train[feature_].shape[1]):
+                                    print(' KL_0 i_edge_', i_edge_, '/X_train[feature_].shape[1]=', X_train[feature_].shape[1])  #DEBUG
                                     for j_image_ in range(X_train[feature_].shape[0]):
                                         for j_edge_ in range(X_train[feature_].shape[1]):
                                             KL_0 += distance(X_train[feature_][i_image_, i_edge_, :], X_train[feature_][j_image_, j_edge_, :], KL_type=KL_type)
@@ -383,6 +385,7 @@ class EdgeFactory(SparseEdges):
                                     gram_test[i_, j_] += my_kernel(X_train[feature_][i_, :], X_test[feature_][j_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
                         else:
                             for i_image_ in range(X_train[feature_].shape[0]):
+                                print('gram_train i_image_', i_image_, 'X_train[feature_].shape[0]', X_train[feature_].shape[0])  #DEBUG
                                 for i_edge_ in range(X_train[feature_].shape[1]):
                                     for j_image_ in range(X_train[feature_].shape[0]):
                                         for j_edge_ in range(X_train[feature_].shape[1]):
@@ -392,6 +395,7 @@ class EdgeFactory(SparseEdges):
 
 
                             for i_image_ in range(X_train[feature_].shape[0]):
+                                print('gram_test i_image_', i_image_, 'X_train[feature_].shape[0]', X_train[feature_].shape[0])  #DEBUG
                                 for i_edge_ in range(X_train[feature_].shape[1]):
                                     for j_image_ in range(X_test[feature_].shape[0]):
                                         for j_edge_ in range(X_test[feature_].shape[1]):
