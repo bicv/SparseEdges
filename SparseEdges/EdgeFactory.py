@@ -22,7 +22,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pickle
 
-from SparseEdges import SparseEdges
+from SparseEdges import SparseEdges, KL
 
 class EdgeFactory(SparseEdges):
     """
@@ -388,7 +388,6 @@ class EdgeFactory(SparseEdges):
                                     d = distance(X_train[feature_][i_, :], X_test[feature_][j_, :])
                                     gram_test[i_, j_] += my_kernel(d, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
                         else:
-                            # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-24 associating labels to edges-SVM / vectorization
 
                             # for i_image_ in range(X_train[feature_].shape[0]):
                             #     print('gram_train i_image_', i_image_, 'X_train[feature_].shape[0]', X_train[feature_].shape[0])  #DEBUG
@@ -442,12 +441,13 @@ class EdgeFactory(SparseEdges):
                                     #pre_dispatch=2*self.pe.svm_n_jobs,
                                     )
                 if kernel == 'precomputed':
-                    grid.fit(gram_train, y_train)
+                    grid.fit(gram_train, y_train.ravel())
                 else:
                     X_train_ = np.zeros((n_train, 0))
                     for feature_ in features:
                         X_train_ = np.hstack((X_train_, X_train[feature_]))
-                    grid.fit(X_train_, y_train)
+                    grid.fit(X_train_, y_train.ravel())
+                # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-25 associating labels to edges-SVM / fitting
 
                 self.log.info("Fitting the classifier done in %0.3fs", (time.time() - t0))
                 if self.log.level <= 10:
@@ -456,7 +456,7 @@ class EdgeFactory(SparseEdges):
                     if kernel == 'precomputed':
                         y_pred = grid.predict(gram_train)
                     else:
-                        y_pred = grid.predict(X_train_)
+                        y_pred = grid.predict(X_train_.reshape((n_train, X_train[feature_].shape[-1])))
                     from sklearn.metrics import classification_report
     #                             print y_train, y_pred
     # TODO                         self.log.info(classification_report(y_train, y_pred))
