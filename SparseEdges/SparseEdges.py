@@ -1036,25 +1036,25 @@ class SparseEdges(LogGabor):
         else:
             return 'locked', 'locked edgeslist', ' locked MSE '
 
-    # some helper funtion to compare the databases
-    def KL(self, v_hist, v_hist_obs):
-        """
-        Computes the kullback-Leibler divergence  between 2 histograms
-
-        """
-
-        if v_hist.sum()==0 or v_hist_obs.sum()==0: self.log.error('>X>X>X KL function:  problem with null histograms! <X<X<X<')
-        elif True:
-            v_hist /= v_hist.sum()
-            v_hist_obs /= v_hist_obs.sum()
-            # taking advantage of log(True) = 0 and canceling out null bins in v_hist_obs
-            kl = np.sum(v_hist.ravel()*(np.log(v_hist.ravel()+(v_hist == 0).ravel())
-                                        - np.log(v_hist_obs.ravel()+(v_hist_obs == 0).ravel())))
-            if kl == np.nan: print ( v_hist.sum(), v_hist_obs.sum() )
-            return kl
-        else:
-            from scipy.stats import entropy
-            return entropy(v_hist_obs, v_hist, base=2)
+    # # some helper funtion to compare the databases
+    # def KL(self, v_hist, v_hist_obs):
+    #     """
+    #     Computes the kullback-Leibler divergence  between 2 histograms
+    #
+    #     """
+    #
+    #     if v_hist.sum()==0 or v_hist_obs.sum()==0: self.log.error('>X>X>X KL function:  problem with null histograms! <X<X<X<')
+    #     elif True:
+    #         v_hist /= v_hist.sum()
+    #         v_hist_obs /= v_hist_obs.sum()
+    #         # taking advantage of log(True) = 0 and canceling out null bins in v_hist_obs
+    #         kl = np.sum(v_hist.ravel()*(np.log(v_hist.ravel()+(v_hist == 0).ravel())
+    #                                     - np.log(v_hist_obs.ravel()+(v_hist_obs == 0).ravel())))
+    #         if kl == np.nan: print ( v_hist.sum(), v_hist_obs.sum() )
+    #         return kl
+    #     else:
+    #         from scipy.stats import entropy
+    #         return entropy(v_hist_obs, v_hist, base=2)
 
     def check_independence(self, v_hist, name_database, exp, labels=['d', 'phi', 'theta', 'scale']):
         v_hist /= v_hist.sum()
@@ -1065,7 +1065,7 @@ class SparseEdges(LogGabor):
         flat /= flat.sum()
         out = 'Checking dependence in ' + name_database + '_' + exp + '\n'
         out += '-'*60 + '\n'
-        out += 'Entropy: ' + str(self.KL(v_hist, flat)) + '\n'
+        out += 'Entropy: ' + str(KL(v_hist, flat.ravel())) + '\n'
         out += '-'*60 + '\n'
         combinations = [[[0, 1, 2, 3]], # full dependence
                          [[1, 2, 3], [0]],
@@ -1360,6 +1360,20 @@ class SparseEdges(LogGabor):
 
             except Exception as e:
                 print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
+
+def KL(v_hist_ref, v_hist_obs):
+    """
+    Computes the kullback-Leibler divergence  between 2 histograms
+    the histogram is represented in the last dimension
+    """
+    v_hist_ref /= v_hist_ref.sum(axis=-1)[:, None]
+    v_hist_obs /= v_hist_obs.sum(axis=-1)[:, None]
+    # taking advantage of log(True) = 0 and canceling out null bins in v_hist_obs
+    v_hist_ref = v_hist_ref[:, None, :]
+    v_hist_obs = v_hist_ref[None, :, :]
+    kl = np.sum(v_hist_ref *(  np.log(v_hist_ref + (v_hist_ref == 0))
+                             - np.log(v_hist_obs + (v_hist_obs == 0))), axis=-1)
+    return kl
 
 
 def _test():

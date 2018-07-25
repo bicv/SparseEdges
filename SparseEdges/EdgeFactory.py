@@ -323,8 +323,6 @@ class EdgeFactory(SparseEdges):
                     self.log.error("Failed doing the dummy classifier : %s ", e)
                 ###############################################################################
                 ###############################################################################
-                # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-24 associating labels to edges-SVM / vectorization
-
                 # 3- preparing the gram matrix
                 if y_train.size == 0:
                     self.log.error("preparing the gram matrix but y_train.size == 0 ")
@@ -334,16 +332,15 @@ class EdgeFactory(SparseEdges):
                     # use KL distance as my kernel
                     kernel = 'precomputed'
                     def distance(x, y, KL_type=KL_type):
-                        if KL_type=='sKL': return (self.KL(x, y) + self.KL(y, x))#symmetric KL
-                        elif KL_type=='JSD': return (self.KL(x, (x+y)/2.) + self.KL(y, (x+y)/2.))/2.#Jensen-Shannon divergence
-                        else: return self.KL(x, y)
+                        if KL_type=='sKL': return (KL(x, y) + KL(y, x))#symmetric KL
+                        elif KL_type=='JSD': return (KL(x, (x+y)/2.) + KL(y, (x+y)/2.))/2.#Jensen-Shannon divergence
+                        else: return KL(x, y)
 
-                    def my_kernel(x, y, KL_m, use_log, KL_0):
-                        d = distance(x, y, KL_type=KL_type)/KL_m
+                    def my_kernel(d, KL_m, use_log, KL_0):
                         if use_log:
-                            return d
+                            return d/KL_m
                         else:
-                            return np.exp(-d/KL_0)
+                            return np.exp(-d/KL_m/KL_0)
 
                     if mode=='full':
                         n_train = y_train.shape[0]
@@ -365,43 +362,55 @@ class EdgeFactory(SparseEdges):
                                 for j_ in range(X_train[feature_].shape[0]):
                                     KL_0 += distance(X_train[feature_][i_, :], X_train[feature_][j_, :], KL_type=KL_type)
                         else:
-                            for i_image_ in range(X_train[feature_].shape[0]):
-                                print(' KL_0 i_image_', i_image_, '/X_train[feature_].shape[0]=', X_train[feature_].shape[0])  #DEBUG
-                                for i_edge_ in range(X_train[feature_].shape[1]):
-                                    print(' KL_0 i_edge_', i_edge_, '/X_train[feature_].shape[1]=', X_train[feature_].shape[1])  #DEBUG
-                                    for j_image_ in range(X_train[feature_].shape[0]):
-                                        for j_edge_ in range(X_train[feature_].shape[1]):
-                                            KL_0 += distance(X_train[feature_][i_image_, i_edge_, :], X_train[feature_][j_image_, j_edge_, :], KL_type=KL_type)
+                            X_train_ = X_train[feature_].reshape((n_train, X_train[feature_].shape[-1]))
+                            KL_ = distance(X_train_, X_train_, KL_type=KL_type)
+                            KL_0 = KL_.sum()
+                            # X_train[feature_].shape[0]
+                            # for i_image_ in range(X_train[feature_].shape[0]):
+                            #     print(' KL_0 i_image_', i_image_, '/X_train[feature_].shape[0]=', X_train[feature_].shape[0])  #DEBUG
+                            #     for i_edge_ in range(X_train[feature_].shape[1]):
+                            #         print(' KL_0 i_edge_', i_edge_, '/X_train[feature_].shape[1]=', X_train[feature_].shape[1])  #DEBUG
+                            #         for j_image_ in range(X_train[feature_].shape[0]):
+                            #             for j_edge_ in range(X_train[feature_].shape[1]):
+                            #                 KL_0 += distance(X_train[feature_][i_image_, i_edge_, :], X_train[feature_][j_image_, j_edge_, :], KL_type=KL_type)
                         KL_0 /= n_train**2
                         self.log.info('KL_0 = %f ', KL_0)
                         self.log.info('for feature_ = %s ', feature_)
                         if mode=='full':
+                            # TODO : vectorize
                             for i_ in range(n_train):
                                 for j_ in range(n_train):
-                                    gram_train[i_, j_] += my_kernel(X_train[feature_][i_, :], X_train[feature_][j_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                                    d = distance(X_train[feature_][i_, :], X_train[feature_][j_, :])
+                                    gram_train[i_, j_] += my_kernel(d, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
                             # TODO: check the fact that we compute the crossed gram maytrix with train to test distance
                             for i_ in range(n_train):
                                 for j_ in range(n_test):
-                                    gram_test[i_, j_] += my_kernel(X_train[feature_][i_, :], X_test[feature_][j_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                                    d = distance(X_train[feature_][i_, :], X_test[feature_][j_, :])
+                                    gram_test[i_, j_] += my_kernel(d, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
                         else:
-                            for i_image_ in range(X_train[feature_].shape[0]):
-                                print('gram_train i_image_', i_image_, 'X_train[feature_].shape[0]', X_train[feature_].shape[0])  #DEBUG
-                                for i_edge_ in range(X_train[feature_].shape[1]):
-                                    for j_image_ in range(X_train[feature_].shape[0]):
-                                        for j_edge_ in range(X_train[feature_].shape[1]):
-                                            i__ = i_image_*X_train[feature_].shape[1]+i_edge_
-                                            j__ = j_image_*X_train[feature_].shape[1]+j_edge_
-                                            gram_train[i__, j__] += my_kernel(X_train[feature_][i_image_, i_edge_, :], X_train[feature_][j_image_, j_edge_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                            # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-24 associating labels to edges-SVM / vectorization
 
+                            # for i_image_ in range(X_train[feature_].shape[0]):
+                            #     print('gram_train i_image_', i_image_, 'X_train[feature_].shape[0]', X_train[feature_].shape[0])  #DEBUG
+                            #     for i_edge_ in range(X_train[feature_].shape[1]):
+                            #         for j_image_ in range(X_train[feature_].shape[0]):
+                            #             for j_edge_ in range(X_train[feature_].shape[1]):
+                            #                 i__ = i_image_*X_train[feature_].shape[1]+i_edge_
+                            #                 j__ = j_image_*X_train[feature_].shape[1]+j_edge_
+                            #                 gram_train[i__, j__] += my_kernel(X_train[feature_][i_image_, i_edge_, :], X_train[feature_][j_image_, j_edge_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                            gram_train =  my_kernel(KL_, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
 
-                            for i_image_ in range(X_train[feature_].shape[0]):
-                                print('gram_test i_image_', i_image_, 'X_train[feature_].shape[0]', X_train[feature_].shape[0])  #DEBUG
-                                for i_edge_ in range(X_train[feature_].shape[1]):
-                                    for j_image_ in range(X_test[feature_].shape[0]):
-                                        for j_edge_ in range(X_test[feature_].shape[1]):
-                                            i__ = i_image_*X_train[feature_].shape[1]+i_edge_
-                                            j__ = j_image_*X_test[feature_].shape[1]+j_edge_
-                                            gram_test[i__, j__] += my_kernel(X_train[feature_][i_image_, i_edge_, :], X_test[feature_][j_image_, j_edge_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                            # for i_image_ in range(X_train[feature_].shape[0]):
+                            #     print('gram_test i_image_', i_image_, 'X_train[feature_].shape[0]', X_train[feature_].shape[0])  #DEBUG
+                            #     for i_edge_ in range(X_train[feature_].shape[1]):
+                            #         for j_image_ in range(X_test[feature_].shape[0]):
+                            #             for j_edge_ in range(X_test[feature_].shape[1]):
+                            #                 i__ = i_image_*X_train[feature_].shape[1]+i_edge_
+                            #                 j__ = j_image_*X_test[feature_].shape[1]+j_edge_
+                            #                 gram_test[i__, j__] += my_kernel(X_train[feature_][i_image_, i_edge_, :], X_test[feature_][j_image_, j_edge_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                            X_test_ = X_test[feature_].reshape((n_test, X_test[feature_].shape[-1]))
+                            KL_ = distance(X_train_, X_test_, KL_type=KL_type)
+                            gram_test =  my_kernel(KL_, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
 
                 ###############################################################################
                 # 4- Train a SVM classification model
@@ -620,8 +629,8 @@ class EdgeFactory(SparseEdges):
                 for ii_image, i_image in enumerate(range(N_image-N_image_half, N_image)):
                     v_hist_obs = self.cohistedges(edgeslist_db[i_database][:, :, i_image][..., np.newaxis], display=None)
                     if not(do_scale): v_hist_obs = v_hist_obs.sum(axis=3)
-                    d_A = self.KL(v_hist_obs, v_hist[0])
-                    d_B = self.KL(v_hist_obs, v_hist[1])
+                    d_A = KL(v_hist_obs, v_hist[0])
+                    d_B = KL(v_hist_obs, v_hist[1])
                     if geometric: rho_[ii_image] = d_A/np.sqrt(d_A**2+d_B**2)
                     else: rho_[ii_image] = d_A/np.sqrt(d_A*d_B)#/(d_A+d_B)
                 rho.append(rho_)
