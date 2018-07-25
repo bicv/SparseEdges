@@ -323,7 +323,7 @@ class EdgeFactory(SparseEdges):
                     self.log.error("Failed doing the dummy classifier : %s ", e)
                 ###############################################################################
                 ###############################################################################
-                # >>> YOU ARE HERE <<< DEBUGGING SVM
+                # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-24 associating labels to edges-SVM
 
                 # 3- preparing the gram matrix
                 if y_train.size == 0:
