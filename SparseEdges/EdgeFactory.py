@@ -363,8 +363,8 @@ class EdgeFactory(SparseEdges):
                                     KL_0 += distance(X_train[feature_][i_, :], X_train[feature_][j_, :], KL_type=KL_type)
                         else:
                             X_train_ = X_train[feature_].reshape((n_train, X_train[feature_].shape[-1]))
-                            KL_ = distance(X_train_, X_train_, KL_type=KL_type)
-                            KL_0 = KL_.sum()
+                            KL_train = distance(X_train_, X_train_, KL_type=KL_type)
+                            KL_0 = KL_train.sum()
                             # X_train[feature_].shape[0]
                             # for i_image_ in range(X_train[feature_].shape[0]):
                             #     print(' KL_0 i_image_', i_image_, '/X_train[feature_].shape[0]=', X_train[feature_].shape[0])  #DEBUG
@@ -397,7 +397,7 @@ class EdgeFactory(SparseEdges):
                             #                 i__ = i_image_*X_train[feature_].shape[1]+i_edge_
                             #                 j__ = j_image_*X_train[feature_].shape[1]+j_edge_
                             #                 gram_train[i__, j__] += my_kernel(X_train[feature_][i_image_, i_edge_, :], X_train[feature_][j_image_, j_edge_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
-                            gram_train =  my_kernel(KL_, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                            gram_train =  my_kernel(KL_train, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
 
                             # for i_image_ in range(X_train[feature_].shape[0]):
                             #     print('gram_test i_image_', i_image_, 'X_train[feature_].shape[0]', X_train[feature_].shape[0])  #DEBUG
@@ -408,8 +408,8 @@ class EdgeFactory(SparseEdges):
                             #                 j__ = j_image_*X_test[feature_].shape[1]+j_edge_
                             #                 gram_test[i__, j__] += my_kernel(X_train[feature_][i_image_, i_edge_, :], X_test[feature_][j_image_, j_edge_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
                             X_test_ = X_test[feature_].reshape((n_test, X_test[feature_].shape[-1]))
-                            KL_ = distance(X_train_, X_test_, KL_type=KL_type)
-                            gram_test =  my_kernel(KL_, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
+                            KL_test = distance(X_train_, X_test_, KL_type=KL_type)
+                            gram_test =  my_kernel(KL_test, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
 
                 ###############################################################################
                 # 4- Train a SVM classification model
@@ -441,13 +441,14 @@ class EdgeFactory(SparseEdges):
                                     #pre_dispatch=2*self.pe.svm_n_jobs,
                                     )
                 if kernel == 'precomputed':
+                    # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-25 associating labels to edges-SVM / fitting
+                    print ('gram_train.shape=', gram_train.shape, 'y_train.shape=', y_train.shape)   #DEBUG
                     grid.fit(gram_train, y_train.ravel())
                 else:
                     X_train_ = np.zeros((n_train, 0))
                     for feature_ in features:
                         X_train_ = np.hstack((X_train_, X_train[feature_]))
                     grid.fit(X_train_, y_train.ravel())
-                # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-25 associating labels to edges-SVM / fitting
 
                 self.log.info("Fitting the classifier done in %0.3fs", (time.time() - t0))
                 if self.log.level <= 10:
