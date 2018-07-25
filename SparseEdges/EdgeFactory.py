@@ -71,7 +71,7 @@ class EdgeFactory(SparseEdges):
         return labels, y
 
     def svm(self, exp, opt_notSVM='', opt_SVM='', databases=['serre07_distractors', 'serre07_targets'],
-            edgeslists=[None, None], database_labels=None,
+            edgeslists=[None, None], N_edges=None, database_labels=None,
             feature='full', kernel='precomputed', KL_type='JSD', noise=0.):
         """
         outline:
@@ -155,27 +155,31 @@ class EdgeFactory(SparseEdges):
                             try:
                                 t0 = time.time()
                                 hists = []
+                                if N_edges is None:
+                                    N_edges = edgeslist.shape[1]
+                                print('N_edges', N_edges)  #DEBUG
+
                                 for i_image in range(edgeslist.shape[2]):
                                     if feature_ == 'full':
                                         # using the full histogram
-                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image], mode=mode)
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :N_edges, i_image], mode=mode)
                                     elif feature_ == 'full_nochevron':
                                         #  or just the chevron map
-                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image], mode=mode)
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :N_edges, i_image], mode=mode)
                                         # marginalize over theta and psi
                                         v_hist = v_hist.sum(axis=(1, 2))
                                     elif feature_ == 'chevron':
                                         #  or just the chevron map
-                                        v_hist = self.cooccurence_hist(edgeslist[:, :, i_image], mode=mode)
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :N_edges, i_image], mode=mode)
                                         # marginalize over distances and scales
                                         v_hist = v_hist.sum(axis=(0, 3))
                                     elif feature_ == 'first':
                                         # control with first-order
-                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image], display=False, mode=mode)
+                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :N_edges, i_image], display=False, mode=mode)
                                     elif feature_ == 'first_rot':
                                         edgeslist[2, :, i_image] += np.random.rand() * np.pi
                                         # control with first-order
-                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :, i_image], display=False, mode=mode)
+                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :N_edges, i_image], display=False, mode=mode)
                                     else:
                                         self.log.error('problem here, you asked for a non-existant feature', feature_)
                                         break
@@ -184,8 +188,7 @@ class EdgeFactory(SparseEdges):
                                     if mode=='full':
                                         v_hist /= v_hist.sum()
                                     else:
-                                        N_edge = v_hist.shape[-1]
-                                        for i_edge in range(N_edge):
+                                        for i_edge in range(v_hist.shape[-1]):
                                             v_hist[..., i_edge] /= v_hist[..., i_edge].sum()
                                     # append for each image
                                     hists.append(v_hist)
@@ -606,7 +609,7 @@ class EdgeFactory(SparseEdges):
                     self.log.info(' >> There is no histogram, computing: %s ', e)
                     # images are separated in a learning and classification set: the histogram is computed on the first half of the images
                     N_image = edgeslist.shape[2]
-                    v_hist_ = self.cohistedges(edgeslist[:, :, :N_image/2], display=None)
+                    v_hist_ = self.cohistedges(edgeslist[:, :, :N_image//2], display=None)
                     np.save(matname + '_kmeans_hist.npy', v_hist_)
             else:
                 self.log.info('XX The process extracting edges in %s  is locked', name_database)

@@ -1366,11 +1366,16 @@ def KL(v_hist_ref, v_hist_obs):
     Computes the kullback-Leibler divergence  between 2 histograms
     the histogram is represented in the last dimension
     """
-    v_hist_ref /= v_hist_ref.sum(axis=-1)[:, None]
-    v_hist_obs /= v_hist_obs.sum(axis=-1)[:, None]
-    # taking advantage of log(True) = 0 and canceling out null bins in v_hist_obs
-    v_hist_ref = v_hist_ref[:, None, :]
-    v_hist_obs = v_hist_ref[None, :, :]
+    if v_hist_ref.ndim >1:
+        v_hist_ref /= v_hist_ref.sum(axis=-1)[:, None]
+        v_hist_obs /= v_hist_obs.sum(axis=-1)[:, None]
+        # taking advantage of log(True) = 0 and canceling out null bins in v_hist_obs
+        v_hist_ref = v_hist_ref[:, None, :]
+        v_hist_obs = v_hist_obs[None, :, :]
+    else:
+        v_hist_ref /= v_hist_ref.sum()
+        v_hist_obs /= v_hist_obs.sum()
+
     kl = np.sum(v_hist_ref *(  np.log(v_hist_ref + (v_hist_ref == 0))
                              - np.log(v_hist_obs + (v_hist_obs == 0))), axis=-1)
     return kl
