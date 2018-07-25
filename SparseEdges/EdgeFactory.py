@@ -63,8 +63,8 @@ class EdgeFactory(SparseEdges):
         labels = labels[croparea[0]:croparea[1], croparea[2]:croparea[3]]
         X, Y, sf_0 = edges[0, :], edges[1, :],  edges[3, :]
         if pos_noise>0:
-            X += pos_noise * np.random.randn(self.pe.N) / sf_0
-            Y += pos_noise * np.random.randn(self.pe.N) / sf_0
+            X += pos_noise * np.random.randn(edges.shape[1]) / sf_0
+            Y += pos_noise * np.random.randn(edges.shape[1]) / sf_0
         X = [int(np.max((0, np.min((X_, self.pe.N_X-1))))) for X_ in X]
         Y = [int(np.max((0, np.min((Y_, self.pe.N_Y-1))))) for Y_ in Y]
         y = labels[X, Y].astype(np.int)
@@ -155,9 +155,7 @@ class EdgeFactory(SparseEdges):
                             try:
                                 t0 = time.time()
                                 hists = []
-                                if N_edges is None:
-                                    N_edges = edgeslist.shape[1]
-                                print('N_edges', N_edges)  #DEBUG
+                                if N_edges is None: N_edges = edgeslist.shape[1]
 
                                 for i_image in range(edgeslist.shape[2]):
                                     if feature_ == 'full':
@@ -219,8 +217,7 @@ class EdgeFactory(SparseEdges):
                                 X_[feature_].append(hists[i_image, ...].ravel())
                             else:
                                 X__ = []
-                                N_edge = hists.shape[-1]
-                                for i_edge in range(N_edge):
+                                for i_edge in range(hists.shape[-1]):
                                     X__.append(hists[i_image, ..., i_edge].ravel())
                                 X_[feature_].append(X__)
                                 # print( 'np.array(X__).shape', np.array(X__).shape, 'np.array(X_[feature_]).shape', np.array(X_[feature_]).shape)  #DEBUG
@@ -232,18 +229,21 @@ class EdgeFactory(SparseEdges):
             # appending all data for all images
             for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
                 imagelist, edgeslist, MSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
-                try:
+                if True: #try:
                     if mode=='full':
                         for i_image, (filename, croparea) in enumerate(imagelist):
                             y_.append(i_database)
                     else:
+                        if N_edges is None:
+                            N_edges = edgeslist.shape[1]
+                        print('N_edges', N_edges)  #DEBUG
                         for i_image, (filename, croparea) in enumerate(imagelist):
-                            labels, y__ = self.get_labels(edgeslist[:, :, i_image], filename, croparea, database_labels=database_labels)
+                            labels, y__ = self.get_labels(edgeslist[:, :N_edges, i_image], filename, croparea, database_labels=database_labels)
                             y_.append(y__)
-                except Exception as e:
-                    self.log.warn(' >> Failed the labelling, skipping SVM : %s ', e)
-                    locked = True
-                    return None
+                # except Exception as e:
+                #     self.log.warn(' >> Failed the labelling, skipping SVM : %s ', e)
+                #     locked = True
+                #     return None
 
             # converting to numpy
             X = {}
