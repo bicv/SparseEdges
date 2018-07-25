@@ -323,7 +323,7 @@ class EdgeFactory(SparseEdges):
                     self.log.error("Failed doing the dummy classifier : %s ", e)
                 ###############################################################################
                 ###############################################################################
-                # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-24 associating labels to edges-SVM
+                # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-24 associating labels to edges-SVM / vectorization
 
                 # 3- preparing the gram matrix
                 if y_train.size == 0:
@@ -389,8 +389,8 @@ class EdgeFactory(SparseEdges):
                                 for i_edge_ in range(X_train[feature_].shape[1]):
                                     for j_image_ in range(X_train[feature_].shape[0]):
                                         for j_edge_ in range(X_train[feature_].shape[1]):
-                                            i__ = i_image_*X_train[feature_].shape[1]*i_edge_
-                                            j__ = j_image_*X_train[feature_].shape[1]*j_edge_
+                                            i__ = i_image_*X_train[feature_].shape[1]+i_edge_
+                                            j__ = j_image_*X_train[feature_].shape[1]+j_edge_
                                             gram_train[i__, j__] += my_kernel(X_train[feature_][i_image_, i_edge_, :], X_train[feature_][j_image_, j_edge_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
 
 
@@ -399,8 +399,8 @@ class EdgeFactory(SparseEdges):
                                 for i_edge_ in range(X_train[feature_].shape[1]):
                                     for j_image_ in range(X_test[feature_].shape[0]):
                                         for j_edge_ in range(X_test[feature_].shape[1]):
-                                            i__ = i_image_*X_train[feature_].shape[1]*i_edge_
-                                            j__ = j_image_*X_test[feature_].shape[1]*j_edge_
+                                            i__ = i_image_*X_train[feature_].shape[1]+i_edge_
+                                            j__ = j_image_*X_test[feature_].shape[1]+j_edge_
                                             gram_test[i__, j__] += my_kernel(X_train[feature_][i_image_, i_edge_, :], X_test[feature_][j_image_, j_edge_, :], KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
 
                 ###############################################################################
