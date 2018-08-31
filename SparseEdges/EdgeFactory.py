@@ -155,29 +155,30 @@ class EdgeFactory(SparseEdges):
                             try:
                                 t0 = time.time()
                                 hists = []
-                                if N_edges is None: N_edges = edgeslist.shape[1]
+                                # TODO : compute histograms with less edges?
+                                N_edges_hist = edgeslist.shape[1]
 
                                 for i_image in range(edgeslist.shape[2]):
                                     if feature_ == 'full':
                                         # using the full histogram
-                                        v_hist = self.cooccurence_hist(edgeslist[:, :N_edges, i_image], mode=mode)
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :N_edges_hist, i_image], mode=mode)
                                     elif feature_ == 'full_nochevron':
                                         #  or just the chevron map
-                                        v_hist = self.cooccurence_hist(edgeslist[:, :N_edges, i_image], mode=mode)
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :N_edges_hist, i_image], mode=mode)
                                         # marginalize over theta and psi
                                         v_hist = v_hist.sum(axis=(1, 2))
                                     elif feature_ == 'chevron':
                                         #  or just the chevron map
-                                        v_hist = self.cooccurence_hist(edgeslist[:, :N_edges, i_image], mode=mode)
+                                        v_hist = self.cooccurence_hist(edgeslist[:, :N_edges_hist, i_image], mode=mode)
                                         # marginalize over distances and scales
                                         v_hist = v_hist.sum(axis=(0, 3))
                                     elif feature_ == 'first':
                                         # control with first-order
-                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :N_edges, i_image], display=False, mode=mode)
+                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :N_edges_hist, i_image], display=False, mode=mode)
                                     elif feature_ == 'first_rot':
                                         edgeslist[2, :, i_image] += np.random.rand() * np.pi
                                         # control with first-order
-                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :N_edges, i_image], display=False, mode=mode)
+                                        v_hist, v_theta_edges_ = self.histedges_theta(edgeslist[:, :N_edges_hist, i_image], display=False, mode=mode)
                                     else:
                                         self.log.error('problem here, you asked for a non-existant feature', feature_)
                                         break
@@ -186,8 +187,13 @@ class EdgeFactory(SparseEdges):
                                     if mode=='full':
                                         v_hist /= v_hist.sum()
                                     else:
+                                        # take only the first edges
+                                        # but still, the histogram is computed on all edges
+                                        if N_edges is None: N_edges = edgeslist.shape[1]
+                                        v_hist = v_hist[..., :N_edges]
                                         for i_edge in range(v_hist.shape[-1]):
                                             v_hist[..., i_edge] /= v_hist[..., i_edge].sum()
+
                                     # append for each image
                                     hists.append(v_hist)
 
@@ -229,7 +235,7 @@ class EdgeFactory(SparseEdges):
             # appending all data for all images
             for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
                 imagelist, edgeslist, MSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
-                if True: #try:
+                try:
                     if mode=='full':
                         for i_image, (filename, croparea) in enumerate(imagelist):
                             y_.append(i_database)
@@ -240,10 +246,10 @@ class EdgeFactory(SparseEdges):
                         for i_image, (filename, croparea) in enumerate(imagelist):
                             labels, y__ = self.get_labels(edgeslist[:, :N_edges, i_image], filename, croparea, database_labels=database_labels)
                             y_.append(y__)
-                # except Exception as e:
-                #     self.log.warn(' >> Failed the labelling, skipping SVM : %s ', e)
-                #     locked = True
-                #     return None
+                except Exception as e:
+                    self.log.warn(' >> Failed the labelling, skipping SVM : %s ', e)
+                    locked = True
+                    return None
 
             # converting to numpy
             X = {}

@@ -1366,6 +1366,7 @@ def KL(v_hist_ref, v_hist_obs):
     Computes the kullback-Leibler divergence  between 2 histograms
     the histogram is represented in the last dimension
     """
+    if v_hist_ref.sum()==0 or v_hist_obs.sum()==0: return 10000
     if v_hist_ref.ndim >1:
         v_hist_ref /= v_hist_ref.sum(axis=-1)[:, None]
         v_hist_obs /= v_hist_obs.sum(axis=-1)[:, None]
