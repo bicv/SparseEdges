@@ -1361,25 +1361,32 @@ class SparseEdges(LogGabor):
             except Exception as e:
                 print('Failed to analyze experiment %s with error : %s ' % (experiment, e) )
 
-def KL(v_hist_ref, v_hist_obs):
+def KL(v_hist_ref, v_hist_obs, p0=1.e-3):
     """
-    Computes the kullback-Leibler divergence  between 2 histograms
+    Computes the kullback-Leibler divergence between 2 histograms
     the histogram is represented in the last dimension
     """
-    if v_hist_ref.sum()==0 or v_hist_obs.sum()==0: return 10000
-    if v_hist_ref.ndim >1:
+    if v_hist_ref.sum()==0 or v_hist_obs.sum()==0:
+        print('ddooooh')
+        return 10000
+        
+    v_hist_ref = v_hist_ref + p0 / v_hist_ref.shape[-1]
+    v_hist_obs = v_hist_obs + p0 / v_hist_obs.shape[-1]
+
+    if v_hist_ref.ndim == 2:
         v_hist_ref /= v_hist_ref.sum(axis=-1)[:, None]
         v_hist_obs /= v_hist_obs.sum(axis=-1)[:, None]
-        # taking advantage of log(True) = 0 and canceling out null bins in v_hist_obs
         v_hist_ref = v_hist_ref[:, None, :]
         v_hist_obs = v_hist_obs[None, :, :]
-    else:
+    else: # one vector
         v_hist_ref /= v_hist_ref.sum()
         v_hist_obs /= v_hist_obs.sum()
 
-    kl = np.sum(v_hist_ref *(  np.log(v_hist_ref + (v_hist_ref == 0))
-                             - np.log(v_hist_obs + (v_hist_obs == 0))), axis=-1)
-    return kl
+    # taking advantage of log(True) = 0 and canceling out null bins in v_hist_obs
+    # v_hist_ref_ = v_hist_ref + (v_hist_ref == 0.)
+    # v_hist_obs_ = v_hist_obs + (v_hist_obs == 0.)
+
+    return np.sum(v_hist_ref * (np.log2(v_hist_ref/v_hist_obs)), axis=-1)
 
 
 def _test():

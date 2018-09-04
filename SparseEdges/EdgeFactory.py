@@ -72,7 +72,7 @@ class EdgeFactory(SparseEdges):
 
     def svm(self, exp, opt_notSVM='', opt_SVM='', databases=['serre07_distractors', 'serre07_targets'],
             edgeslists=[None, None], N_edges=None, database_labels=None,
-            feature='full', kernel='precomputed', KL_type='JSD', noise=0.):
+            feature='full', kernel='precomputed', KL_type='KL', noise=0.):
         """
         outline:
 
@@ -192,6 +192,7 @@ class EdgeFactory(SparseEdges):
                                         if N_edges is None: N_edges = edgeslist.shape[1]
                                         v_hist = v_hist[..., :N_edges]
                                         for i_edge in range(v_hist.shape[-1]):
+                                            if v_hist[..., i_edge].sum() ==0 : print('dooh! v_hist is null')
                                             v_hist[..., i_edge] /= v_hist[..., i_edge].sum()
 
                                     # append for each image
@@ -208,6 +209,7 @@ class EdgeFactory(SparseEdges):
                             except Exception:
                                 self.log.error(' xxx when trying to remove it, I found no lock file named %s_lock', matname_hist)
 
+
             # gather data
             # TODO faster reshaping
             locked = False
@@ -218,6 +220,8 @@ class EdgeFactory(SparseEdges):
                     matname_hist = os.path.join(self.pe.matpath, exp + '_SVM-hist_' + name_database + '_' + feature_ + opt_notSVM + '.npy')
                     try:
                         hists = np.load(matname_hist)
+                        # print('hists ratio negative', (hists<0).sum() / hists.size) #DEBUG
+
                         for i_image in range(hists.shape[0]):
                             if mode=='full':
                                 X_[feature_].append(hists[i_image, ...].ravel())
@@ -232,6 +236,7 @@ class EdgeFactory(SparseEdges):
                         self.log.warn(' >> Missing histogram, skipping SVM : %s ', e)
                         locked = True
                         return None
+
             # appending all data for all images
             for i_database, (name_database, edgeslist) in enumerate(zip(databases, edgeslists)):
                 imagelist, edgeslist, MSE = self.process(exp, note=opt_notSVM, name_database=name_database, noise=noise)
@@ -242,7 +247,7 @@ class EdgeFactory(SparseEdges):
                     else:
                         if N_edges is None:
                             N_edges = edgeslist.shape[1]
-                        print('N_edges', N_edges)  #DEBUG
+                        # print('N_edges', N_edges)  #DEBUG
                         for i_image, (filename, croparea) in enumerate(imagelist):
                             labels, y__ = self.get_labels(edgeslist[:, :N_edges, i_image], filename, croparea, database_labels=database_labels)
                             y_.append(y__)
@@ -255,9 +260,9 @@ class EdgeFactory(SparseEdges):
             X = {}
             for feature_ in features:
                 X[feature_] = np.array(X_[feature_])
-                print('feature_', feature_, 'X[feature_].shape', X[feature_].shape)  #DEBUG
+                # print('feature_', feature_, 'X[feature_].shape', X[feature_].shape)  #DEBUG
             y = np.array(y_)
-            print('y.shape', y.shape)  #DEBUG
+            # print('y.shape', y.shape)  #DEBUG
             # print('y.shape', y.shape, 'y', y)  #DEBUG
 
 
@@ -265,7 +270,7 @@ class EdgeFactory(SparseEdges):
             fone_score = np.zeros(self.pe.N_svm_cv)
             t0_cv = time.time()
             for i_cv in range(self.pe.N_svm_cv):
-                print('i_cv', i_cv, 'self.pe.N_svm_cv', self.pe.N_svm_cv, 'fone_score', fone_score)  #DEBUG
+                # print('i_cv', i_cv, 'self.pe.N_svm_cv', self.pe.N_svm_cv, 'fone_score', fone_score)  #DEBUG
 
                 ###############################################################################
                 # 1- Split into a training set and a test set using a ShuffleSplit + doing that in parallel for the differrent features to test
@@ -273,7 +278,7 @@ class EdgeFactory(SparseEdges):
                 rs = ShuffleSplit(n_splits=1, test_size=self.pe.svm_test_size, random_state=self.pe.seed + i_cv)
                 # split into a training and testing set
                 for index_train, index_test in rs.split(y): pass
-                print('index_train', index_train, 'index_test', index_test)  #DEBUG
+                # print('index_train', index_train, 'index_test', index_test)  #DEBUG
                 X_train, X_test = {}, {}
                 if mode=='full':
                     for feature_ in features:
@@ -284,7 +289,7 @@ class EdgeFactory(SparseEdges):
                         X_train[feature_], X_test[feature_] = X[feature_][index_train, :, :].copy(), X[feature_][index_test, :, :].copy()
                     y_train, y_test =  y[index_train, :].copy(), y[index_test, :].copy()
                 n_train, n_test = y_train.shape[0], y_test.shape[0]
-                print('n_train', n_train, 'n_test', n_test)  #DEBUG
+                # print('n_train', n_train, 'n_test', n_test)  #DEBUG
                 # is_target.append(y_test)
                 # tested_indices.append(index_test)
 
@@ -361,8 +366,8 @@ class EdgeFactory(SparseEdges):
                     gram_train = np.zeros((n_train, n_train))
                     gram_test = np.zeros((n_train, n_test))
                     for feature_ in features:
-                        print('feature_', feature_, 'X_train[feature_].shape', X_train[feature_].shape)  #DEBUG
-                        print('feature_', feature_, 'X_test[feature_].shape', X_test[feature_].shape)  #DEBUG
+                        # print('feature_', feature_, 'X_train[feature_].shape', X_train[feature_].shape)  #DEBUG
+                        # print('feature_', feature_, 'X_test[feature_].shape', X_test[feature_].shape)  #DEBUG
 
                         # compute the average KL
                         KL_0 = 0
@@ -372,7 +377,10 @@ class EdgeFactory(SparseEdges):
                                     KL_0 += distance(X_train[feature_][i_, :], X_train[feature_][j_, :], KL_type=KL_type)
                         else:
                             X_train_ = X_train[feature_].reshape((n_train, X_train[feature_].shape[-1]))
+                            # print('feature_', feature_, 'X_train_.shape', X_train_.shape)  #DEBUG
                             KL_train = distance(X_train_, X_train_, KL_type=KL_type)
+                            # print('feature_', feature_, 'KL_train.shape', KL_train.shape)  #DEBUG
+                            # print('KL_train ratio negative', (KL_train<0).sum() / KL_train.size) #DEBUG
                             KL_0 = KL_train.sum()
                             # X_train[feature_].shape[0]
                             # for i_image_ in range(X_train[feature_].shape[0]):
@@ -385,6 +393,8 @@ class EdgeFactory(SparseEdges):
                         KL_0 /= n_train**2
                         self.log.info('KL_0 = %f ', KL_0)
                         self.log.info('for feature_ = %s ', feature_)
+                        # print('KL_0 = ', KL_0, 'for feature_ = ', feature_)  #DEBUG
+
                         if mode=='full':
                             # TODO : vectorize
                             for i_ in range(n_train):
@@ -397,7 +407,7 @@ class EdgeFactory(SparseEdges):
                                     d = distance(X_train[feature_][i_, :], X_test[feature_][j_, :])
                                     gram_test[i_, j_] += my_kernel(d, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
                         else:
-
+                            # cf 2018-07-24 associating labels to edges-SVM
                             # for i_image_ in range(X_train[feature_].shape[0]):
                             #     print('gram_train i_image_', i_image_, 'X_train[feature_].shape[0]', X_train[feature_].shape[0])  #DEBUG
                             #     for i_edge_ in range(X_train[feature_].shape[1]):
@@ -420,12 +430,14 @@ class EdgeFactory(SparseEdges):
                             KL_test = distance(X_train_, X_test_, KL_type=KL_type)
                             gram_test =  my_kernel(KL_test, KL_m=self.pe.svm_KL_m, use_log=self.pe.svm_log, KL_0=KL_0)
 
+                    # print('number of nan in gram_train=', np.isnan(gram_train).sum())  #DEBUG
+                    # print('number of nan in gram_test=', np.isnan(gram_test).sum())  #DEBUG
                 ###############################################################################
                 # 4- Train a SVM classification model
                 from sklearn.grid_search import GridSearchCV
                 # see http://scikit-learn.org/stable/modules/grid_search.html
                 from sklearn.svm import SVC
-                from sklearn import cross_validation
+                # from sklearn import model_selection
                 self.log.info("Fitting the classifier to the training set %s - %s - %s ",  databases, exp, feature)
                 t0 = time.time()
                 if kernel == 'precomputed':
@@ -445,13 +457,13 @@ class EdgeFactory(SparseEdges):
                                     param_grid,
                                     verbose=1,
                                     scoring='f1_weighted',
-                                    cv=5,
+                                    cv=self.pe.N_svm_cv,
                                     n_jobs=self.pe.svm_n_jobs, # http://scikit-learn.org/0.13/modules/generated/sklearn.grid_search.GridSearchCV.html
                                     #pre_dispatch=2*self.pe.svm_n_jobs,
                                     )
                 if kernel == 'precomputed':
                     # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-25 associating labels to edges-SVM / fitting
-                    print ('gram_train.shape=', gram_train.shape, 'y_train.shape=', y_train.shape)   #DEBUG
+                    # print ('gram_train.shape=', gram_train.shape, 'y_train.shape=', y_train.shape)   #DEBUG
                     grid.fit(gram_train, y_train.ravel())
                 else:
                     X_train_ = np.zeros((n_train, 0))
