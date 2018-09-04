@@ -445,10 +445,9 @@ class EdgeFactory(SparseEdges):
                 t0 = time.time()
                 if kernel == 'precomputed':
                     C_range = np.logspace(self.pe.C_range_begin,self.pe.C_range_end, self.pe.N_svm_grid**2, base=2.)
-                    gamma_range = np.logspace(self.pe.gamma_range_begin,self.pe.gamma_range_end, 1, base=2.)
                     param_grid = {'C': C_range }
                 else:
-                    C_range = np.logspace(self.pe.C_range_begin,self.pe.C_range_end, self.pe.N_svm_grid, base=2.)
+                    C_range = np.logspace(self.pe.C_range_begin, self.pe.C_range_end, self.pe.N_svm_grid, base=2.)
                     gamma_range = np.logspace(self.pe.gamma_range_begin,self.pe.gamma_range_end, self.pe.N_svm_grid, base=2.)
                     param_grid = {'C': C_range, 'gamma': gamma_range }
                 grid = GridSearchCV(SVC(verbose=False,
@@ -465,8 +464,7 @@ class EdgeFactory(SparseEdges):
                                     #pre_dispatch=2*self.pe.svm_n_jobs,
                                     )
                 if kernel == 'precomputed':
-                    # >>> YOU ARE HERE <<< DEBUGGING SVM 2018-07-25 associating labels to edges-SVM / fitting
-                    # print ('gram_train.shape=', gram_train.shape, 'y_train.shape=', y_train.shape)   #DEBUG
+                    print ('gram_train.shape=', gram_train.shape, 'y_train.shape=', y_train.shape)   #DEBUG
                     grid.fit(gram_train, y_train.ravel())
                 else:
                     X_train_ = np.zeros((n_train, 0))
@@ -543,12 +541,13 @@ class EdgeFactory(SparseEdges):
                 # predicted_target.append(y_pred)
                 if self.log.level<=10:
                     from sklearn.metrics import classification_report
-                    print(classification_report(y_test.ravel(), y_pred))
+                    print('classification_report on test \n', classification_report(y_test.ravel(), y_pred))
                     from sklearn.metrics import confusion_matrix
-                    print(confusion_matrix(y_test.ravel(), y_pred))
+                    print('confusion_matrix on test \n', confusion_matrix(y_test.ravel(), y_pred))
+                    print('fone_score on test', metrics.f1_score(y_test.ravel(), y_pred))
                 # see https://en.wikipedia.org/wiki/F1_score
                 try:
-                    fone_score[i_cv] = np.array(metrics.f1_score(y_test.ravel(), y_pred, labels=[0, 1], average=None)).mean()#'weighted')
+                    fone_score[i_cv] = np.array(metrics.f1_score(y_test.ravel(), y_pred, average=None)).mean()#'weighted')labels=[0, 1],
                 except Exception:
                     self.log.error(' something bad happened for the fone score ')
                 results = "=> Accuracy @ %d = %0.2f" % (i_cv+1, fone_score[i_cv])
