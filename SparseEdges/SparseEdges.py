@@ -1369,7 +1369,7 @@ def KL(v_hist_ref, v_hist_obs, p0=1.e-3):
     if v_hist_ref.sum()==0 or v_hist_obs.sum()==0:
         print('ddooooh')
         return 10000
-        
+
     v_hist_ref = v_hist_ref + p0 / v_hist_ref.shape[-1]
     v_hist_obs = v_hist_obs + p0 / v_hist_obs.shape[-1]
 
@@ -1387,6 +1387,26 @@ def KL(v_hist_ref, v_hist_obs, p0=1.e-3):
     # v_hist_obs_ = v_hist_obs + (v_hist_obs == 0.)
 
     return np.sum(v_hist_ref * (np.log2(v_hist_ref/v_hist_obs)), axis=-1)
+
+def TV(v_hist_ref, v_hist_obs):
+    """
+    Computes the TV distance between 2 histograms
+
+    the histogram is represented in the last dimension
+
+    https://en.wikipedia.org/wiki/Total_variation_distance_of_probability_measures
+
+    """
+    if v_hist_ref.ndim == 2:
+        v_hist_ref /= v_hist_ref.sum(axis=-1)[:, None]
+        v_hist_obs /= v_hist_obs.sum(axis=-1)[:, None]
+        v_hist_ref = v_hist_ref[:, None, :]
+        v_hist_obs = v_hist_obs[None, :, :]
+    else: # one vector
+        v_hist_ref /= v_hist_ref.sum()
+        v_hist_obs /= v_hist_obs.sum()
+
+    return np.max(np.abs(v_hist_ref-v_hist_obs), axis=-1)
 
 
 def _test():

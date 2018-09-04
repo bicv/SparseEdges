@@ -22,7 +22,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pickle
 
-from SparseEdges import SparseEdges, KL
+from SparseEdges import SparseEdges, KL, TV
 
 class EdgeFactory(SparseEdges):
     """
@@ -71,8 +71,8 @@ class EdgeFactory(SparseEdges):
         return labels, y
 
     def svm(self, exp, opt_notSVM='', opt_SVM='', databases=['serre07_distractors', 'serre07_targets'],
-            edgeslists=[None, None], N_edges=None, database_labels=None,
-            feature='full', kernel='precomputed', KL_type='KL', noise=0.):
+            edgeslists=[None, None], N_edges=None, database_labels=None, group_labels=None,
+            feature='full', kernel='precomputed', KL_type='JSD', noise=0.):
         """
         outline:
 
@@ -250,6 +250,8 @@ class EdgeFactory(SparseEdges):
                         # print('N_edges', N_edges)  #DEBUG
                         for i_image, (filename, croparea) in enumerate(imagelist):
                             labels, y__ = self.get_labels(edgeslist[:, :N_edges, i_image], filename, croparea, database_labels=database_labels)
+                            if not group_labels is None:
+                                y__ = [group_labels[label] for label in y__]
                             y_.append(y__)
                 except Exception as e:
                     self.log.warn(' >> Failed the labelling, skipping SVM : %s ', e)
@@ -348,6 +350,7 @@ class EdgeFactory(SparseEdges):
                     def distance(x, y, KL_type=KL_type):
                         if KL_type=='sKL': return (KL(x, y) + KL(y, x))#symmetric KL
                         elif KL_type=='JSD': return (KL(x, (x+y)/2.) + KL(y, (x+y)/2.))/2.#Jensen-Shannon divergence
+                        elif KL_type=='TV': return TV(x, y) # Total variation
                         else: return KL(x, y)
 
                     def my_kernel(d, KL_m, use_log, KL_0):
