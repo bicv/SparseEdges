@@ -379,7 +379,7 @@ class SparseEdges(LogGabor):
         self.binedges_sf_0 = self.binedges_sf_0[::-1]
         self.binedges_loglevel = np.linspace(-self.pe.loglevel_max, self.pe.loglevel_max, self.pe.N_scale+1)
 
-    def histedges_theta(self, edgeslist, mp_theta=None, v_hist=None, fig=None, ax=None, figsize=None, display=True):
+    def histedges_theta(self, edgeslist, mp_theta=None, v_hist=None, fig=None, ax=None, figsize=None, display=True, mode='full'):
         """
         First-order stats
 
@@ -387,6 +387,10 @@ class SparseEdges(LogGabor):
 
         """
         self.init_binedges(mp_theta)
+
+        if mode=='full':
+            return edgeslist[2, :]
+
         if v_hist is None:
             theta = edgeslist[2, ...].ravel()
             value = edgeslist[4, ...].ravel()
