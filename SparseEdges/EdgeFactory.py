@@ -437,7 +437,7 @@ class EdgeFactory(SparseEdges):
                     # print('number of nan in gram_test=', np.isnan(gram_test).sum())  #DEBUG
                 ###############################################################################
                 # 4- Train a SVM classification model
-                from sklearn.grid_search import GridSearchCV
+                from sklearn.model_selection import GridSearchCV
                 # see http://scikit-learn.org/stable/modules/grid_search.html
                 from sklearn.svm import SVC
                 # from sklearn import model_selection
@@ -454,11 +454,11 @@ class EdgeFactory(SparseEdges):
                                         kernel=kernel,
                                         tol=self.pe.svm_tol,
     #                                             probability=True,
+                                        class_weight='balanced',
                                         max_iter = self.pe.svm_max_iter,
                                         ),
                                     param_grid,
                                     verbose=1,
-                                    class_weight='balanced',
                                     scoring='f1_weighted',
                                     cv=self.pe.N_svm_cv,
                                     n_jobs=self.pe.svm_n_jobs, # http://scikit-learn.org/0.13/modules/generated/sklearn.grid_search.GridSearchCV.html

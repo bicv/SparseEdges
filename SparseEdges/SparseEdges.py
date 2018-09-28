@@ -388,7 +388,7 @@ class SparseEdges(LogGabor):
         """
         self.init_binedges(mp_theta)
 
-        if mode=='full':
+        if mode=='edge':
             return edgeslist[2, :]
 
         if v_hist is None:
