@@ -14,7 +14,7 @@ setup(
      author = "Laurent Perrinet INT - CNRS",
     author_email = "Laurent.Perrinet@univ-amu.fr",
     description = "SparseEdges: A bio-inspired sparse representation of edges in natural images.",
-    long_description=open("README.md", 'r', encoding='utf-8').read(),
+    # long_description=open("README.md", 'r', encoding='utf-8').read(),
     license = "GPLv2",
     install_requires=['LogGabor'],
     extras_require={
