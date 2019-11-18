@@ -5,7 +5,6 @@ See http://pythonhosted.org/SparseEdges
 
 """
 __author__ = "Laurent Perrinet INT - CNRS"
-__version__ = '20180606'
 __licence__ = 'GPLv2'
 import numpy as np
 import os
@@ -82,6 +81,7 @@ class SparseEdges(LogGabor):
                                       )
         # image of the winning filter
         lg_star = self.invert(C_star*FT_lg_star, full=False)
+        if do_mask: lg_star *= self.mask
         for i_sf_0, sf_0 in enumerate(self.sf_0):
             for i_theta, theta in enumerate(self.theta):
                 FT_lg = self.loggabor(0., 0., sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
@@ -91,32 +91,13 @@ class SparseEdges(LogGabor):
     def reconstruct(self, edges, do_mask=False, do_energy=False):
         image = np.zeros((self.pe.N_X, self.pe.N_Y))
         for i_edge in range(edges.shape[1]):
-            if not do_energy:
-                atom = self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
-                                self.loggabor(
-                                                edges[0, i_edge], edges[1, i_edge],
-                                                theta=edges[2, i_edge], B_theta=self.pe.B_theta,
-                                                sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
-                                                ),
-                                full=False)
-            else: # TODO: this may simplify in the call to LogGabor
-                atom = self.invert(edges[4, i_edge] * np.exp(1j*np.pi) *
-                                    self.loggabor(
-                                                    edges[0, i_edge], edges[1, i_edge],
-                                                    theta=edges[2, i_edge], B_theta=self.pe.B_theta,
-                                                    sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
-                                                    ),
-                                    full=False)**2
-                atom += self.invert(edges[4, i_edge] * np.exp(1j*2*np.pi) *
-                                    self.loggabor(
-                                                    edges[0, i_edge], edges[1, i_edge],
-                                                    theta=edges[2, i_edge], B_theta=self.pe.B_theta,
-                                                    sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
-                                                    ),
-                                    full=False)**2
-                atom = np.sqrt(atom)
-            image += atom
-
+            image += self.invert(edges[4, i_edge] * np.exp(1j*edges[5, i_edge]) *
+                            self.loggabor(
+                                            edges[0, i_edge], edges[1, i_edge],
+                                            theta=edges[2, i_edge], B_theta=self.pe.B_theta,
+                                            sf_0=edges[3, i_edge], B_sf=self.pe.B_sf,
+                                            ),
+                            full=False)
         if do_mask: image *= self.mask
         return image
 

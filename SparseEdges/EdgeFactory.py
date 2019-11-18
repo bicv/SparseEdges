@@ -5,7 +5,6 @@ See http://pythonhosted.org/SparseEdges
 
 """
 __author__ = "Laurent Perrinet INT - CNRS"
-__version__ = '20180606'
 __licence__ = 'GPLv2'
 import numpy as np
 import os

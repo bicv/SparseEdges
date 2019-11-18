@@ -1,5 +1,5 @@
 __author__ = "Laurent Perrinet INT - CNRS"
-__version__ = '20191113'
+__version__ = '20191118'
 __licence__ = 'GPLv2'
 from .SparseEdges import SparseEdges, KL, TV
 from .EdgeFactory import EdgeFactory
