@@ -81,7 +81,7 @@ class SparseEdges(LogGabor):
                                       )
         # image of the winning filter
         lg_star = self.invert(C_star*FT_lg_star, full=False)
-        if self.pe.do_mask: lg_star *= self.mask
+        #if self.pe.do_mask: lg_star *= self.mask
         for i_sf_0, sf_0 in enumerate(self.sf_0):
             for i_theta, theta in enumerate(self.theta):
                 FT_lg = self.loggabor(0., 0., sf_0=sf_0, B_sf=self.pe.B_sf, theta=theta, B_theta=self.pe.B_theta)
