@@ -28,7 +28,7 @@ pypi_tags:
 
 pypi_upload:
 	$(PYTHON) setup.py sdist #upload
-	twine upload dist/*
+	twine upload -u LaurentPerrinet dist/*
 
 pypi_docs:
 	rm web.zip
