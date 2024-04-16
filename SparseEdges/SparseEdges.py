@@ -117,7 +117,7 @@ class SparseEdges(LogGabor):
         if ax==None:
             border = 0.0
             ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), facecolor='w')
-        ax.axis(c='b', lw=0, frame_on=False)
+        ax.set_frame_on(False)
 
         if color in ['black', 'redgreen', 'redblue', 'bluegreen', 'brown', 'green', 'blue']: #cocir or chevrons
             linewidth = self.pe.line_width_chevrons
@@ -198,7 +198,7 @@ class SparseEdges(LogGabor):
                             fill=False, facecolor='none', edgecolor = 'black', alpha = 0.5, ls='dashed', lw=linewidth_mask)
             ax.add_patch(circ)
         ax.axis([0, self.pe.N_Y, self.pe.N_X, 0])
-        ax.grid(b=False, which="both")
+        # ax.grid(b=False, which="both")
         plt.draw()
         if mappable:
             return fig, ax, line_segments
@@ -716,7 +716,7 @@ class SparseEdges(LogGabor):
                 if ax==None:
                     border = 0.005
                     ax = fig.add_axes((border, border, 1.-2*border, 1.-2*border), facecolor='w')
-                    ax.axis(c='b', lw=0)
+                    ax.set_frame_on(False)
 
             # make circles around each couple of edges
             import matplotlib.patches as patches
