@@ -877,7 +877,7 @@ class SparseEdges(LogGabor):
                 self.log.info(' >> There is no MSE: %s ', e)
                 try:
                     MSE = self.full_MSE(exp, name_database, imagelist)
-                    if MSE is 'locked':
+                    if MSE == 'locked':
                         self.log.info('>> MSE extraction %s is locked', matname)
                         locked = True
                     else:
